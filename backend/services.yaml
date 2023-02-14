@@ -1,0 +1,28 @@
+- slug: circleci
+  link: https://status.circleci.com
+  name: Circle CI
+  should_scrap_website: false
+  incident_url: https://status.circleci.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.circleci.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.circleci.com/api/v2/components.json
+  provider_type: atlassian
+
+- slug: plivo
+  link: https://status.plivo.com
+  name: Plivo
+  should_scrap_website: false
+  incident_url: https://status.plivo.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.plivo.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.plivo.com/api/v2/components.json
+  provider_type: atlassian
+  
+- slug: twilio
+  link: https://status.twilio.com
+  name: Twilio
+  should_scrap_website: false
+  incident_url: https://status.twilio.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.twilio.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.twilio.com/api/v2/components.json
+  provider_type: atlassian
+
+  
