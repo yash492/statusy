@@ -2,23 +2,19 @@ package types
 
 import (
 	"time"
-
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type Incident struct {
-	gorm.Model
-	Uuid               uuid.UUID
+	BaseModel
 	Description        string
 	Url                string
 	IncidentCreatedAt  time.Time
 	ProviderIncidentId string
+	
 }
 
 type IncidentUpdate struct {
-	gorm.Model
-	Uuid        uuid.UUID
+	BaseModel
 	IncidentId  string
 	Description string
 	Status      string
@@ -26,7 +22,7 @@ type IncidentUpdate struct {
 }
 
 type IncidentUpdatesComponent struct {
-	gorm.Model
+	BaseModel
 	IncidentUpdateId string
 	ComponentId      string
 }

@@ -1,14 +1,8 @@
 package types
 
-import (
-	"github.com/google/uuid"
-	"gorm.io/gorm"
-)
-
 type Service struct {
-	gorm.Model
+	BaseModel
 	Name                   string `yaml:"name"`
-	Uuid                   uuid.UUID
 	Slug                   string `yaml:"slug"`
 	Link                   string `yaml:"link"`
 	ShouldScrapWebsite     bool   `yaml:"should_scrap_website"`

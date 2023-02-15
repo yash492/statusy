@@ -29,12 +29,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	err = cmd.AddServicesToDb(db)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	err = cmd.AddComponentsToDb(db)
+	err = cmd.AddServicesAndComponentsToDb(db)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -12,3 +12,15 @@ type ServicesStore interface {
 type ComponentsStore interface {
 	AddComponents([]types.Component) ([]types.Component, error)
 }
+
+type IncidentStore interface {
+	AddIncidents([]types.Incident) ([]types.Incident, error)
+}
+
+type IncidentUpdateStore interface {
+	AddIncidentUpdates([]types.IncidentUpdate) ([]types.IncidentUpdate, error)
+}
+
+type IncidentUpdateComponentsStore interface {
+	AddIncidentUpdates([]types.IncidentUpdatesComponent) ([]types.IncidentUpdatesComponent, error)
+}
