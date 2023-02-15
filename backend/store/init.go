@@ -1,6 +1,7 @@
 package store
 
 import (
+	"backend/config"
 	"fmt"
 	"log"
 
@@ -19,12 +20,12 @@ type dbCreds struct {
 
 func InitDb() *gorm.DB {
 	dsn := dbCreds{
-		host:     "localhost",
-		port:     5432,
-		password: "root",
-		dbname:   "statusy",
-		user:     "yash",
-		sslmode:  "disable",
+		host:     config.Env.Db.Host,
+		port:     config.Env.Db.Port,
+		password: config.Env.Db.Password,
+		dbname:   config.Env.Db.Dbname,
+		user:     config.Env.Db.User,
+		sslmode:  config.Env.Db.SslMode,
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn.string()), &gorm.Config{})
