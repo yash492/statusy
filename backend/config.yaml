@@ -1,9 +1,0 @@
-db:
-  provider: postgres
-  port: 5432
-  host: dpg-cespn22rrk0dan0t47ug-a.singapore-postgres.render.com
-  user: yash
-  password: K11PR0PQ1DSVsQxEfBKGLwi9BsjzdpEW
-  sslmode: require
-  dbname: dev_p6ji
- 
