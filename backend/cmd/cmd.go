@@ -14,12 +14,36 @@ import (
 	"gorm.io/gorm"
 )
 
-type Services struct {
+type ServicesEnv struct {
 	Store store.ServicesStore
 }
 
-type Components struct {
+type ComponentsEnv struct {
 	Store store.ComponentsStore
+}
+
+type IncidentUpdatesEnv struct {
+	Store store.IncidentUpdateStore
+}
+
+type IncidentUpdatesComponentsEnv struct {
+	Store store.IncidentUpdateComponentsStore
+}
+
+var Components = ComponentsEnv{
+	Store: store.InitDbEnv(),
+}
+
+var Services = ServicesEnv{
+	Store: store.InitDbEnv(),
+}
+
+var IncidentUpdate = IncidentUpdatesEnv{
+	Store: store.InitDbEnv(),
+}
+
+var IncidentUpdatesComponent = IncidentUpdatesComponentsEnv{
+	Store: store.InitDbEnv(),
 }
 
 func AddServicesAndComponentsToDb(db *gorm.DB) error {
@@ -35,17 +59,9 @@ func AddServicesAndComponentsToDb(db *gorm.DB) error {
 		return fmt.Errorf(err.Error(), "could not unmarshal provider_details.yaml")
 	}
 
-	services := Services{
-		Store: store.InitDbEnv(db),
-	}
-
-	insertedServices, err := services.Store.AddServices(parseServices)
+	insertedServices, err := Services.Store.AddServices(parseServices)
 	if err != nil {
 		return err
-	}
-
-	components := Components{
-		Store: store.InitDbEnv(db),
 	}
 
 	totalComponents := make([]types.Component, 0)
@@ -59,7 +75,7 @@ func AddServicesAndComponentsToDb(db *gorm.DB) error {
 		}
 	}
 
-	_, err = components.Store.AddComponents(totalComponents)
+	_, err = Components.Store.AddComponents(totalComponents)
 	return err
 }
 

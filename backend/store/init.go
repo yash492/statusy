@@ -18,6 +18,8 @@ type dbCreds struct {
 	port     int
 }
 
+var dbEnv *gorm.DB
+
 func InitDb() *gorm.DB {
 	dsn := dbCreds{
 		host:     config.Env.Db.Host,
@@ -34,13 +36,13 @@ func InitDb() *gorm.DB {
 		log.Fatalln("could not initialise db ", err)
 		return nil
 	}
-
+	dbEnv = db
 	return db
 }
 func (d dbCreds) string() string {
 	return fmt.Sprintf("host=%v password=%v dbname=%v user=%v sslmode=%v port=%v", d.host, d.password, d.dbname, d.user, d.sslmode, d.port)
 }
 
-func InitDbEnv(db *gorm.DB) *Db {
-	return &Db{db}
+func InitDbEnv() *Db {
+	return &Db{dbEnv}
 }
