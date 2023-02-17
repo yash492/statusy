@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS incident_components (
 	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 	updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 	deleted_at TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT fk_incident_components_inciden_id
+    CONSTRAINT fk_incident_components_incident_id
 		FOREIGN KEY (incident_id)
 		REFERENCES incidents(id),
     CONSTRAINT fk_incident_components_component_id

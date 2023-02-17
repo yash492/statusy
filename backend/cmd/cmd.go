@@ -73,7 +73,6 @@ func (s *ServicesEnv) AddServicesToDb() error {
 func (c *ComponentsEnv) AddComponentsToDb() error {
 
 	services, err := c.Store.GetAllServices()
-
 	if err != nil {
 		return err
 	}
@@ -108,14 +107,12 @@ func getAtlassianComponents(url string, serviceId uint) ([]types.Component, erro
 	}
 
 	atlassianComponentsReq := types.AtlassianComponentsReq{}
-
 	err = json.Unmarshal(bytes, &atlassianComponentsReq)
 	if err != nil {
 		return nil, err
 	}
 
 	components := []types.Component{}
-
 	for _, component := range atlassianComponentsReq.Components {
 		components = append(components, types.Component{
 			Name:      component.Name,
