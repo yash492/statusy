@@ -24,12 +24,11 @@ func main() {
 	}
 
 	tx := db.Exec(string(bytes))
-
 	if tx.Error != nil {
 		log.Fatalln(err)
 	}
 
-	err = cmd.AddServicesAndComponentsToDb(db)
+	err = cmd.Init()
 	if err != nil {
 		log.Fatalln(err)
 	}

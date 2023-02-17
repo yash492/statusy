@@ -11,7 +11,6 @@ import (
 
 	"github.com/gosimple/slug"
 	"gopkg.in/yaml.v3"
-	"gorm.io/gorm"
 )
 
 type ServicesEnv struct {
@@ -34,27 +33,27 @@ type IncidentComponentsEnv struct {
 	Store store.IncidentComponentsStore
 }
 
-var Components = ComponentsEnv{
-	Store: store.InitDbEnv(),
+func Init() error {
+	components := ComponentsEnv{Store: store.InitDbEnv()}
+	services := ServicesEnv{Store: store.InitDbEnv()}
+	// incidents := IncidentsEnv{Store: store.InitDbEnv()}
+	// incidentComponents := IncidentComponentsEnv{Store: store.InitDbEnv()}
+	// incidentUpdates := IncidentUpdatesEnv{Store: store.InitDbEnv()}
+
+	err := services.AddServicesToDb()
+	if err != nil {
+		return err
+	}
+
+	err = components.AddComponentsToDb()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-var Services = ServicesEnv{
-	Store: store.InitDbEnv(),
-}
-
-var Incidents = IncidentsEnv{
-	Store: store.InitDbEnv(),
-}
-
-var IncidentUpdate = IncidentUpdatesEnv{
-	Store: store.InitDbEnv(),
-}
-
-var IncidentUpdatesComponent = IncidentComponentsEnv{
-	Store: store.InitDbEnv(),
-}
-
-func AddServicesAndComponentsToDb(db *gorm.DB) error {
+func (s *ServicesEnv) AddServicesToDb() error {
 	bytes, err := os.ReadFile("./services.yaml")
 	if err != nil {
 		return fmt.Errorf(err.Error(), "could not read the services.yaml file")
@@ -67,13 +66,20 @@ func AddServicesAndComponentsToDb(db *gorm.DB) error {
 		return fmt.Errorf(err.Error(), "could not unmarshal provider_details.yaml")
 	}
 
-	insertedServices, err := Services.Store.AddServices(parseServices)
+	_, err = s.Store.AddServices(parseServices)
+	return err
+}
+
+func (c *ComponentsEnv) AddComponentsToDb() error {
+
+	services, err := c.Store.GetAllServices()
+
 	if err != nil {
 		return err
 	}
 
 	totalComponents := make([]types.Component, 0)
-	for _, service := range insertedServices {
+	for _, service := range services {
 		if service.ProviderType == types.AtlassianProviderType {
 			fetchedComponents, err := getAtlassianComponents(service.ComponentsUrl, service.ID)
 			if err != nil {
@@ -83,7 +89,7 @@ func AddServicesAndComponentsToDb(db *gorm.DB) error {
 		}
 	}
 
-	_, err = Components.Store.AddComponents(totalComponents)
+	_, err = c.Store.AddComponents(totalComponents)
 	return err
 }
 
