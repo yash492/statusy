@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS incidents (
 	uuid UUID DEFAULT (uuid_generate_v4()),
 	description TEXT NOT NULL,
 	url TEXT NOT NULL,
+	service_id INT NOT NULL,
 	incident_created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     provider_incident_id TEXT NOT NULL,
 	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -63,17 +64,17 @@ CREATE TABLE IF NOT EXISTS incident_updates (
 		REFERENCES incidents(id)
 );
 
-CREATE TABLE IF NOT EXISTS incident_updates_components (
+CREATE TABLE IF NOT EXISTS incident_components (
 	id SERIAL PRIMARY KEY,
-    incident_update_id INT NOT NULL,
+    incident_id INT NOT NULL,
 	component_id INT NOT NULL,
 	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 	updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 	deleted_at TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT fk_incident_updates_components_incident_update_id
-		FOREIGN KEY (incident_update_id)
-		REFERENCES incident_updates(id),
-    CONSTRAINT fk_incident_updates_components_component_id
+    CONSTRAINT fk_incident_components_inciden_id
+		FOREIGN KEY (incident_id)
+		REFERENCES incidents(id),
+    CONSTRAINT fk_incident_components_component_id
 		FOREIGN KEY (component_id)
 		REFERENCES components(id)
 );

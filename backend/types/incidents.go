@@ -9,8 +9,8 @@ type Incident struct {
 	Description        string
 	Url                string
 	IncidentCreatedAt  time.Time
+	ServiceId          int
 	ProviderIncidentId string
-	
 }
 
 type IncidentUpdate struct {
@@ -21,8 +21,8 @@ type IncidentUpdate struct {
 	StatusTime  string
 }
 
-type IncidentUpdatesComponent struct {
+type IncidentsComponent struct {
 	BaseModel
-	IncidentUpdateId string
-	ComponentId      string
+	IncidentId  string
+	ComponentId string
 }

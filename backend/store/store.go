@@ -21,6 +21,6 @@ type IncidentUpdateStore interface {
 	AddIncidentUpdates([]types.IncidentUpdate) ([]types.IncidentUpdate, error)
 }
 
-type IncidentUpdateComponentsStore interface {
-	AddIncidentUpdatesComponents([]types.IncidentUpdatesComponent) ([]types.IncidentUpdatesComponent, error)
+type IncidentComponentsStore interface {
+	AddIncidentComponents([]types.IncidentsComponent) ([]types.IncidentsComponent, error)
 }

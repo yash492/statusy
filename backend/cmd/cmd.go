@@ -22,12 +22,16 @@ type ComponentsEnv struct {
 	Store store.ComponentsStore
 }
 
+type IncidentsEnv struct {
+	Store store.IncidentStore
+}
+
 type IncidentUpdatesEnv struct {
 	Store store.IncidentUpdateStore
 }
 
-type IncidentUpdatesComponentsEnv struct {
-	Store store.IncidentUpdateComponentsStore
+type IncidentComponentsEnv struct {
+	Store store.IncidentComponentsStore
 }
 
 var Components = ComponentsEnv{
@@ -38,11 +42,15 @@ var Services = ServicesEnv{
 	Store: store.InitDbEnv(),
 }
 
+var Incidents = IncidentsEnv{
+	Store: store.InitDbEnv(),
+}
+
 var IncidentUpdate = IncidentUpdatesEnv{
 	Store: store.InitDbEnv(),
 }
 
-var IncidentUpdatesComponent = IncidentUpdatesComponentsEnv{
+var IncidentUpdatesComponent = IncidentComponentsEnv{
 	Store: store.InitDbEnv(),
 }
 
