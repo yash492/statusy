@@ -26,7 +26,7 @@ type dbConfig struct {
 func Load() error {
 	var config config
 
-	bytes, err := os.ReadFile("./config.yaml")
+	bytes, err := os.ReadFile("../config.yaml")
 	if err != nil {
 		return err
 	}

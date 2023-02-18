@@ -1,8 +1,10 @@
 package store
 
-import "backend/types"
+import (
+	"backend/models"
+)
 
-func (d Db) AddIncidents(incidents []types.Incident) ([]types.Incident, error) {
+func (d Db) AddIncidents(incidents []models.Incident) ([]models.Incident, error) {
 	result := d.Create(&incidents)
 	return incidents, result.Error
 }

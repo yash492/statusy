@@ -1,12 +1,12 @@
 package store
 
 import (
-	"backend/types"
+	"backend/models"
 
 	"gorm.io/gorm/clause"
 )
 
-func (d Db) AddComponents(components []types.Component) ([]types.Component, error) {
+func (d Db) AddComponents(components []models.Component) ([]models.Component, error) {
 	result := d.Clauses(clause.OnConflict{DoNothing: true}).Create(&components)
 	return components, result.Error
 }

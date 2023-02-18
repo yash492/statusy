@@ -1,26 +1,28 @@
 package store
 
 import (
-	"backend/types"
+	"backend/models"
 )
 
 type ServicesStore interface {
-	AddServices([]types.Service) ([]types.Service, error)
+	AddServices([]models.Service) ([]models.Service, error)
+	GetAllServices() ([]models.Service, error)
+	GetServiceBySlug(slug string) (models.Service, error)
 }
 
 type ComponentsStore interface {
-	AddComponents([]types.Component) ([]types.Component, error)
-	GetAllServices() ([]types.Service, error)
+	AddComponents([]models.Component) ([]models.Component, error)
 }
 
 type IncidentStore interface {
-	AddIncidents([]types.Incident) ([]types.Incident, error)
+	AddIncidents([]models.Incident) ([]models.Incident, error)
 }
 
 type IncidentUpdateStore interface {
-	AddIncidentUpdates([]types.IncidentUpdate) ([]types.IncidentUpdate, error)
+	AddIncidentUpdates([]models.IncidentUpdate) ([]models.IncidentUpdate, error)
+	GetLastIncidentCreatedAtForSlug(slug string) (models.LastUpdatedIncidentForSlug, error)
 }
 
 type IncidentComponentsStore interface {
-	AddIncidentComponents([]types.IncidentsComponent) ([]types.IncidentsComponent, error)
+	AddIncidentComponents([]models.IncidentsComponent) ([]models.IncidentsComponent, error)
 }

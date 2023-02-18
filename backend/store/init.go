@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type dbCreds struct {
@@ -30,7 +31,9 @@ func InitDb() *gorm.DB {
 		sslmode:  config.Env.Db.SslMode,
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn.string()), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn.string()), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 
 	if err != nil {
 		log.Fatalln("could not initialise db ", err)

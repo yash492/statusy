@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"backend/store"
+	"backend/models"
 	"backend/types"
 	"encoding/json"
 	"fmt"
@@ -13,39 +13,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type ServicesEnv struct {
-	Store store.ServicesStore
-}
-
-type ComponentsEnv struct {
-	Store store.ComponentsStore
-}
-
-type IncidentsEnv struct {
-	Store store.IncidentStore
-}
-
-type IncidentUpdatesEnv struct {
-	Store store.IncidentUpdateStore
-}
-
-type IncidentComponentsEnv struct {
-	Store store.IncidentComponentsStore
-}
-
 func Init() error {
-	components := ComponentsEnv{Store: store.InitDbEnv()}
-	services := ServicesEnv{Store: store.InitDbEnv()}
-	// incidents := IncidentsEnv{Store: store.InitDbEnv()}
-	// incidentComponents := IncidentComponentsEnv{Store: store.InitDbEnv()}
-	// incidentUpdates := IncidentUpdatesEnv{Store: store.InitDbEnv()}
+	initRepos()
 
-	err := services.AddServicesToDb()
+	err := AddServicesToDb()
 	if err != nil {
 		return err
 	}
 
-	err = components.AddComponentsToDb()
+	err = AddComponentsToDb()
 	if err != nil {
 		return err
 	}
@@ -53,31 +29,31 @@ func Init() error {
 	return nil
 }
 
-func (s *ServicesEnv) AddServicesToDb() error {
+func AddServicesToDb() error {
 	bytes, err := os.ReadFile("./services.yaml")
 	if err != nil {
 		return fmt.Errorf(err.Error(), "could not read the services.yaml file")
 	}
 
-	var parseServices []types.Service
+	var parseServices []models.Service
 
 	err = yaml.Unmarshal(bytes, &parseServices)
 	if err != nil {
 		return fmt.Errorf(err.Error(), "could not unmarshal provider_details.yaml")
 	}
 
-	_, err = s.Store.AddServices(parseServices)
+	_, err = servicesEnv.Store.AddServices(parseServices)
 	return err
 }
 
-func (c *ComponentsEnv) AddComponentsToDb() error {
+func AddComponentsToDb() error {
 
-	services, err := c.Store.GetAllServices()
+	services, err := servicesEnv.Store.GetAllServices()
 	if err != nil {
 		return err
 	}
 
-	totalComponents := make([]types.Component, 0)
+	totalComponents := make([]models.Component, 0)
 	for _, service := range services {
 		if service.ProviderType == types.AtlassianProviderType {
 			fetchedComponents, err := getAtlassianComponents(service.ComponentsUrl, service.ID)
@@ -88,11 +64,11 @@ func (c *ComponentsEnv) AddComponentsToDb() error {
 		}
 	}
 
-	_, err = c.Store.AddComponents(totalComponents)
+	_, err = componentsEnv.Store.AddComponents(totalComponents)
 	return err
 }
 
-func getAtlassianComponents(url string, serviceId uint) ([]types.Component, error) {
+func getAtlassianComponents(url string, serviceId uint) ([]models.Component, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -112,9 +88,9 @@ func getAtlassianComponents(url string, serviceId uint) ([]types.Component, erro
 		return nil, err
 	}
 
-	components := []types.Component{}
+	components := []models.Component{}
 	for _, component := range atlassianComponentsReq.Components {
-		components = append(components, types.Component{
+		components = append(components, models.Component{
 			Name:      component.Name,
 			ServiceId: serviceId,
 			Slug:      slug.Make(component.Name),

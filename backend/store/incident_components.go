@@ -1,7 +1,9 @@
 package store
 
-import "backend/types"
+import (
+	"backend/models"
+)
 
-func (d Db) AddIncidentComponents([]types.IncidentsComponent) ([]types.IncidentsComponent, error) {
+func (d Db) AddIncidentComponents([]models.IncidentsComponent) ([]models.IncidentsComponent, error) {
 	return nil, nil
 }

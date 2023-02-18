@@ -1,4 +1,4 @@
-package types
+package models
 
 import (
 	"time"
@@ -9,7 +9,7 @@ type Incident struct {
 	Description        string
 	Url                string
 	IncidentCreatedAt  time.Time
-	ServiceId          int
+	ServiceId          uint
 	ProviderIncidentId string
 }
 
@@ -25,4 +25,9 @@ type IncidentsComponent struct {
 	BaseModel
 	IncidentId  string
 	ComponentId string
+}
+
+type LastUpdatedIncidentForSlug struct {
+	Slug          string
+	LastUpdatedAt time.Time
 }
