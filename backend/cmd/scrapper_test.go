@@ -17,5 +17,8 @@ func TestAtlassianScrapper(t *testing.T) {
 		ProviderSlug: "circleci",
 	}
 
-	a.ScrapIncidents()
+	err := a.ScrapIncidents()
+	if err != nil {
+		panic(err)
+	}
 }

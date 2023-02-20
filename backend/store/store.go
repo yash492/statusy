@@ -12,10 +12,11 @@ type ServicesStore interface {
 
 type ComponentsStore interface {
 	AddComponents([]models.Component) ([]models.Component, error)
+	GetComponentsBySlugAndService(slug string, serviceId uint) (models.Component, error)
 }
 
 type IncidentStore interface {
-	AddIncidents([]models.Incident) ([]models.Incident, error)
+	AddIncident(models.Incident) (models.Incident, error)
 }
 
 type IncidentUpdateStore interface {
@@ -24,5 +25,5 @@ type IncidentUpdateStore interface {
 }
 
 type IncidentComponentsStore interface {
-	AddIncidentComponents([]models.IncidentsComponent) ([]models.IncidentsComponent, error)
+	AddIncidentComponents([]models.IncidentComponent) ([]models.IncidentComponent, error)
 }

@@ -4,6 +4,7 @@ import (
 	"backend/models"
 )
 
-func (d Db) AddIncidentComponents([]models.IncidentsComponent) ([]models.IncidentsComponent, error) {
-	return nil, nil
+func (d Db) AddIncidentComponents(incidentComponents []models.IncidentComponent) ([]models.IncidentComponent, error) {
+	result := d.Create(&incidentComponents)
+	return incidentComponents, result.Error
 }

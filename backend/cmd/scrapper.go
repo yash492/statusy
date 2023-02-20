@@ -4,8 +4,11 @@ import (
 	"backend/models"
 	"backend/types"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/gosimple/slug"
 )
 
 type Scrapper interface {
@@ -43,28 +46,66 @@ func (a *AtlassianIncidents) ScrapIncidents() error {
 		return err
 	}
 
-	incidents := []models.Incident{}
 	lastUpdatedIncident, err := incidentUpdatesEnv.Store.GetLastIncidentCreatedAtForSlug(a.ProviderSlug)
 	if err != nil {
 		return err
 	}
 
-	for _, incident := range a.Incidents.Incidents {
+	incidentUpdates := []models.IncidentUpdate{}
+	incidentComponents := []models.IncidentComponent{}
 
-		if lastUpdatedIncident.LastUpdatedAt.After(incident.CreatedAt) {
+	for _, incidentPayload := range a.Incidents.Incidents {
+
+		if lastUpdatedIncident.LastUpdatedAt.After(incidentPayload.CreatedAt) {
 			continue
 		}
 
-		incidents = append(incidents, models.Incident{
-			Url:                incident.Shortlink,
-			IncidentCreatedAt:  incident.CreatedAt,
-			ProviderIncidentId: incident.ID,
-			Description:        incident.Name,
+		incident, err := incidentsEnv.Store.AddIncident(models.Incident{
+			Url:                incidentPayload.Shortlink,
+			IncidentCreatedAt:  incidentPayload.CreatedAt,
+			ProviderIncidentId: incidentPayload.ID,
+			Description:        incidentPayload.Name,
 			ServiceId:          service.ID,
 		})
+		if err != nil {
+			return err
+		}
+
+		for _, updatePayload := range incidentPayload.IncidentUpdates {
+			incidentUpdates = append(incidentUpdates, models.IncidentUpdate{
+				IncidentId:  incident.ID,
+				Description: updatePayload.Body,
+				Status:      updatePayload.Status,
+				StatusTime:  updatePayload.CreatedAt,
+			})
+		}
+
+		// This get incident components, since the components are stored in incident updates
+		// rather than the parent incident req payload
+		incidentUpdateVar := incidentPayload.IncidentUpdates[0].AffectedComponents
+
+		for _, componentPayload := range incidentUpdateVar {
+
+			componentSlug := slug.Make(componentPayload.Name)
+
+			fmt.Println(componentPayload.Code, componentPayload.Name)
+			component, err := componentsEnv.Store.GetComponentsBySlugAndService(componentSlug, service.ID)
+			if err != nil {
+				return err
+			}
+
+			incidentComponents = append(incidentComponents, models.IncidentComponent{
+				IncidentId:  incident.ID,
+				ComponentId: component.ID,
+			})
+		}
 	}
 
-	_, err = incidentsEnv.Store.AddIncidents(incidents)
+	_, err = incidentUpdatesEnv.Store.AddIncidentUpdates(incidentUpdates)
+	if err != nil {
+		return err
+	}
+	_, err = incidentComponentsEnv.Store.AddIncidentComponents(incidentComponents)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Incident struct {
@@ -15,16 +17,17 @@ type Incident struct {
 
 type IncidentUpdate struct {
 	BaseModel
-	IncidentId  string
+	IncidentId  uint
 	Description string
 	Status      string
-	StatusTime  string
+	StatusTime  time.Time
 }
 
-type IncidentsComponent struct {
-	BaseModel
-	IncidentId  string
-	ComponentId string
+// Using gorm.Model because incident_components table does not have uuid
+type IncidentComponent struct {
+	gorm.Model
+	IncidentId  uint
+	ComponentId uint
 }
 
 type LastUpdatedIncidentForSlug struct {
