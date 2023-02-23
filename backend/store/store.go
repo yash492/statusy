@@ -12,7 +12,7 @@ type ServicesStore interface {
 
 type ComponentsStore interface {
 	AddComponents([]models.Component) ([]models.Component, error)
-	GetComponentsBySlugAndService(slug string, serviceId uint) (models.Component, error)
+	GetComponentsByCodeAndService(code string, serviceId uint) (models.Component, error)
 }
 
 type IncidentStore interface {

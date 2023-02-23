@@ -90,10 +90,20 @@ func getAtlassianComponents(url string, serviceId uint) ([]models.Component, err
 
 	components := []models.Component{}
 	for _, component := range atlassianComponentsReq.Components {
+		metadata := map[string]string{
+			"component_id": component.ID,
+		}
+
+		marshalledMetadata, err := json.Marshal(metadata)
+		if err != nil {
+			return nil, err
+		}
+
 		components = append(components, models.Component{
 			Name:      component.Name,
 			ServiceId: serviceId,
 			Slug:      slug.Make(component.Name),
+			Metadata:  marshalledMetadata,
 		})
 	}
 	return components, nil

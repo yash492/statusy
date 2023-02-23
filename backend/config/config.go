@@ -14,7 +14,6 @@ type config struct {
 var Env config
 
 type dbConfig struct {
-	Provider string `yaml:"provider"`
 	Port     int    `yaml:"port"`
 	Host     string `yaml:"host"`
 	User     string `yaml:"user"`

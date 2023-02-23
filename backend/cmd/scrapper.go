@@ -4,11 +4,8 @@ import (
 	"backend/models"
 	"backend/types"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/gosimple/slug"
 )
 
 type Scrapper interface {
@@ -86,10 +83,7 @@ func (a *AtlassianIncidents) ScrapIncidents() error {
 
 		for _, componentPayload := range incidentUpdateVar {
 
-			componentSlug := slug.Make(componentPayload.Name)
-
-			fmt.Println(componentPayload.Code, componentPayload.Name)
-			component, err := componentsEnv.Store.GetComponentsBySlugAndService(componentSlug, service.ID)
+			component, err := componentsEnv.Store.GetComponentsByCodeAndService(componentPayload.Code, service.ID)
 			if err != nil {
 				return err
 			}

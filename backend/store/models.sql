@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS components (
 	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 	updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 	deleted_at TIMESTAMP WITH TIME ZONE,
+	metadata JSONB DEFAULT '{}'::JSONB,
 	CONSTRAINT fk_service_id_components 
 		FOREIGN KEY(service_id) 
 		REFERENCES services(id)
