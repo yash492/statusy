@@ -36,19 +36,34 @@ func (s *StatusioIncidents) ScrapIncidents() error {
 
 	doc.Find("#statusio_history_timeline").Each(func(i int, s *goquery.Selection) {
 		s.Find(".history_timeline_event_title").Each(func(i int, s *goquery.Selection) {
-			// incidentTitleParsed := s.Find("a").Text()
-			// incidentCreatedAtStrParsed := s.Find(".history_timeline_event_date").Text()
+			incidentTitleParsed := s.Find("a").Text()
+			incidentCreatedAtStrParsed := s.Find(".history_timeline_event_date").Text()
 
-			// fmt.Println(incidentCreatedAtStrParsed, incidentTitleParsed)
+			fmt.Println(incidentCreatedAtStrParsed, incidentTitleParsed)
 		})
 
 		s.Find(".panel > .panel-body").Each(func(i int, s *goquery.Selection) {
-			
-			// Using hyphen as a delimiter to fetch components, incident status
-			incidentMetadataHeader := s.Find(".event_inner_title").AppendHtml("<p>-</p>").Text()
-			incidentMetadataValue := s.Find(".event_inner_text").AppendHtml("<p>-</p>").Text()
 
-			mappedIncidentMetadata := mapIncidentMetadata(strings.Split(incidentMetadataHeader, "-"), strings.Split(incidentMetadataValue, "-"))
+			incidentMetadataHeaders := make([]string, 0)
+			s.Find(".event_inner_title").Each(func(i int, s *goquery.Selection) {
+				text := s.Text()
+				if text == "" {
+					return
+				}
+
+				incidentMetadataHeaders = append(incidentMetadataHeaders, trim(text))
+			})
+
+			incidentMetadataValues := make([]string, 0)
+			s.Find(".event_inner_text").Each(func(i int, s *goquery.Selection) {
+				text := s.Text()
+				if text == "" {
+					return
+				}
+				incidentMetadataValues = append(incidentMetadataValues, trim(text))
+			})
+
+			mappedIncidentMetadata := mapIncidentMetadata(incidentMetadataHeaders, incidentMetadataValues)
 			fmt.Println(mappedIncidentMetadata)
 		})
 
@@ -59,13 +74,10 @@ func (s *StatusioIncidents) ScrapIncidents() error {
 
 func mapIncidentMetadata(headers []string, values []string) map[string]string {
 
-	metaMap := make(map[string]string, len(headers))
+	incidentMetadataMap := make(map[string]string, len(headers))
 	for i, header := range headers {
-		if header == "" || values[i] == "" {
-			continue
-		}
-		metaMap[trim(header)] = trim(values[i])
+		incidentMetadataMap[header] = values[i]
 	}
 
-	return metaMap
+	return incidentMetadataMap
 }
