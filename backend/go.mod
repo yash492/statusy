@@ -11,6 +11,12 @@ require (
 )
 
 require (
+	github.com/andybalholm/cascadia v1.3.1 // indirect
+	golang.org/x/net v0.7.0 // indirect
+)
+
+require (
+	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
@@ -18,5 +24,5 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	golang.org/x/crypto v0.4.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 )
