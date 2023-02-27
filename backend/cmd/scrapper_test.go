@@ -9,7 +9,7 @@ import (
 )
 
 func TestAtlassianScrapper(t *testing.T) {
-	config.Load()
+	config.Load("../config.yaml")
 	store.InitDb()
 	initRepos()
 	a := AtlassianIncidents{
@@ -25,7 +25,7 @@ func TestAtlassianScrapper(t *testing.T) {
 }
 
 func TestStatusioScrapper(t *testing.T) {
-	config.Load()
+	config.Load("../config.yaml")
 	store.InitDb()
 	initRepos()
 	a := StatusioIncidents{

@@ -22,10 +22,10 @@ type dbConfig struct {
 	Dbname   string `yaml:"dbname"`
 }
 
-func Load() error {
+func Load(filePath string) error {
 	var config config
 
-	bytes, err := os.ReadFile("../config.yaml")
+	bytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}

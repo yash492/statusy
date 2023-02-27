@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
+	_ "time/tzdata"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -14,6 +16,9 @@ type StatusioIncidents struct {
 	Incidents    []models.Incident
 	ProviderSlug string
 }
+
+const incidentStatusHeader = "Incident Status"
+const componentsHeader = "Conponents"
 
 var trim = strings.TrimSpace
 
@@ -65,6 +70,23 @@ func (s *StatusioIncidents) ScrapIncidents() error {
 
 			mappedIncidentMetadata := mapIncidentMetadata(incidentMetadataHeaders, incidentMetadataValues)
 			fmt.Println(mappedIncidentMetadata)
+
+			s.Find(".incident_time:first-child").Each(func(i int, s *goquery.Selection) {
+				html, _ := s.Html()
+				delimiter := "<br/>"
+				incidentCreationTimeStr := ""
+				if strings.Contains(html, delimiter) {
+					incidentCreationTimeStr = strings.SplitN(html, delimiter, 2)[0]
+				} else {
+					incidentCreationTimeStr = html
+				}
+				loc, err := time.LoadLocation("America/Chicago")
+
+
+				t, err := time.ParseInLocation("January 2, 2006 3:04PM MST", incidentCreationTimeStr, loc)
+				fmt.Println(t.String(), incidentCreationTimeStr, err)
+
+			})
 		})
 
 	})

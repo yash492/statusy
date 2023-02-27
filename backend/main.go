@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	err := config.Load()
+	err := config.Load("./config.yaml")
 	if err != nil {
 		log.Fatalln(err)
 	}
