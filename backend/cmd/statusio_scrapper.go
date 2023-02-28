@@ -104,7 +104,7 @@ func getIncidentCreatedAtInUtc(incidentCreatedAtStr string) (time.Time, error) {
 	incidentCreatedAtWithoutTz := incidentCreatedAtStr[:incidentCreatedAtStrLength-4]
 	incidentCreatedAtTz := incidentCreatedAtStr[incidentCreatedAtStrLength-3:]
 
-	tz, err := external.GetTimezoneForStatusioTzAbbr(incidentCreatedAtTz)
+	tz, err := external.GetTimezoneForTzAbbr(incidentCreatedAtTz)
 	if err != nil {
 		return time.Time{}, err
 	}

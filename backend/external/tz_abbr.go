@@ -44,7 +44,7 @@ var timezoneAbbrMap = map[string]string{
 	"+13":   "Pacific/Tongatapu",
 }
 
-func GetTimezoneForStatusioTzAbbr(timezoneAbbr string) (string, error) {
+func GetTimezoneForTzAbbr(timezoneAbbr string) (string, error) {
 	offset, ok := timezoneAbbrMap[timezoneAbbr]
 	if !ok {
 		return "", fmt.Errorf("can find timezone name for the given abbr %v", timezoneAbbr)
