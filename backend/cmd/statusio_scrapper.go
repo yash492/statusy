@@ -69,7 +69,9 @@ func (s *StatusioIncidents) ScrapIncidents() error {
 				incidentMetadataValues = append(incidentMetadataValues, trim(text))
 			})
 
-			// mappedIncidentMetadata := mapIncidentMetadata(incidentMetadataHeaders, incidentMetadataValues)
+			mappedIncidentMetadata := mapIncidentMetadata(incidentMetadataHeaders, incidentMetadataValues)
+
+			fmt.Println(mappedIncidentMetadata)
 
 			s.Find(".incident_time:first-child").Each(func(i int, s *goquery.Selection) {
 				html, _ := s.Html()
@@ -100,9 +102,14 @@ func mapIncidentMetadata(headers []string, values []string) map[string]string {
 }
 
 func getIncidentCreatedAtInUtc(incidentCreatedAtStr string) (time.Time, error) {
-	incidentCreatedAtStrLength := len(incidentCreatedAtStr)
-	incidentCreatedAtWithoutTz := incidentCreatedAtStr[:incidentCreatedAtStrLength-4]
-	incidentCreatedAtTz := incidentCreatedAtStr[incidentCreatedAtStrLength-3:]
+	daytime := "AM"
+	if strings.Contains(incidentCreatedAtStr, "PM") {
+		daytime = "PM"
+	}
+
+	index := strings.Index(incidentCreatedAtStr, daytime)
+	incidentCreatedAtWithoutTz := trim(incidentCreatedAtStr[:index+len(daytime)])
+	incidentCreatedAtTz := trim(incidentCreatedAtStr[index+len(daytime):])
 
 	tz, err := external.GetTimezoneForTzAbbr(incidentCreatedAtTz)
 	if err != nil {
