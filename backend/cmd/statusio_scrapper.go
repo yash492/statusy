@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"backend/external"
 	"backend/models"
 	"fmt"
 	"net/http"
@@ -68,8 +69,7 @@ func (s *StatusioIncidents) ScrapIncidents() error {
 				incidentMetadataValues = append(incidentMetadataValues, trim(text))
 			})
 
-			mappedIncidentMetadata := mapIncidentMetadata(incidentMetadataHeaders, incidentMetadataValues)
-			fmt.Println(mappedIncidentMetadata)
+			// mappedIncidentMetadata := mapIncidentMetadata(incidentMetadataHeaders, incidentMetadataValues)
 
 			s.Find(".incident_time:first-child").Each(func(i int, s *goquery.Selection) {
 				html, _ := s.Html()
@@ -80,12 +80,8 @@ func (s *StatusioIncidents) ScrapIncidents() error {
 				} else {
 					incidentCreationTimeStr = html
 				}
-				loc, err := time.LoadLocation("America/Chicago")
 
-
-				t, err := time.ParseInLocation("January 2, 2006 3:04PM MST", incidentCreationTimeStr, loc)
-				fmt.Println(t.String(), incidentCreationTimeStr, err)
-
+				getIncidentCreatedAtInUtc(incidentCreationTimeStr)
 			})
 		})
 
@@ -100,6 +96,25 @@ func mapIncidentMetadata(headers []string, values []string) map[string]string {
 	for i, header := range headers {
 		incidentMetadataMap[header] = values[i]
 	}
-
 	return incidentMetadataMap
+}
+
+func getIncidentCreatedAtInUtc(incidentCreatedAtStr string) (time.Time, error) {
+	incidentCreatedAtStrLength := len(incidentCreatedAtStr)
+	incidentCreatedAtWithoutTz := incidentCreatedAtStr[:incidentCreatedAtStrLength-4]
+	incidentCreatedAtTz := incidentCreatedAtStr[incidentCreatedAtStrLength-3:]
+
+	tz, err := external.GetTimezoneForStatusioTzAbbr(incidentCreatedAtTz)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	loc, err := time.LoadLocation(tz)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	parsedTime, err := time.ParseInLocation("January 2, 2006 3:04PM", incidentCreatedAtWithoutTz, loc)
+	return parsedTime.UTC(), err
+
 }
