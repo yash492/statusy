@@ -5,9 +5,11 @@ import (
 	"backend/models"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 	_ "time/tzdata"
+	"unicode"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -19,7 +21,9 @@ type StatusioIncidents struct {
 }
 
 const incidentStatusHeader = "Incident Status"
-const componentsHeader = "Conponents"
+const incidentComponentsHeader = "Components"
+const plannedMaintenance = "Planned Maintenance"
+const breakDelimiter = "<br/>"
 
 var trim = strings.TrimSpace
 
@@ -39,69 +43,83 @@ func (s *StatusioIncidents) ScrapIncidents() error {
 	if err != nil {
 		return err
 	}
+	incident := &models.Incident{}
 
-	doc.Find("#statusio_history_timeline").Each(func(i int, s *goquery.Selection) {
-		s.Find(".history_timeline_event_title").Each(func(i int, s *goquery.Selection) {
-			incidentTitleParsed := s.Find("a").Text()
-			incidentCreatedAtStrParsed := s.Find(".history_timeline_event_date").Text()
+	urlParsed, err := url.Parse(s.IncidentUrl)
+	if err != nil {
+		return err
+	}
 
-			fmt.Println(incidentCreatedAtStrParsed, incidentTitleParsed)
+	doc.Find(".timelineMinor").Each(func(i int, s *goquery.Selection) {
+		// This could be incident status or scheduled maintenance
+		eventStatus := s.Find(".pull-right.status_description").Text()
+		if eventStatus == plannedMaintenance || eventStatus == "" {
+			return
+		}
+
+		incidentTitleNode := s.Find(".panel-title a")
+		incidentTitle := trim(incidentTitleNode.Text())
+		incidentLink, _ := incidentTitleNode.Attr("href")
+
+		incidentComponents := make([]string, 0)
+		incidentStatus := ""
+
+		s.Find(".panel > .panel-body").Children().Each(func(i int, s *goquery.Selection) {
+			// This is incident status, components
+			incidentEntity := trim(s.Find(".event_inner_title").Text())
+
+			// This is value of the incident status, components
+			incidentEntityValue := trim(s.Find(".event_inner_text").Text())
+			if incidentEntity == incidentStatusHeader {
+				incidentStatus = incidentEntityValue
+			}
+
+			if incidentEntity == incidentComponentsHeader {
+				incidentComponents = trimSpacesFromStringSlice(strings.Split(trim(incidentEntityValue), ","))
+			}
+
+			// Incident Updates
+			incidentTimeHtml, err := s.Find(".incident_time").Html()
+			if err != nil {
+				fmt.Println(err)
+			}
+			incidentTimeStr := ""
+			if strings.Contains(incidentTimeHtml, breakDelimiter) {
+				incidentTimeStr = strings.SplitN(incidentTimeHtml, breakDelimiter, 2)[0]
+			}
+
+			var incidentTime time.Time
+			if incidentTimeStr != "" {
+				incidentTime, _ = getTimeInUtc(incidentTimeStr)
+			}
+
+			incidentMsgSelection := s.Find(".incident_message_details")
+			incidentMsg := incidentMsgSelection.Text()
+			incidentMsgStatus := formatIncidentMsgStatus(incidentMsgSelection.Siblings().Text())
+
+			if !incidentTime.IsZero() {
+				fmt.Println(incidentMsg, incidentMsgStatus, incidentTime)
+			}
+
 		})
 
-		s.Find(".panel > .panel-body").Each(func(i int, s *goquery.Selection) {
+		incident.Description = incidentTitle
+		joinedUrlPath, _ := url.JoinPath(fmt.Sprintf("%v://%v", urlParsed.Scheme, urlParsed.Host), trim(incidentLink))
+		incident.Url = joinedUrlPath
 
-			incidentMetadataHeaders := make([]string, 0)
-			s.Find(".event_inner_title").Each(func(i int, s *goquery.Selection) {
-				text := s.Text()
-				if text == "" {
-					return
-				}
+		idxOfIncidentProviderIncIdFromPath := strings.LastIndex(incidentLink, "/")
+		if idxOfIncidentProviderIncIdFromPath != -1 {
+			incident.ProviderIncidentId = incidentLink[idxOfIncidentProviderIncIdFromPath+1:]
+		}
 
-				incidentMetadataHeaders = append(incidentMetadataHeaders, trim(text))
-			})
-
-			incidentMetadataValues := make([]string, 0)
-			s.Find(".event_inner_text").Each(func(i int, s *goquery.Selection) {
-				text := s.Text()
-				if text == "" {
-					return
-				}
-				incidentMetadataValues = append(incidentMetadataValues, trim(text))
-			})
-
-			mappedIncidentMetadata := mapIncidentMetadata(incidentMetadataHeaders, incidentMetadataValues)
-
-			fmt.Println(mappedIncidentMetadata)
-
-			s.Find(".incident_time:first-child").Each(func(i int, s *goquery.Selection) {
-				html, _ := s.Html()
-				delimiter := "<br/>"
-				incidentCreationTimeStr := ""
-				if strings.Contains(html, delimiter) {
-					incidentCreationTimeStr = strings.SplitN(html, delimiter, 2)[0]
-				} else {
-					incidentCreationTimeStr = html
-				}
-
-				getIncidentCreatedAtInUtc(incidentCreationTimeStr)
-			})
-		})
+		fmt.Println(incidentComponents, incidentStatus)
 
 	})
 
 	return nil
 }
 
-func mapIncidentMetadata(headers []string, values []string) map[string]string {
-
-	incidentMetadataMap := make(map[string]string, len(headers))
-	for i, header := range headers {
-		incidentMetadataMap[header] = values[i]
-	}
-	return incidentMetadataMap
-}
-
-func getIncidentCreatedAtInUtc(incidentCreatedAtStr string) (time.Time, error) {
+func getTimeInUtc(incidentCreatedAtStr string) (time.Time, error) {
 	daytime := "AM"
 	if strings.Contains(incidentCreatedAtStr, "PM") {
 		daytime = "PM"
@@ -123,5 +141,26 @@ func getIncidentCreatedAtInUtc(incidentCreatedAtStr string) (time.Time, error) {
 
 	parsedTime, err := time.ParseInLocation("January 2, 2006 3:04PM", incidentCreatedAtWithoutTz, loc)
 	return parsedTime.UTC(), err
+
+}
+
+func trimSpacesFromStringSlice(slice []string) []string {
+	trimmedSlice := make([]string, 0)
+	for _, s := range slice {
+		if trim(s) == "" {
+			continue
+		}
+		trimmedSlice = append(trimmedSlice, trim(s))
+	}
+
+	return trimmedSlice
+}
+
+func formatIncidentMsgStatus(str string) string {
+	trimmedStr := strings.TrimFunc(str, func(r rune) bool {
+		return r == '[' || r == ']' || unicode.IsSpace(r)
+	})
+
+	return strings.ToLower(trimmedStr)
 
 }
