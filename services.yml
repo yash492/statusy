@@ -1,0 +1,17 @@
+- slug: twilio
+  link: https://status.twilio.com
+  name: Twilio
+  should_scrap_website: false
+  incident_url: https://status.twilio.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.twilio.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.twilio.com/api/v2/components.json
+  provider_type: atlassian
+
+- slug: docker
+  link: https://www.dockerstatus.com
+  name: Docker
+  should_scrap_website: true
+  incident_url: https://www.dockerstatus.com/pages/history/533c6539221ae15e3f000031
+  schedule_maintenance_url: https://www.dockerstatus.com/pages/history/533c6539221ae15e3f000031
+  components_url: https://www.dockerstatus.com
+  provider_type: statusio
