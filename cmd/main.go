@@ -9,11 +9,11 @@ import (
 
 func main() {
 	// This sets up the default logger in the app
+	//TODO: error handling and logging
 	setupSlog()
 	config.New()
 	store.New()
 	domain.New()
-
-	resource.InitServices()
+	resource.New()
 
 }

@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Services struct {
+type services struct {
 	Name                   string `yaml:"name"`
 	Link                   string `yaml:"link"`
 	ShouldScrapWebsite     bool   `yaml:"should_scrap_website"`
@@ -21,7 +21,7 @@ type Services struct {
 	ProviderType           string `yaml:"provider_type"`
 }
 
-func InitServices() error {
+func initServices() error {
 	services, err := fetchServiceFromFile()
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func InitServices() error {
 
 func fetchServiceFromFile() ([]schema.Service, error) {
 
-	var servicesYml []Services
+	var servicesYml []services
 
 	// Reading service yaml content in bytes
 	bytes, err := static.Fs.ReadFile("services.yml")
@@ -61,7 +61,7 @@ func fetchServiceFromFile() ([]schema.Service, error) {
 	return services, nil
 }
 
-func addAndVerifySlugToServices(servicesYml []Services) ([]schema.Service, error) {
+func addAndVerifySlugToServices(servicesYml []services) ([]schema.Service, error) {
 	var services []schema.Service
 	var slugMap map[string]bool
 
