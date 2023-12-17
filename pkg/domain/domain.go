@@ -8,6 +8,6 @@ var Service store.ServiceStore
 
 func New() {
 	Incident = store.NewIncidentDBConn()
-	Component = store.InitDbVar()
-	Service = store.InitDbVar()
+	Component = store.NewComponentDBConn()
+	Service = store.NewServiceDBConn()
 }

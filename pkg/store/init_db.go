@@ -22,6 +22,10 @@ func New() error {
 		log.Fatalln(err)
 	}
 
+	if err = conn.Ping(context.Background()); err != nil {
+		log.Fatalln(err)
+	}
+
 	dbConn = db{
 		pgConn: conn,
 	}
@@ -34,5 +38,6 @@ func InitDbVar() db {
 }
 
 func dbConnectionStr() string {
-	return fmt.Sprintf("postgres://%s:%s@%s:5432/%s;", config.PGUser, config.PGPassword, config.PGHost, config.PGDatabaseName)
+	str := fmt.Sprintf("postgres://%s:%s@%s:5432/%s", config.PGUser, config.PGPassword, config.PGHost, config.PGDatabaseName)
+	return str
 }
