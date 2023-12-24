@@ -8,8 +8,14 @@ type ServiceStore interface {
 }
 
 type ComponentStore interface {
-	Create(components []schema.Component) error
+	Create(components []schema.Component) ([]schema.Component, error)
+	GetAllByServiceID(serviceID uint) ([]schema.Component, error)
 }
 
 type IncidentStore interface {
+	Create([]schema.Incident) ([]schema.Incident, error)
+	GetByProviderID(providerID string) (schema.Incident, error)
+	CreateIncidentUpdates(incidentUpdates []schema.IncidentUpdate) error
+	GetLastIncidentUpdatesTimeByService(serviceID uint, incidentIDs []uint) ([]schema.LastIncidentUpdateForIncident, error)
+	CreateIncidentComponents(incidentComponents []schema.IncidentComponent) error
 }

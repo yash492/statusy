@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func setupSlog() {
+func initLogger() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
 	}))

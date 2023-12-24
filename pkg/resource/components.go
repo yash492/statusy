@@ -2,12 +2,32 @@ package resource
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/yash492/statusy/pkg/domain"
 	"github.com/yash492/statusy/pkg/schema"
 	"github.com/yash492/statusy/pkg/types"
 )
+
+type atlassianComponentsReq struct {
+	Components []atlassianComponent `json:"components"`
+}
+
+type atlassianComponent struct {
+	ID                 string    `json:"id"`
+	Name               string    `json:"name"`
+	Status             string    `json:"status"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
+	Position           int       `json:"position"`
+	Description        *string   `json:"description"`
+	Showcase           bool      `json:"showcase"`
+	GroupID            string    `json:"group_id"`
+	PageID             string    `json:"page_id"`
+	Group              bool      `json:"group"`
+	OnlyShowIfDegraded bool      `json:"only_show_if_degraded"`
+}
 
 type parseProviderComponentsFunc func(client *resty.Client, serviceId uint, componentsUrl string) ([]schema.Component, error)
 
@@ -35,7 +55,7 @@ func initComponents() error {
 		}
 	}
 
-	err = domain.Component.Create(components)
+	_, err = domain.Component.Create(components)
 	if err != nil {
 		return err
 	}
@@ -47,7 +67,7 @@ func parseAtlassianComponents(
 	serviceId uint,
 	componentsUrl string) ([]schema.Component, error) {
 
-	var atlassianComponentReq types.AtlassianComponentsReq
+	var atlassianComponentReq atlassianComponentsReq
 	_, err := client.R().SetResult(&atlassianComponentReq).Get(componentsUrl)
 	if err != nil {
 		slog.Error(err.Error())
@@ -62,9 +82,9 @@ func parseAtlassianComponents(
 		}
 
 		components = append(components, schema.Component{
-			Name:                componentReq.Name,
-			ServiceId:           serviceId,
-			ProviderComponentId: componentReq.ID,
+			Name:       componentReq.Name,
+			ServiceID:  serviceId,
+			ProviderID: componentReq.ID,
 		})
 	}
 

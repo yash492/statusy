@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/yash492/statusy/cmd/scrapper"
 	"github.com/yash492/statusy/pkg/config"
 	"github.com/yash492/statusy/pkg/domain"
 	"github.com/yash492/statusy/pkg/resource"
@@ -10,10 +11,11 @@ import (
 func main() {
 	// This sets up the default logger in the app
 	//TODO: error handling and logging
-	setupSlog()
+	initLogger()
 	config.New()
 	store.New()
 	domain.New()
 	resource.New()
+	scrapper.New()
 
 }

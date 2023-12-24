@@ -16,7 +16,13 @@ type db struct {
 var dbConn db
 
 func New() error {
-	conn, err := pgxpool.New(context.Background(), dbConnectionStr())
+
+	config, err := pgxpool.ParseConfig(dbConnectionStr())
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	conn, err := pgxpool.NewWithConfig(context.Background(), config)
 
 	if err != nil {
 		log.Fatalln(err)
