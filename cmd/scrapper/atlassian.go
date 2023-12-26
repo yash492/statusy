@@ -8,7 +8,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/samber/lo"
 	"github.com/yash492/statusy/pkg/domain"
+	"github.com/yash492/statusy/pkg/queue"
 	"github.com/yash492/statusy/pkg/schema"
+	"github.com/yash492/statusy/pkg/types"
 )
 
 type atlassianProvider struct {
@@ -52,7 +54,7 @@ type atlassianIncidentComponent struct {
 	Status string `json:"status"`
 }
 
-func (a atlassianProvider) scrap(client *resty.Client) error {
+func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error {
 	var atlassian atlassianIncidentReq
 	_, err := client.R().SetResult(&atlassian).Get(a.incidentUrl)
 	if err != nil {
@@ -143,17 +145,21 @@ func (a atlassianProvider) scrap(client *resty.Client) error {
 		})
 
 		newIncidentsUpdates = append(newIncidentsUpdates, incidentUpdated...)
+
 	}
 
 	newIncidentUpdatesFromExistingIncident, err := a.handleExistingIncidents(existingIncidentUpdateMap)
 	if err != nil {
 		return err
 	}
-
-	err = domain.Incident.CreateIncidentUpdates(append(newIncidentUpdatesFromExistingIncident, newIncidentsUpdates...))
+	aggregatedIncidentUpdates := append(newIncidentUpdatesFromExistingIncident, newIncidentsUpdates...)
+	err = domain.Incident.CreateIncidentUpdates(aggregatedIncidentUpdates)
 	if err != nil {
 		return err
 	}
+
+	// Publish incident to dispatcher
+	publishUpdatesToDispatcher(queue, aggregatedIncidentUpdates)
 
 	err = a.handleIncidentComponents(componentsMap, incidentComponentMap)
 	if err != nil {
@@ -210,7 +216,7 @@ func (a atlassianProvider) handleIncidentComponents(componentsMap map[string]sch
 	var incidentComponents []schema.IncidentComponent
 
 	for incidentID, atlassianComponents := range incidentComponentMap {
- 		for _, atlassianComponent := range atlassianComponents {
+		for _, atlassianComponent := range atlassianComponents {
 			component, ok := componentsMap[atlassianComponent.ID]
 			if !ok {
 				returnedComponents, err := domain.Component.Create([]schema.Component{{
@@ -232,4 +238,23 @@ func (a atlassianProvider) handleIncidentComponents(componentsMap map[string]sch
 	}
 
 	return domain.Incident.CreateIncidentComponents(incidentComponents)
+}
+
+func publishUpdatesToDispatcher(dispatcherQueue *queue.Queue, incidentUpdates []schema.IncidentUpdate) {
+	for _, incidentUpdate := range incidentUpdates {
+		dispatcherQueue.Publish(queue.IncidentPayload{
+			State:          normaliseProviderState(incidentUpdate.Status),
+			IncidentUpdate: incidentUpdate,
+		})
+	}
+}
+
+func normaliseProviderState(providerState string) string {
+	stateMap := map[string]string{
+		"identified":    types.IncidentOpen,
+		"monitoring":    types.IncidentInProgress,
+		"investigating": types.IncidentInProgress,
+		"closed":        types.IncidentClosed,
+	}
+	return stateMap[providerState]
 }
