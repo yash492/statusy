@@ -1,4 +1,4 @@
-package slack
+package pagerduty
 
 type IncidentOpenWorker struct{}
 type IncidentInProgressWorker struct{}

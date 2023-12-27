@@ -1,5 +1,9 @@
 package worker
 
+import (
+	"github.com/yash492/statusy/pkg/types"
+)
+
 type WorkerMap map[string]map[string]Worker
 
 var dispatchWorker WorkerMap
@@ -9,5 +13,5 @@ func init() {
 }
 
 type Worker interface {
-	Do() error
+	Do(event types.WorkerEvent) error
 }

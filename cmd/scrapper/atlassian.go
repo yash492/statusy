@@ -251,10 +251,10 @@ func publishUpdatesToDispatcher(dispatcherQueue *queue.Queue, incidentUpdates []
 
 func normaliseProviderState(providerState string) string {
 	stateMap := map[string]string{
-		"identified":    types.IncidentOpen,
-		"monitoring":    types.IncidentInProgress,
-		"investigating": types.IncidentInProgress,
-		"closed":        types.IncidentClosed,
+		"investigating": types.IncidentOpenEventType,
+		"identified":    types.IncidentInProgressEventType,
+		"monitoring":    types.IncidentInProgressEventType,
+		"resolved":      types.IncidentClosedEventType,
 	}
 	return stateMap[providerState]
 }
