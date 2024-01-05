@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS incidents (
 	id SERIAL PRIMARY KEY,
 	name TEXT NOT NULL,
 	link TEXT NOT NULL,
+	provider_impact TEXT NOT NULL,
+	impact TEXT NOT NULL,
 	service_id INT NOT NULL,
 	provider_id TEXT NOT NULL,
 	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -47,6 +49,7 @@ CREATE TABLE IF NOT EXISTS incident_updates (
 	id SERIAL PRIMARY KEY,
     incident_id INT NOT NULL,
 	description TEXT NOT NULL,
+	provider_status TEXT NOT NULL,
 	status TEXT NOT NULL,
 	status_time TIMESTAMP WITH TIME ZONE NOT NULL,
 	provider_id TEXT NOT NULL,
@@ -74,3 +77,32 @@ CREATE TABLE IF NOT EXISTS incident_components (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_incident_id_component_id ON incident_components(incident_id, component_id);
 
+CREATE TABLE IF NOT EXISTS subscriptions (
+	id SERIAL PRIMARY KEY,
+	uuid UUID DEFAULT (uuid_generate_v4()),
+	service_id INT NOT NULL,
+	is_all_components BOOLEAN NOT NULL,
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+	deleted_at TIMESTAMP WITH TIME ZONE,
+	CONSTRAINT fk_subscriptions_service_id
+		FOREIGN KEY (service_id)
+		REFERENCES services(id)
+		
+);
+
+CREATE TABLE IF NOT EXISTS subscription_components (
+	id SERIAL PRIMARY KEY,
+	subscription_id INT NOT NULL,
+	component_id INT NOT NULL,
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+	deleted_at TIMESTAMP WITH TIME ZONE,
+	CONSTRAINT fk_subscriptions_component_id
+		FOREIGN KEY (component_id)
+		REFERENCES components(id),
+	CONSTRAINT fk_subscription_components_subscription_id
+		FOREIGN KEY (subscription_id)
+		REFERENCES subscriptions(id)
+		ON DELETE CASCADE
+);

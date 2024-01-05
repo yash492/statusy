@@ -1,7 +1,5 @@
 package schema
 
-type tableName string
-
 type Service struct {
 	BaseModel
 	Name                   string `db:"name"`
@@ -13,5 +11,3 @@ type Service struct {
 	ScheduleMaintenanceURL string `db:"schedule_maintenance_url"`
 	ComponentsURL          string `db:"components_url"`
 }
-
-const ServiceTable = "services"

@@ -2,6 +2,7 @@ package scrapper
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -101,10 +102,12 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 		}
 
 		newIncidents = append(newIncidents, schema.Incident{
-			Name:       incidentReq.Name,
-			Link:       incidentReq.Shortlink,
-			ServiceID:  a.serviceID,
-			ProviderID: incidentReq.ID,
+			Name:           incidentReq.Name,
+			Link:           incidentReq.Shortlink,
+			ServiceID:      a.serviceID,
+			ProviderImpact: incidentReq.Impact,
+			Impact:         incidentReq.Impact,
+			ProviderID:     incidentReq.ID,
 		})
 
 		// Using Provider incident ID since, a standart incident ID is not available
@@ -136,11 +139,12 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 
 		incidentUpdated := lo.Map(atlassianIncidentUpdates, func(update atlassianIncidentUpdate, _ int) schema.IncidentUpdate {
 			return schema.IncidentUpdate{
-				IncidentID:  incident.ID,
-				Description: update.Body,
-				Status:      update.Status,
-				StatusTime:  update.CreatedAt,
-				ProviderID:  update.ID,
+				IncidentID:     incident.ID,
+				Description:    update.Body,
+				ProviderStatus: update.Status,
+				StatusTime:     update.CreatedAt,
+				ProviderID:     update.ID,
+				Status:         normaliseProviderState(update.Status),
 			}
 		})
 
@@ -182,11 +186,12 @@ func (a atlassianProvider) handleExistingIncidents(existingIncidentUpdateMap map
 			for _, incidentUpdate := range incidentUpdates {
 				if (!lastIncidentUpdate.LastIncidentUpdatesTime.Valid) || (incidentUpdate.StatusTime.After(lastIncidentUpdate.LastIncidentUpdatesTime.Time)) {
 					newIncidentUpdates = append(newIncidentUpdates, schema.IncidentUpdate{
-						IncidentID:  lastIncidentUpdate.IncidentID,
-						Description: incidentUpdate.Description,
-						ProviderID:  incidentUpdate.ProviderID,
-						Status:      incidentUpdate.Status,
-						StatusTime:  incidentUpdate.StatusTime,
+						IncidentID:     lastIncidentUpdate.IncidentID,
+						Description:    incidentUpdate.Description,
+						ProviderID:     incidentUpdate.ProviderID,
+						ProviderStatus: incidentUpdate.ProviderStatus,
+						StatusTime:     incidentUpdate.StatusTime,
+						Status:         normaliseProviderState(incidentUpdate.ProviderStatus),
 					})
 				}
 			}
@@ -198,11 +203,11 @@ func (a atlassianProvider) handleExistingIncidents(existingIncidentUpdateMap map
 func (atlassianProvider) parseExistingIncidentUpdates(req []atlassianIncidentUpdate, incidentID uint) []schema.IncidentUpdate {
 	incidentUpdates := lo.Map(req, func(req atlassianIncidentUpdate, _ int) schema.IncidentUpdate {
 		incidentUpdate := schema.IncidentUpdate{
-			Description: req.Body,
-			Status:      req.Status,
-			StatusTime:  req.CreatedAt,
-			IncidentID:  incidentID,
-			ProviderID:  req.ID,
+			Description:    req.Body,
+			ProviderStatus: req.Status,
+			StatusTime:     req.CreatedAt,
+			IncidentID:     incidentID,
+			ProviderID:     req.ID,
 		}
 
 		return incidentUpdate
@@ -243,7 +248,7 @@ func (a atlassianProvider) handleIncidentComponents(componentsMap map[string]sch
 func publishUpdatesToDispatcher(dispatcherQueue *queue.Queue, incidentUpdates []schema.IncidentUpdate) {
 	for _, incidentUpdate := range incidentUpdates {
 		dispatcherQueue.Publish(queue.IncidentPayload{
-			State:          normaliseProviderState(incidentUpdate.Status),
+			State:          fmt.Sprintf("%v.%v", types.Incident, normaliseProviderState(incidentUpdate.ProviderStatus)),
 			IncidentUpdate: incidentUpdate,
 		})
 	}
@@ -251,10 +256,10 @@ func publishUpdatesToDispatcher(dispatcherQueue *queue.Queue, incidentUpdates []
 
 func normaliseProviderState(providerState string) string {
 	stateMap := map[string]string{
-		"investigating": types.IncidentOpenEventType,
-		"identified":    types.IncidentInProgressEventType,
-		"monitoring":    types.IncidentInProgressEventType,
-		"resolved":      types.IncidentClosedEventType,
+		"investigating": types.IncidentTriggered,
+		"identified":    types.IncidentInProgress,
+		"monitoring":    types.IncidentInProgress,
+		"resolved":      types.IncidentResolved,
 	}
 	return stateMap[providerState]
 }

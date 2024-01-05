@@ -4,13 +4,13 @@ import "fmt"
 
 const (
 	Incident           string = "incident"
-	IncidentOpen       string = "open"
+	IncidentTriggered  string = "triggered"
 	IncidentInProgress string = "in_progress"
-	IncidentClosed     string = "closed"
+	IncidentResolved   string = "resolved"
 )
 
 var (
-	IncidentOpenEventType       string = fmt.Sprintf("%v.%v", Incident, IncidentOpen)
+	IncidentTriggeredEventType  string = fmt.Sprintf("%v.%v", Incident, IncidentTriggered)
 	IncidentInProgressEventType string = fmt.Sprintf("%v.%v", Incident, IncidentInProgress)
-	IncidentClosedEventType     string = fmt.Sprintf("%v.%v", Incident, IncidentClosed)
+	IncidentClosedEventType     string = fmt.Sprintf("%v.%v", Incident, IncidentResolved)
 )

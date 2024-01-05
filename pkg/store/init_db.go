@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 	"github.com/yash492/statusy/pkg/config"
 )
 
@@ -22,8 +24,12 @@ func New() error {
 		log.Fatalln(err)
 	}
 
-	conn, err := pgxpool.NewWithConfig(context.Background(), config)
+	config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxUUID.Register(conn.TypeMap())
+		return nil
+	}
 
+	conn, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
 		log.Fatalln(err)
 	}

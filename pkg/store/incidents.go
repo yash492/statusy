@@ -24,8 +24,8 @@ func (db incidentDBConn) Create(incidents []schema.Incident) ([]schema.Incident,
 	var returningIncidents []schema.Incident
 
 	query := `INSERT INTO incidents
-				(name, link, service_id, provider_id) 
-				VALUES ($1, $2, $3, $4)
+				(name, link, service_id, provider_id, impact, provider_impact) 
+				VALUES ($1, $2, $3, $4, $5, $6)
 				ON CONFLICT DO NOTHING
 				RETURNING *`
 
@@ -36,6 +36,8 @@ func (db incidentDBConn) Create(incidents []schema.Incident) ([]schema.Incident,
 				incident.Link,
 				incident.ServiceID,
 				incident.ProviderID,
+				incident.Impact,
+				incident.ProviderImpact,
 			).
 			Query(func(rows pgx.Rows) error {
 				queriedIncident, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.Incident])
@@ -63,8 +65,8 @@ func (db incidentDBConn) GetByProviderID(providerID string) (schema.Incident, er
 
 func (db incidentDBConn) CreateIncidentUpdates(incidentUpdates []schema.IncidentUpdate) error {
 	query := `INSERT INTO incident_updates
-				(incident_id, description, status_time, status, provider_id) 
-				VALUES ($1, $2, $3, $4, $5)`
+				(incident_id, description, status_time, provider_status, status, provider_id) 
+				VALUES ($1, $2, $3, $4, $5, $6)`
 
 	batch := pgx.Batch{}
 
@@ -74,6 +76,7 @@ func (db incidentDBConn) CreateIncidentUpdates(incidentUpdates []schema.Incident
 			update.IncidentID,
 			update.Description,
 			update.StatusTime,
+			update.ProviderStatus,
 			update.Status,
 			update.ProviderID,
 		)

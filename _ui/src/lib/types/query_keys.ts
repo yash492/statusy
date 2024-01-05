@@ -1,0 +1,1 @@
+export const SERVICE_LIST_FOR_SUBSCRIPTION_QUERY_KEY = 'services_list_for_subscription';

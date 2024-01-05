@@ -7,6 +7,6 @@ import (
 )
 
 func (i IncidentOpenWorker) Do(event types.WorkerEvent) error {
-	slog.Info("slack incident open worker", "event_type", "incident.open", "status", event.IncidentUpdate.Status)
+	slog.Info("slack incident open worker", "event_type", "incident.open", "status", event.IncidentUpdate.ProviderStatus)
 	return nil
 }

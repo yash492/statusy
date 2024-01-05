@@ -6,7 +6,7 @@ import (
 )
 
 func New() WorkerMap {
-	registerWorker(types.SlackWorker, types.IncidentOpenEventType, slack.IncidentOpenWorker{})
+	registerWorker(types.SlackWorker, types.IncidentTriggeredEventType, slack.IncidentOpenWorker{})
 	registerWorker(types.SlackWorker, types.IncidentInProgressEventType, slack.IncidentInProgressWorker{})
 	registerWorker(types.SlackWorker, types.IncidentClosedEventType, slack.IncidentClosedWorker{})
 	return dispatchWorker

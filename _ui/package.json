@@ -36,7 +36,10 @@
 	"dependencies": {
 		"@steeze-ui/heroicons": "^2.2.3",
 		"@steeze-ui/svelte-icon": "^1.5.0",
+		"@tanstack/svelte-query": "^5.17.0",
 		"@tanstack/svelte-table": "^8.11.2",
+		"axios": "^1.6.3",
+		"svelte-french-toast": "^1.2.0",
 		"svelte-select": "^5.8.1"
 	}
 }

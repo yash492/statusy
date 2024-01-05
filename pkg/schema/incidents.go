@@ -7,19 +7,22 @@ import (
 
 type Incident struct {
 	BaseModel
-	Name       string `db:"name"`
-	Link       string `db:"link"`
-	ServiceID  uint   `db:"service_id"`
-	ProviderID string `db:"provider_id"`
+	Name           string `db:"name"`
+	Link           string `db:"link"`
+	ProviderImpact string `db:"provider_impact"`
+	Impact         string `db:"impact"`
+	ServiceID      uint   `db:"service_id"`
+	ProviderID     string `db:"provider_id"`
 }
 
 type IncidentUpdate struct {
 	BaseModel
-	IncidentID  uint      `db:"incident_id"`
-	Description string    `db:"description"`
-	ProviderID  string    `db:"provider_id"`
-	Status      string    `db:"status"`
-	StatusTime  time.Time `db:"status_time"`
+	IncidentID     uint      `db:"incident_id"`
+	Description    string    `db:"description"`
+	ProviderID     string    `db:"provider_id"`
+	Status         string    `db:"status"`
+	ProviderStatus string    `db:"provider_status"`
+	StatusTime     time.Time `db:"status_time"`
 }
 
 type IncidentComponent struct {
