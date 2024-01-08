@@ -20,10 +20,14 @@ func routes(r chi.Router) {
 }
 
 func subscriptionRoutes(r chi.Router) {
-	r.Method(http.MethodPost, "/add-service", api.Handler(handlers.AddSubscription))
+	r.Method(http.MethodPost, "/", api.Handler(handlers.AddSubscription))
 	r.Method(http.MethodGet, "/services", api.Handler(handlers.ServicesForSubsciptions))
 	r.With(middlewares.Subscription).Route("/{subscriptionID}", subSubscriptionRoutes)
+}
 
+func subSubscriptionRoutes(r chi.Router) {
+	r.Method(http.MethodGet, "/", api.Handler(handlers.SubscriptionByID))
+	r.Method(http.MethodPut, "/", api.Handler(handlers.EditSubscription))
 }
 
 func servicesRoutes(r chi.Router) {
@@ -32,8 +36,4 @@ func servicesRoutes(r chi.Router) {
 
 func subServiceRoutes(r chi.Router) {
 	r.Method(http.MethodGet, "/components", api.Handler(handlers.ComponentsByService))
-}
-
-func subSubscriptionRoutes(r chi.Router) {
-	r.Method(http.MethodGet, "/", api.Handler(handlers.SubscriptionByID))
 }

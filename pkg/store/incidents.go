@@ -63,12 +63,13 @@ func (db incidentDBConn) GetByProviderID(providerID string) (schema.Incident, er
 	return pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.Incident])
 }
 
-func (db incidentDBConn) CreateIncidentUpdates(incidentUpdates []schema.IncidentUpdate) error {
+func (db incidentDBConn) CreateIncidentUpdates(incidentUpdates []schema.IncidentUpdate) ([]schema.IncidentUpdate, error) {
 	query := `INSERT INTO incident_updates
 				(incident_id, description, status_time, provider_status, status, provider_id) 
-				VALUES ($1, $2, $3, $4, $5, $6)`
+				VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`
 
 	batch := pgx.Batch{}
+	incidentUpdatesReturning := []schema.IncidentUpdate{}
 
 	for _, update := range incidentUpdates {
 		batch.Queue(
@@ -79,11 +80,18 @@ func (db incidentDBConn) CreateIncidentUpdates(incidentUpdates []schema.Incident
 			update.ProviderStatus,
 			update.Status,
 			update.ProviderID,
-		)
+		).Query(func(rows pgx.Rows) error {
+			incidentUpdatesRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.IncidentUpdate])
+			if err != nil {
+				return err
+			}
+			incidentUpdatesReturning = append(incidentUpdatesReturning, incidentUpdatesRow)
+			return nil
+		})
 	}
 
 	err := dbConn.pgConn.SendBatch(context.Background(), &batch).Close()
-	return err
+	return incidentUpdatesReturning, err
 }
 
 func (db incidentDBConn) GetLastIncidentUpdatesTimeByService(serviceID uint, incidentIDs []uint) ([]schema.LastIncidentUpdateForIncident, error) {

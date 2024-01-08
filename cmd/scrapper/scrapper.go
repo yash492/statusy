@@ -36,7 +36,7 @@ func New(queue *queue.Queue, wg *sync.WaitGroup) {
 func scrapStatusPages(queue *queue.Queue, providerServices []scrapper) {
 	client := resty.New()
 
-	ticker := time.NewTicker(500 * time.Millisecond)
+	ticker := time.NewTicker(2 * time.Second)
 	done := make(chan bool)
 
 	for {

@@ -34,7 +34,7 @@
 </script>
 
 <div class="mb-10">
-	<div class="border-b border-gray-700 flex w-1/2 text-sm md:text-base">
+	<div class="border-b border-gray-700 flex w-full text-sm md:text-base">
 		{#each titles as title}
 			<button
 				class={`font-medium rounded-t-md w-fit h-fit px-2 py-1 mr-4 hover:bg-purple-900 ${isTabActiveCssClasses(

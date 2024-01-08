@@ -137,14 +137,22 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 
 		incidentComponentMap[incident.ID] = atlassianIncidentComponent
 
-		incidentUpdated := lo.Map(atlassianIncidentUpdates, func(update atlassianIncidentUpdate, _ int) schema.IncidentUpdate {
+		incidentUpdated := lo.Map(atlassianIncidentUpdates, func(update atlassianIncidentUpdate, i int) schema.IncidentUpdate {
+
+			status := normaliseProviderState(update.Status)
+
+			// Assuming first incident update will be in a triggered state
+			if len(atlassianIncidentUpdates)-1 == i {
+				status = types.IncidentTriggered
+			}
+
 			return schema.IncidentUpdate{
 				IncidentID:     incident.ID,
 				Description:    update.Body,
 				ProviderStatus: update.Status,
 				StatusTime:     update.CreatedAt,
 				ProviderID:     update.ID,
-				Status:         normaliseProviderState(update.Status),
+				Status:         status,
 			}
 		})
 
@@ -157,18 +165,18 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 		return err
 	}
 	aggregatedIncidentUpdates := append(newIncidentUpdatesFromExistingIncident, newIncidentsUpdates...)
-	err = domain.Incident.CreateIncidentUpdates(aggregatedIncidentUpdates)
+	insertedIncidentsUpdates, err := domain.Incident.CreateIncidentUpdates(aggregatedIncidentUpdates)
 	if err != nil {
 		return err
 	}
-
-	// Publish incident to dispatcher
-	publishUpdatesToDispatcher(queue, aggregatedIncidentUpdates)
 
 	err = a.handleIncidentComponents(componentsMap, incidentComponentMap)
 	if err != nil {
 		return err
 	}
+
+	// Publish incident to dispatcher
+	publishUpdatesToDispatcher(queue, insertedIncidentsUpdates)
 	return nil
 }
 
@@ -248,7 +256,7 @@ func (a atlassianProvider) handleIncidentComponents(componentsMap map[string]sch
 func publishUpdatesToDispatcher(dispatcherQueue *queue.Queue, incidentUpdates []schema.IncidentUpdate) {
 	for _, incidentUpdate := range incidentUpdates {
 		dispatcherQueue.Publish(queue.IncidentPayload{
-			State:          fmt.Sprintf("%v.%v", types.Incident, normaliseProviderState(incidentUpdate.ProviderStatus)),
+			State:          fmt.Sprintf("%v.%v", types.Incident, incidentUpdate.Status),
 			IncidentUpdate: incidentUpdate,
 		})
 	}
@@ -256,10 +264,11 @@ func publishUpdatesToDispatcher(dispatcherQueue *queue.Queue, incidentUpdates []
 
 func normaliseProviderState(providerState string) string {
 	stateMap := map[string]string{
-		"investigating": types.IncidentTriggered,
+		"investigating": types.IncidentInProgress,
 		"identified":    types.IncidentInProgress,
 		"monitoring":    types.IncidentInProgress,
 		"resolved":      types.IncidentResolved,
+		"postmortem":    types.IncidentResolved,
 	}
 	return stateMap[providerState]
 }

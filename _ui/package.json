@@ -39,7 +39,11 @@
 		"@tanstack/svelte-query": "^5.17.0",
 		"@tanstack/svelte-table": "^8.11.2",
 		"axios": "^1.6.3",
+		"clsx": "^2.1.0",
+		"lucide-svelte": "^0.307.0",
 		"svelte-french-toast": "^1.2.0",
-		"svelte-select": "^5.8.1"
+		"svelte-select": "^5.8.1",
+		"tailwind-merge": "^2.2.0",
+		"tailwind-variants": "^0.1.20"
 	}
 }

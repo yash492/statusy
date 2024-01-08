@@ -1,4 +1,8 @@
-import type { AddSubscription, ServiceForSubscription } from '$lib/types/subscriptions';
+import type {
+	SaveSubscription,
+	ServiceForSubscription,
+	SubscriptionWithComponents
+} from '$lib/types/subscriptions';
 import axios from 'axios';
 
 export class SubscriptionAPI {
@@ -10,7 +14,15 @@ export class SubscriptionAPI {
 		});
 	}
 
-	async Add(subscription: AddSubscription) {
-		return axios.post<{ data: { msg: string } }>('/subscriptions/add-service', subscription);
+	async Add(subscription: SaveSubscription) {
+		return axios.post<{ data: { msg: string } }>('/subscriptions', subscription);
+	}
+
+	async GetByID(subscriptionID: string) {
+		return axios.get<{ data: SubscriptionWithComponents }>(`/subscriptions/${subscriptionID}`);
+	}
+
+	async Update(subscription: SaveSubscription, subscriptionID: string) {
+		return axios.put<{ data: { msg: string } }>(`/subscriptions/${subscriptionID}`, subscription);
 	}
 }

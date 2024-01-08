@@ -106,3 +106,38 @@ CREATE TABLE IF NOT EXISTS subscription_components (
 		REFERENCES subscriptions(id)
 		ON DELETE CASCADE
 );
+
+CREATE TABLE squadcast_extension (
+	id SERIAL PRIMARY KEY,
+	webhook_url TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE pagerduty_extension (
+	id SERIAL PRIMARY KEY,
+	routing_key TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE chatops_extension (
+	id SERIAL PRIMARY KEY,
+	-- type - slack, msteams, discord
+	type TEXT NOT NULL,
+	webhook_url TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE webhook_extension (
+	id SERIAL PRIMARY KEY,
+	webhook_url TEXT NOT NULL,
+	hmac_256_secret TEXT,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ
+);
