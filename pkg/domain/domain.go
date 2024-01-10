@@ -6,10 +6,7 @@ var Incident store.IncidentStore
 var Component store.ComponentStore
 var Service store.ServiceStore
 var Subscription store.SubscriptionStore
-
-func New() {
-	Incident = store.NewIncidentDBConn()
-	Component = store.NewComponentDBConn()
-	Service = store.NewServiceDBConn()
-	Subscription = store.NewSubscriptionConn()
-}
+var ChatopsExtension store.ChatopsExtensionStore
+var SquadcastExtension store.SquadcastExtensionStore
+var PagerdutyExtension store.PagerdutyExtensionStore
+var WebhookExtension store.WebhookExtensionStore

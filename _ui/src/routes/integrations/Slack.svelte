@@ -22,7 +22,8 @@
 			bind:value={webhookURL}
 		/>
 	</div>
-	<div class="mb-3">
-		<Button>Add Configuration</Button>
+	<div class="mb-3 flex gap-4">
+		<Button>Add</Button>
+		<Button>Delete</Button>
 	</div>
 </IntegrationModalWithList>

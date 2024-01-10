@@ -16,9 +16,9 @@ type saveSubscriptionReq struct {
 	CustomComponents []uint `json:"custom_components"`
 }
 
-func (s saveSubscriptionReq) Validate() error {
+func (s *saveSubscriptionReq) Validate() error {
 	if !s.IsAllComponents && len(s.CustomComponents) == 0 {
-		return fmt.Errorf("%w please choose components for the chosen option", api.ErrValidation)
+		return fmt.Errorf("%w: please choose components for the chosen option", api.ErrValidation)
 	}
 
 	return nil

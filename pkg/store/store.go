@@ -30,3 +30,27 @@ type SubscriptionStore interface {
 	Update(subscriptionID uuid.UUID, componentIDs []uint, isAllComponents bool) error
 	GetForIncidentUpdates(incidentUpdateID uint) ([]schema.SubscriptionForIncidentUpdates, error)
 }
+
+type SquadcastExtensionStore interface {
+	Get() (schema.SquadcastExtension, error)
+	Save(webhookURL string, uuid uuid.UUID) error
+	Delete(uuid uuid.UUID) error
+}
+
+type PagerdutyExtensionStore interface {
+	Get() (schema.PagerdutyExtension, error)
+	Save(routingKey string, uuid uuid.UUID) error
+	Delete(uuid uuid.UUID) error
+}
+
+type ChatopsExtensionStore interface {
+	Get() ([]schema.ChatopsExtension, error)
+	Save(chatopsType string, webhookURL string, uuid uuid.UUID) error
+	Delete(uuid uuid.UUID) error
+}
+
+type WebhookExtensionStore interface {
+	Get() (schema.WebhookExtension, error)
+	Save(webhookURL string, secret *string, uuid uuid.UUID) error
+	Delete(uuid uuid.UUID) error
+}

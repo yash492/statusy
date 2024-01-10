@@ -20,11 +20,12 @@
 		<input
 			class="w-full bg-neutral-600 outline-none py-2 mt-2 px-3 rounded-md"
 			id="secret"
-			bind:value={webhookURL}
+			bind:value={webhookSecret}
 		/>
 	</div>
 
-	<div class="mb-3">
-		<Button>Add Configuration</Button>
+	<div class="mb-3 flex gap-4">
+		<Button>Add</Button>
+		<Button>Delete</Button>
 	</div>
 </IntegrationModalWithList>

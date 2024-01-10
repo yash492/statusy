@@ -14,7 +14,7 @@
 		<Tab title="Chat Ops" id="2">
 			<Chatops />
 		</Tab>
-		<Tab title="Webhooks" id="3">
+		<Tab title="Webhook" id="3">
 			<Webhook />
 		</Tab>
 	</Tabs>

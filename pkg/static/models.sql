@@ -107,25 +107,34 @@ CREATE TABLE IF NOT EXISTS subscription_components (
 		ON DELETE CASCADE
 );
 
-CREATE TABLE squadcast_extension (
+CREATE TABLE squadcast_extensions (
 	id SERIAL PRIMARY KEY,
+	uuid UUID NOT NULL DEFAULT (uuid_generate_v4()),
 	webhook_url TEXT NOT NULL,
 	created_at TIMESTAMPTZ DEFAULT NOW(),
 	updated_at TIMESTAMPTZ DEFAULT NOW(),
 	deleted_at TIMESTAMPTZ
 );
 
-CREATE TABLE pagerduty_extension (
+CREATE UNIQUE INDEX IF NOT EXISTS idx_squadcast_extension_uuid ON squadcast_extensions(uuid); 
+
+
+CREATE TABLE pagerduty_extensions (
 	id SERIAL PRIMARY KEY,
+	uuid UUID NOT NULL DEFAULT (uuid_generate_v4()),
 	routing_key TEXT NOT NULL,
 	created_at TIMESTAMPTZ DEFAULT NOW(),
 	updated_at TIMESTAMPTZ DEFAULT NOW(),
 	deleted_at TIMESTAMPTZ
 );
 
-CREATE TABLE chatops_extension (
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pagerduty_extension_uuid ON pagerduty_extensions(uuid); 
+
+
+CREATE TABLE chatops_extensions (
 	id SERIAL PRIMARY KEY,
 	-- type - slack, msteams, discord
+	uuid UUID NOT NULL DEFAULT (uuid_generate_v4()),
 	type TEXT NOT NULL,
 	webhook_url TEXT NOT NULL,
 	created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -133,11 +142,16 @@ CREATE TABLE chatops_extension (
 	deleted_at TIMESTAMPTZ
 );
 
-CREATE TABLE webhook_extension (
+CREATE UNIQUE INDEX IF NOT EXISTS idx_chatops_extension_uuid ON chatops_extensions(uuid); 
+
+CREATE TABLE webhook_extensions (
 	id SERIAL PRIMARY KEY,
+	uuid UUID NOT NULL DEFAULT (uuid_generate_v4()),
 	webhook_url TEXT NOT NULL,
-	hmac_256_secret TEXT,
+	secret TEXT,
 	created_at TIMESTAMPTZ DEFAULT NOW(),
 	updated_at TIMESTAMPTZ DEFAULT NOW(),
 	deleted_at TIMESTAMPTZ
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_webhooks_extension_uuid ON webhooks_extensions(uuid); 
