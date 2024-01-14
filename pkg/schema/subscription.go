@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -26,16 +28,18 @@ type SubscriptionWithComponents struct {
 }
 
 type SubscriptionForIncidentUpdates struct {
-	ServiceID                    uint   `db:"service_id"`
-	ServiceName                  string `db:"service_name"`
-	ComponentID                  uint   `db:"component_id"`
-	ComponentName                string `db:"component_name"`
-	IncidentID                   uint   `db:"incident_id"`
-	IncidentName                 string `db:"incident_name"`
-	IncidentLink                 string `db:"incident_link"`
-	IncidentImpact               string `db:"incident_impact"`
-	IncidentUpdate               string `db:"incident_update"`
-	IncidentUpdateProviderStatus string `db:"incident_update_provider_status"`
-	IncidentUpdateStatus         string `db:"incident_update_status"`
-	IsAllComponents              bool   `db:"is_all_components"`
+	ServiceID                    uint      `db:"service_id"`
+	ServiceName                  string    `db:"service_name"`
+	ComponentID                  uint      `db:"component_id"`
+	ComponentName                string    `db:"component_name"`
+	IncidentID                   uint      `db:"incident_id"`
+	IncidentName                 string    `db:"incident_name"`
+	IncidentLink                 string    `db:"incident_link"`
+	IncidentImpact               string    `db:"incident_impact"`
+	IncidentUpdate               string    `db:"incident_update"`
+	IncidentUpdateID             uint      `db:"incident_update_id"`
+	IncidentUpdateProviderStatus string    `db:"incident_update_provider_status"`
+	IncidentUpdateStatus         string    `db:"incident_update_status"`
+	IncidentUpdateStatusTime     time.Time `db:"incident_update_status_time"`
+	IsAllComponents              bool      `db:"is_all_components"`
 }

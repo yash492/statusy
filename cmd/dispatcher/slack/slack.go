@@ -3,6 +3,7 @@ package slack
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx"
 	"github.com/slack-go/slack"
@@ -35,26 +36,30 @@ func dispatchSlackMsg(event types.WorkerEvent) error {
 	slackWebhookURL := slack.WebhookURL
 	components := helpers.ConvertComponentsToStr(event.Components)
 
-	blocks, attachment := makeSlackWebhookMessage(components, event.IncidentName, event.ServiceName, event.IncidentUpdateProviderStatus, event.EventType, event.IncidentUpdate, event.IncidentLink)
+	blocks, attachment := makeSlackWebhookMessage(components, event)
 	return sendWebhookMsg(slackWebhookURL, blocks, attachment)
 }
 
-func makeSlackWebhookMessage(components string, incidentName, serviceName, providerStatus, eventType, incidentUpdateDescription, incidentLink string) (slack.Message, slack.Attachment) {
+func makeSlackWebhookMessage(components string, event types.WorkerEvent) (slack.Message, slack.Attachment) {
 	msg := slack.NewBlockMessage(
 		slack.SectionBlock{
 			Type: slack.MBTSection,
 			Text: &slack.TextBlockObject{
 				Type: slack.MarkdownType,
-				Text: fmt.Sprintf(":rotating_light: *%v*", helpers.SlackHyperlinkFormat(incidentLink, incidentName)),
+				Text: fmt.Sprintf(":rotating_light: *%v*", helpers.SlackHyperlinkFormat(event.IncidentLink, event.ServiceName)),
 			},
 			Fields: []*slack.TextBlockObject{
 				{
 					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Service:* %v", serviceName),
+					Text: fmt.Sprintf("*Service:* %v", event.ServiceName),
 				},
 				{
 					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Status:* `%v`", cases.Title(language.AmericanEnglish).String(providerStatus)),
+					Text: fmt.Sprintf("*Status:* `%v`", cases.Title(language.AmericanEnglish).String(event.IncidentUpdateProviderStatus)),
+				},
+				{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf("*Created At:* `%v`", event.IncidentUpdateStatusTime.UTC().Format(time.RFC850)),
 				},
 				{
 					Type: slack.MarkdownType,
@@ -68,12 +73,12 @@ func makeSlackWebhookMessage(components string, incidentName, serviceName, provi
 		Type: slack.MBTSection,
 		Text: &slack.TextBlockObject{
 			Type: slack.MarkdownType,
-			Text: incidentUpdateDescription,
+			Text: event.IncidentUpdate,
 		},
 	})
 
 	attachment := slack.Attachment{
-		Color:  slackMsgColor[eventType],
+		Color:  slackMsgColor[event.EventType],
 		Blocks: attachmentBlocks.Blocks,
 	}
 

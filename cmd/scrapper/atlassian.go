@@ -57,10 +57,13 @@ type atlassianIncidentComponent struct {
 
 func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error {
 	var atlassian atlassianIncidentReq
-	_, err := client.R().SetResult(&atlassian).Get(a.incidentUrl)
+	_, err := client.R().SetHeader("Authorization", "OAuth 317d16908f244276a67169cc87dd65c0").SetResult(&atlassian).Get(a.incidentUrl)
 	if err != nil {
 		return err
 	}
+
+	//TODO: remove this
+	// atlassian.Incidents = atlassian.Incidents[:4]
 
 	components, err := domain.Component.GetAllByServiceID(a.serviceID)
 	if err != nil {
@@ -89,13 +92,20 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 	// This is start of incident parsing stage
 	for _, incidentReq := range atlassian.Incidents {
 
+		// Reversing the incident updates from atlassian as
+		// it sends the payload in the following descending order resolved -> update -> investigating
+		// which is not desirable since we need the updates in the ascending order
+		// to perform connected dispatch events, for example squadcast can't resolve an incident
+		// when an already resolved signal is sent before the trigger signal
+		incidentUpdateReq := lo.Reverse(incidentReq.IncidentUpdates)
+
 		// If incident already exists in the DB, fetch it from the DB
 		// and the put it into the map for further scraping of incident updates and incident
 		// components
 		// This is to ensure bulk insert of incident updates
 		existingIncident, err := domain.Incident.GetByProviderID(incidentReq.ID)
 		if err == nil {
-			incidentUpdates := a.parseExistingIncidentUpdates(incidentReq.IncidentUpdates, existingIncident.ID)
+			incidentUpdates := a.parseExistingIncidentUpdates(incidentUpdateReq, existingIncident.ID)
 			existingIncidentUpdateMap[existingIncident.ID] = incidentUpdates
 			incidentComponentMap[existingIncident.ID] = incidentReq.IncidentComponents
 			continue
@@ -111,7 +121,7 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 		})
 
 		// Using Provider incident ID since, a standart incident ID is not available
-		newIncidentUpdateMap[incidentReq.ID] = incidentReq.IncidentUpdates
+		newIncidentUpdateMap[incidentReq.ID] = incidentUpdateReq
 		newIncidentComponentMap[incidentReq.ID] = incidentReq.IncidentComponents
 	}
 
@@ -142,7 +152,7 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 			status := normaliseProviderState(update.Status)
 
 			// Assuming first incident update will be in a triggered state
-			if len(atlassianIncidentUpdates)-1 == i {
+			if i == 0 {
 				status = types.IncidentTriggered
 			}
 

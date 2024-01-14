@@ -170,9 +170,11 @@ func (db subscriptionDBConn) GetForIncidentUpdates(incidentUpdateID uint) ([]sch
 				incidents.name AS incident_name,
 				incidents.link AS incident_link,
 				incidents.impact AS incident_impact,
+				incident_updates.id AS incident_update_id,
 				incident_updates.description AS incident_update,
 				incident_updates.provider_status AS incident_update_provider_status,
 				incident_updates.status AS incident_update_status,
+				incident_updates.status_time::TIMESTAMPTZ AS incident_update_status_time,
 				subscriptions.is_all_components AS is_all_components
 			FROM
 				incident_updates

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/samber/lo"
 	"github.com/yash492/statusy/cmd/dispatcher/worker"
@@ -34,17 +35,30 @@ func dispatchIncident(incident queue.IncidentPayload, workerMap worker.WorkerMap
 		return
 	}
 
-	for workerName, eventMap := range workerMap {
-		slog.Info("dispatching event", "worker_name", workerName, "event_type", incident.State)
-		worker := eventMap[workerEvent.EventType]
+	wg := &sync.WaitGroup{}
 
-		go func(w types.WorkerEvent) {
+	for workerName, eventMap := range workerMap {
+		slog.Info("dispatching event", "worker_name", workerName, "event_type", incident.State, "incident_update_id", incident.IncidentUpdate.ID, "incident_id", workerEvent.IncidentID)
+		worker, ok := eventMap[workerEvent.EventType]
+		if !ok {
+			return
+		}
+
+		wg.Add(1)
+		go func(w types.WorkerEvent, wg *sync.WaitGroup) {
+			defer wg.Done()
 			err := worker.Do(w)
 			if err != nil {
 				slog.Error(err.Error())
 			}
-		}(workerEvent)
+			// Limiting the request speed as not to cross rate limits
+			// and giving ample breathing room for services to process the request
+			time.Sleep(1 * time.Second)
+		}(workerEvent, wg)
+
 	}
+
+	wg.Wait()
 }
 
 func fetchSubscriptionContext(incidentID uint, eventType string) (types.WorkerEvent, error) {
@@ -79,6 +93,8 @@ func fetchSubscriptionContext(incidentID uint, eventType string) (types.WorkerEv
 		IncidentUpdateStatus:         subscriptions[0].IncidentUpdateStatus,
 		IsAllComponents:              subscriptions[0].IsAllComponents,
 		EventType:                    eventType,
+		IncidentUpdateStatusTime:     subscriptions[0].IncidentUpdateStatusTime,
+		IncidentUpdateID:             subscriptions[0].IncidentUpdateID,
 	}
 
 	return workerEvent, nil

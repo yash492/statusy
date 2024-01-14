@@ -2,6 +2,7 @@ package msteams
 
 import (
 	"fmt"
+	"time"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 	"github.com/atc0005/go-teams-notify/v2/messagecard"
@@ -17,6 +18,7 @@ type IncidentInProgressWorker struct{}
 type IncidentClosedWorker struct{}
 
 func dispatchMsTeamsMsg(event types.WorkerEvent) error {
+
 	msteam, err := domain.ChatopsExtension.GetByType("msteams")
 	if err != nil {
 		return err
@@ -42,6 +44,10 @@ func dispatchMsTeamsMsg(event types.WorkerEvent) error {
 			"**Affected Components:**" +
 			newLine +
 			affectedComponents +
+			newLine +
+			"**Created At**" +
+			newLine +
+			event.IncidentUpdateStatusTime.UTC().Format(time.RFC850) +
 			newLine +
 			newLine +
 			"**Description:**" +
