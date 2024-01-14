@@ -172,7 +172,8 @@ func (db subscriptionDBConn) GetForIncidentUpdates(incidentUpdateID uint) ([]sch
 				incidents.impact AS incident_impact,
 				incident_updates.description AS incident_update,
 				incident_updates.provider_status AS incident_update_provider_status,
-				incident_updates.status AS incident_update_status
+				incident_updates.status AS incident_update_status,
+				subscriptions.is_all_components AS is_all_components
 			FROM
 				incident_updates
 				JOIN incidents ON incidents.id = incident_updates.incident_id

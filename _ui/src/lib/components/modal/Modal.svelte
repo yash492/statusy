@@ -9,6 +9,10 @@
 	$: if (dialog && showModal) {
 		dialog.showModal();
 	}
+
+	$: if (dialog && !showModal) {
+		dialog.close();
+	}
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -17,7 +21,6 @@
 <dialog
 	on:click|self={() => {
 		showModal = false;
-		dialog.close();
 	}}
 	on:introstart
 	on:outroend
@@ -32,19 +35,11 @@
 				class="hover:bg-neutral-600 hover:rounded-sm"
 				on:click={() => {
 					showModal = false;
-					dialog.close();
 				}}
 			>
 				<Icon src={XMark} size="23px"></Icon>
 			</button>
 		</div>
 		<slot />
-
-		<!-- <Button
-			on:click={() => {
-				dialog.close();
-				showModal = false;
-			}}>Close</Button
-		> -->
 	</div>
 </dialog>

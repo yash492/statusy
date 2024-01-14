@@ -30,7 +30,7 @@ func (c *saveChatOpsExtensionReq) Validate() error {
 	}
 
 	if strings.TrimSpace(c.WebhookURL) == "" {
-		return fmt.Errorf("%w: webhook cannot be empty", api.ErrValidation)
+		return fmt.Errorf("%w: webhook url cannot be empty", api.ErrValidation)
 	}
 
 	if c.UUID != nil {

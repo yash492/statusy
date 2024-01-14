@@ -11,6 +11,8 @@ type WorkerEvent struct {
 	IncidentUpdateProviderStatus string
 	IncidentUpdateStatus         string
 	Components                   []ComponentsForWorker
+	IsAllComponents              bool
+	EventType                    string
 }
 
 type ComponentsForWorker struct {

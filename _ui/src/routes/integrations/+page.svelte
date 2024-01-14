@@ -1,21 +1,21 @@
 <script>
 	import Tab from '$lib/components/tabs/Tab.svelte';
 	import Tabs from '$lib/components/tabs/Tabs.svelte';
-	import Chatops from './Chatops.svelte';
-	import IncidentManagement from './IncidentManagement.svelte';
-	import Webhook from './Webhook.svelte';
+	import ChatopsTab from './ChatopsTab.svelte';
+	import IncidentManagementTab from './IncidentManagementTab.svelte';
+	import WebhookTab from './WebhookTab.svelte';
 </script>
 
 <div class="pt-12 ml-6">
 	<Tabs>
 		<Tab title="Incident Management" id="1">
-			<IncidentManagement />
+			<IncidentManagementTab />
 		</Tab>
 		<Tab title="Chat Ops" id="2">
-			<Chatops />
+			<ChatopsTab />
 		</Tab>
 		<Tab title="Webhook" id="3">
-			<Webhook />
+			<WebhookTab />
 		</Tab>
 	</Tabs>
 </div>

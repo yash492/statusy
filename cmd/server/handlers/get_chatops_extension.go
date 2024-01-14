@@ -16,6 +16,7 @@ type chatOpsExtensionResp struct {
 }
 
 type chatOpsHelperResp struct {
+	UUID         string `json:"uuid"`
 	IsConfigured bool   `json:"is_configured"`
 	WebhookURL   string `json:"webhook_url"`
 }
@@ -35,6 +36,7 @@ func GetChatopsExtension(w http.ResponseWriter, r *http.Request) *api.Response {
 		chatOpDetail := chatOpsHelperResp{
 			IsConfigured: true,
 			WebhookURL:   chatop.WebhookURL,
+			UUID:         chatop.UUID.String(),
 		}
 
 		if chatop.Type == "slack" {

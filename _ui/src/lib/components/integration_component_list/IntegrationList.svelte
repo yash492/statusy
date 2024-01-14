@@ -15,7 +15,7 @@
 	<p class="font-bold">{name}</p>
 	<div class="flex items-center gap-4">
 		<Button on:click={() => (showModal = true)}>Configure</Button>
-		<div class="flex items-center gap-1">
+		<div class="flex items-center gap-1 w-32">
 			<p class={`text-3xl ${dotColor}`}>&#x2022</p>
 			<p class="text-sm font-semibold">{integratedDisplay}</p>
 		</div>

@@ -22,9 +22,9 @@ func NewSquadcastExtensionConn() squadcastExtensionDBConn {
 func (db squadcastExtensionDBConn) Save(webhookURL string, uuid uuid.UUID) error {
 	query := `INSERT INTO squadcast_extensions(webhook_url, uuid) 
 	VALUES($1, $2) ON CONFLICT(uuid) 
-	DO UPDATE SET routing_key=EXCLUDED.routing_key`
+	DO UPDATE SET webhook_url=EXCLUDED.webhook_url, updated_at=$3`
 
-	_, err := db.pgConn.Exec(context.Background(), query, webhookURL, uuid.String())
+	_, err := db.pgConn.Exec(context.Background(), query, webhookURL, uuid.String(), time.Now())
 	return err
 }
 

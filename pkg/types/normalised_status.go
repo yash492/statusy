@@ -12,5 +12,5 @@ const (
 var (
 	IncidentTriggeredEventType  string = fmt.Sprintf("%v.%v", Incident, IncidentTriggered)
 	IncidentInProgressEventType string = fmt.Sprintf("%v.%v", Incident, IncidentInProgress)
-	IncidentClosedEventType     string = fmt.Sprintf("%v.%v", Incident, IncidentResolved)
+	IncidentResolvedEventType   string = fmt.Sprintf("%v.%v", Incident, IncidentResolved)
 )

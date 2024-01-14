@@ -1,6 +1,8 @@
 package store
 
 import (
+	"database/sql"
+
 	"github.com/google/uuid"
 	"github.com/yash492/statusy/pkg/schema"
 )
@@ -45,12 +47,13 @@ type PagerdutyExtensionStore interface {
 
 type ChatopsExtensionStore interface {
 	Get() ([]schema.ChatopsExtension, error)
+	GetByType(chatopType string) (schema.ChatopsExtension, error)
 	Save(chatopsType string, webhookURL string, uuid uuid.UUID) error
 	Delete(uuid uuid.UUID) error
 }
 
 type WebhookExtensionStore interface {
 	Get() (schema.WebhookExtension, error)
-	Save(webhookURL string, secret *string, uuid uuid.UUID) error
+	Save(webhookURL string, secret sql.NullString, uuid uuid.UUID) error
 	Delete(uuid uuid.UUID) error
 }

@@ -22,9 +22,9 @@ func NewChatOpsExtensionConn() chatOpsExtensionDBConn {
 func (db chatOpsExtensionDBConn) Save(chatOpsType string, webhookURL string, uuid uuid.UUID) error {
 	query := `INSERT INTO chatops_extensions(type, webhook_url, uuid) 
 				VALUES($1, $2, $3) ON CONFLICT(uuid) 
-				DO UPDATE SET type=EXCLUDED.type, webhook_url=EXCLUDED.webhook_url`
+				DO UPDATE SET type=EXCLUDED.type, webhook_url=EXCLUDED.webhook_url, updated_at=$4`
 
-	_, err := db.pgConn.Exec(context.Background(), query, chatOpsType, webhookURL, uuid.String())
+	_, err := db.pgConn.Exec(context.Background(), query, chatOpsType, webhookURL, uuid.String(), time.Now())
 	return err
 }
 
@@ -42,4 +42,14 @@ func (db chatOpsExtensionDBConn) Get() ([]schema.ChatopsExtension, error) {
 	}
 
 	return pgx.CollectRows(rows, pgx.RowToStructByName[schema.ChatopsExtension])
+}
+
+func (db chatOpsExtensionDBConn) GetByType(chatopType string) (schema.ChatopsExtension, error) {
+	query := `SELECT * FROM chatops_extensions WHERE type = $1 AND deleted_at IS NULL`
+	rows, err := db.pgConn.Query(context.Background(), query, chatopType)
+	if err != nil {
+		return schema.ChatopsExtension{}, err
+	}
+
+	return pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.ChatopsExtension])
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -43,7 +44,16 @@ func SaveWebhookExtension(w http.ResponseWriter, r *http.Request) *api.Response 
 		webhookUUID = uuid.MustParse(*req.UUID)
 	}
 
-	if err := domain.WebhookExtension.Save(req.WebhookURL, req.Secret, webhookUUID); err != nil {
+	secret := sql.NullString{
+		String: "",
+		Valid:  false,
+	}
+	if req.Secret != nil {
+		secret.String = *req.Secret
+		secret.Valid = true
+	}
+
+	if err := domain.WebhookExtension.Save(req.WebhookURL, secret, webhookUUID); err != nil {
 		return api.Errorf(w, http.StatusInternalServerError, "cannot save squadcast extension, err: %v", err.Error())
 	}
 

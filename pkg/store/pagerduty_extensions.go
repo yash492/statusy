@@ -22,9 +22,9 @@ func NewPagerdutyExtensionConn() pagedutyExtensionDBConn {
 func (db pagedutyExtensionDBConn) Save(routingKey string, uuid uuid.UUID) error {
 	query := `INSERT INTO pagerduty_extensions(routing_key, uuid) 
 				VALUES($1, $2) ON CONFLICT(uuid) 
-				DO UPDATE SET routing_key=EXCLUDED.routing_key`
+				DO UPDATE SET routing_key=EXCLUDED.routing_key, updated_at=$3`
 
-	_, err := db.pgConn.Exec(context.Background(), query, routingKey, uuid.String())
+	_, err := db.pgConn.Exec(context.Background(), query, routingKey, uuid.String(), time.Now())
 	return err
 }
 

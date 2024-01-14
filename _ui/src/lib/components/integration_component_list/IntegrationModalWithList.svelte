@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Modal from '../modal/Modal.svelte';
 	import IntegrationList from './IntegrationList.svelte';
-	let showModal: boolean = false;
+	export let showModal: boolean = false;
 	export let name: string;
 	export let isIntegrated: boolean;
 	export let modalTitle: string;

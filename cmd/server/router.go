@@ -37,11 +37,12 @@ func servicesRoutes(r chi.Router) {
 
 func integrationRoutes(r chi.Router) {
 	r.Method(http.MethodPut, "/chatops", api.Handler(handlers.SaveChatOpsExtension))
-	r.Method(http.MethodPut, "/squadcast", api.Handler(handlers.SaveSquadcastExtension))
-	r.Method(http.MethodPut, "/pagerduty", api.Handler(handlers.SavePagerdutyExtension))
 	r.Method(http.MethodPut, "/webhook", api.Handler(handlers.SaveWebhookExtension))
 	r.Method(http.MethodGet, "/chatops", api.Handler(handlers.GetChatopsExtension))
-	r.Method(http.MethodGet, "/incident-management", api.Handler(handlers.GetIncidentManagementExtension))
 	r.Method(http.MethodGet, "/webhook", api.Handler(handlers.GetWebhookExtension))
-
+	r.Route("/incident-management", func(r chi.Router) {
+		r.Method(http.MethodGet, "/", api.Handler(handlers.GetIncidentManagementExtension))
+		r.Method(http.MethodPut, "/squadcast", api.Handler(handlers.SaveSquadcastExtension))
+		r.Method(http.MethodPut, "/pagerduty", api.Handler(handlers.SavePagerdutyExtension))
+	})
 }

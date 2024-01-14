@@ -154,4 +154,103 @@ CREATE TABLE webhook_extensions (
 	deleted_at TIMESTAMPTZ
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_webhooks_extension_uuid ON webhooks_extensions(uuid); 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_webhooks_extension_uuid ON webhook_extensions(uuid); 
+
+CREATE TABLE squadcast_incidents (
+	id SERIAL PRIMARY KEY,
+	squadcast_extension_id INT NOT NULL,
+	incident_id INT NOT NULL,
+	incident_update_id INT NOT NULL,
+	event_id TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ,
+	CONSTRAINT fk_squadcast_extension_id
+		FOREIGN KEY (squadcast_extension_id)
+		REFERENCES squadcast_extensions(id),
+	CONSTRAINT fk_incident_id
+		FOREIGN KEY (incident_id)
+		REFERENCES incidents(id),
+	CONSTRAINT fk_incident_update_id
+		FOREIGN KEY (incident_update_id)
+		REFERENCES incident_updates(id)
+);
+
+CREATE TABLE pagerduty_incidents (
+	id SERIAL PRIMARY KEY,
+	pagerduty_extension_id INT NOT NULL,
+	incident_id INT NOT NULL,
+	incident_update_id INT NOT NULL,
+	dedup_key TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ,
+	CONSTRAINT fk_pagerduty_extension_id
+		FOREIGN KEY (pagerduty_extension_id)
+		REFERENCES squadcast_extensions(id),
+	CONSTRAINT fk_incident_id
+		FOREIGN KEY (incident_id)
+		REFERENCES incidents(id),
+	CONSTRAINT fk_incident_update_id
+		FOREIGN KEY (incident_update_id)
+		REFERENCES incident_updates(id)
+);
+
+CREATE TABLE slack_incidents (
+	id SERIAL PRIMARY KEY,
+	slack_extension_id INT NOT NULL,
+	incident_id INT NOT NULL,
+	incident_update_id INT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ,
+	CONSTRAINT fk_slack_extension_id
+		FOREIGN KEY (slack_extension_id)
+		REFERENCES chatops_extensions(id),
+	CONSTRAINT fk_incident_id
+		FOREIGN KEY (incident_id)
+		REFERENCES incidents(id),
+	CONSTRAINT fk_incident_update_id
+		FOREIGN KEY (incident_update_id)
+		REFERENCES incident_updates(id)
+);
+
+CREATE TABLE msteams_incidents (
+	id SERIAL PRIMARY KEY,
+	msteams_extension_id INT NOT NULL,
+	incident_id INT NOT NULL,
+	incident_update_id INT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ,
+	CONSTRAINT fk_msteams_extension_id
+		FOREIGN KEY (msteams_extension_id)
+		REFERENCES chatops_extensions(id),
+	CONSTRAINT fk_incident_id
+		FOREIGN KEY (incident_id)
+		REFERENCES incidents(id),
+	CONSTRAINT fk_incident_update_id
+		FOREIGN KEY (incident_update_id)
+		REFERENCES incident_updates(id)
+);
+
+CREATE TABLE discord_incidents (
+	id SERIAL PRIMARY KEY,
+	discord_extension_id INT NOT NULL,
+	incident_id INT NOT NULL,
+	incident_update_id INT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW(),
+	deleted_at TIMESTAMPTZ,
+	CONSTRAINT fk_discord_extension_id
+		FOREIGN KEY (discord_extension_id)
+		REFERENCES chatops_extensions(id),
+	CONSTRAINT fk_incident_id
+		FOREIGN KEY (incident_id)
+		REFERENCES incidents(id),
+	CONSTRAINT fk_incident_update_id
+		FOREIGN KEY (incident_update_id)
+		REFERENCES incident_updates(id)
+);
+
+

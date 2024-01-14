@@ -28,7 +28,7 @@ func New(queue *queue.Queue, wg *sync.WaitGroup) {
 
 func dispatchIncident(incident queue.IncidentPayload, workerMap worker.WorkerMap) {
 
-	workerEvent, err := fetchSubscriptionContext(incident.IncidentUpdate.ID)
+	workerEvent, err := fetchSubscriptionContext(incident.IncidentUpdate.ID, incident.State)
 	if err != nil {
 		slog.Error(err.Error())
 		return
@@ -36,12 +36,18 @@ func dispatchIncident(incident queue.IncidentPayload, workerMap worker.WorkerMap
 
 	for workerName, eventMap := range workerMap {
 		slog.Info("dispatching event", "worker_name", workerName, "event_type", incident.State)
-		worker := eventMap[incident.State]
-		worker.Do(workerEvent)
+		worker := eventMap[workerEvent.EventType]
+
+		go func(w types.WorkerEvent) {
+			err := worker.Do(w)
+			if err != nil {
+				slog.Error(err.Error())
+			}
+		}(workerEvent)
 	}
 }
 
-func fetchSubscriptionContext(incidentID uint) (types.WorkerEvent, error) {
+func fetchSubscriptionContext(incidentID uint, eventType string) (types.WorkerEvent, error) {
 	subscriptions, err := domain.Subscription.GetForIncidentUpdates(incidentID)
 	if err != nil {
 		slog.Error(err.Error())
@@ -71,6 +77,8 @@ func fetchSubscriptionContext(incidentID uint) (types.WorkerEvent, error) {
 		IncidentUpdate:               subscriptions[0].IncidentUpdate,
 		IncidentUpdateProviderStatus: subscriptions[0].IncidentUpdateProviderStatus,
 		IncidentUpdateStatus:         subscriptions[0].IncidentUpdateStatus,
+		IsAllComponents:              subscriptions[0].IsAllComponents,
+		EventType:                    eventType,
 	}
 
 	return workerEvent, nil

@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,12 +20,12 @@ func NewWebhookExtensionConn() webhookExtensionDBConn {
 	}
 }
 
-func (db webhookExtensionDBConn) Save(webhookURL string, secret *string, uuid uuid.UUID) error {
-	query := `INSERT INTO chatops_extensions(secret, webhook_url, uuid) 
+func (db webhookExtensionDBConn) Save(webhookURL string, secret sql.NullString, uuid uuid.UUID) error {
+	query := `INSERT INTO webhook_extensions(secret, webhook_url, uuid) 
 				VALUES($1, $2, $3) ON CONFLICT(uuid) 
-				DO UPDATE SET type=EXCLUDED.secret, webhook_url=EXCLUDED.webhook_url`
+				DO UPDATE SET secret=EXCLUDED.secret, webhook_url=EXCLUDED.webhook_url, updated_at=$4`
 
-	_, err := db.pgConn.Exec(context.Background(), query, secret, webhookURL, uuid.String())
+	_, err := db.pgConn.Exec(context.Background(), query, secret, webhookURL, uuid.String(), time.Now())
 	return err
 }
 
