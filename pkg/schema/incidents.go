@@ -6,13 +6,15 @@ import (
 )
 
 type Incident struct {
+	//
 	BaseModel
-	Name           string `db:"name"`
-	Link           string `db:"link"`
-	ProviderImpact string `db:"provider_impact"`
-	Impact         string `db:"impact"`
-	ServiceID      uint   `db:"service_id"`
-	ProviderID     string `db:"provider_id"`
+	Name              string    `db:"name"`
+	Link              string    `db:"link"`
+	ProviderImpact    string    `db:"provider_impact"`
+	Impact            string    `db:"impact"`
+	ServiceID         uint      `db:"service_id"`
+	ProviderID        string    `db:"provider_id"`
+	ProviderCreatedAt time.Time `db:"provider_created_at"`
 }
 
 type IncidentUpdate struct {

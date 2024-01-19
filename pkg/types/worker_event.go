@@ -13,13 +13,13 @@ type WorkerEvent struct {
 	IncidentUpdateID             uint
 	IncidentUpdateProviderStatus string
 	IncidentUpdateStatus         string
-	Components                   []ComponentsForWorker
+	Components                   []ComponentsWithNameAndID
 	IsAllComponents              bool
 	EventType                    string
 	IncidentUpdateStatusTime     time.Time
 }
 
-type ComponentsForWorker struct {
+type ComponentsWithNameAndID struct {
 	Name string
 	ID   uint
 }

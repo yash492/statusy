@@ -11,5 +11,11 @@ export function AxiosResponseErr(err: any) {
 		return err.response?.data as ErrorResponse;
 	}
 
-	return null;
+	const errResp: ErrorResponse = {
+		error_msg: 'Failed to connect the server',
+		is_error: true,
+		status_code: 500
+	};
+
+	return errResp;
 }

@@ -29,7 +29,7 @@ func (db pagedutyExtensionDBConn) Save(routingKey string, uuid uuid.UUID) error 
 }
 
 func (db pagedutyExtensionDBConn) Delete(uuid uuid.UUID) error {
-	query := `UPDATE pagerduty_extensions SET deleled_at = $1 WHERE uuid = $2`
+	query := `UPDATE pagerduty_extensions SET deleted_at = $1 WHERE uuid = $2`
 	_, err := db.pgConn.Exec(context.Background(), query, time.Now(), uuid.String())
 	return err
 }

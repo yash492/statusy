@@ -57,3 +57,8 @@ export type GetWebhook = {
 	webhook_url: string;
 	secret: string;
 };
+
+export type DeleteChatopsData = {
+	uuid: string;
+	type: string;
+};

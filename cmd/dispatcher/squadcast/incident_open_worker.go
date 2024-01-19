@@ -42,7 +42,7 @@ func (i IncidentOpenWorker) Do(event types.WorkerEvent) error {
 
 	client := resty.New()
 	affectedComponents := helpers.ConvertComponentsToStr(event.Components)
-	description := fmt.Sprintf("Created At: %v\n", event.IncidentUpdateStatusTime.UTC().Format(time.RFC850)) +
+	description := fmt.Sprintf("Created At: %v\n", event.IncidentUpdateStatusTime.UTC().Format(time.RFC822)) +
 		fmt.Sprintf("Affected Components: %v\n", affectedComponents) +
 		fmt.Sprintf("Incident Link: %v\n", event.IncidentLink) +
 		fmt.Sprintln(event.IncidentUpdate)

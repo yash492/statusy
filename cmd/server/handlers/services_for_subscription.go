@@ -24,7 +24,7 @@ func ServicesForSubsciptions(w http.ResponseWriter, r *http.Request) *api.Respon
 		return api.Errorf(w, http.StatusInternalServerError, "could not fetch services for %v query %v", serviceNameQuery, err.Error())
 	}
 
-	formattedService := lo.Map(services, func(service schema.ServicesForSubsciptions, _ int) servicesForSubsciptionsResponse {
+	formattedService := lo.Map(services, func(service schema.ServicesForSubsciption, _ int) servicesForSubsciptionsResponse {
 		return servicesForSubsciptionsResponse{
 			ID:   service.ServiceID,
 			Name: service.ServiceName,

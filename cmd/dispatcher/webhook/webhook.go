@@ -51,7 +51,7 @@ func dispatchWebhookMsg(event types.WorkerEvent) error {
 		return err
 	}
 
-	components := lo.Map(event.Components, func(component types.ComponentsForWorker, _ int) webhookComponent {
+	components := lo.Map(event.Components, func(component types.ComponentsWithNameAndID, _ int) webhookComponent {
 		return webhookComponent{
 			Name: component.Name,
 			ID:   component.ID,

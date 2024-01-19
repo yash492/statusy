@@ -1,4 +1,5 @@
 import type {
+	GetAllSubscription,
 	SaveSubscription,
 	ServiceForSubscription,
 	SubscriptionWithComponents
@@ -24,5 +25,18 @@ export class SubscriptionAPI {
 
 	async Update(subscription: SaveSubscription, subscriptionID: string) {
 		return axios.put<{ data: { msg: string } }>(`/subscriptions/${subscriptionID}`, subscription);
+	}
+
+	async GetAll(serviceName: string, pageNumber: number, pageLimit: number) {
+		return axios.get<{
+			data: GetAllSubscription[];
+			meta: { total_count: number; page_number: number; page_limit: number };
+		}>('/dashboard', {
+			params: {
+				service_name: serviceName,
+				page_number: pageNumber,
+				pageLimit: pageLimit
+			}
+		});
 	}
 }

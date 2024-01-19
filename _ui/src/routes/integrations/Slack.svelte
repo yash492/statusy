@@ -4,7 +4,7 @@
 	import IntegrationModalWithList from '$lib/components/integration_component_list/IntegrationModalWithList.svelte';
 	import { AxiosResponseErr } from '$lib/helpers/errors';
 	import { Toast } from '$lib/toast/toast';
-	import type { SaveChatOps } from '$lib/types/integrations';
+	import type { DeleteChatopsData, SaveChatOps } from '$lib/types/integrations';
 	import { CHATOPS_GET_ALL_QUERY_KEY } from '$lib/types/query_keys';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import type { AxiosError } from 'axios';
@@ -19,7 +19,7 @@
 
 	let showModal: boolean;
 
-	$: mutate = createMutation({
+	$: mutation = createMutation({
 		mutationFn: (data: SaveChatOps) => _integrationAPI.SaveChatOps(data),
 		onSuccess() {
 			queryClient.invalidateQueries({ queryKey: [CHATOPS_GET_ALL_QUERY_KEY] });
@@ -32,10 +32,27 @@
 	});
 
 	function onSave() {
-		$mutate.mutate({
+		$mutation.mutate({
 			type: 'slack',
 			webhook_url: webhookURL.trim(),
 			uuid: isConfigured ? uuid : undefined
+		});
+	}
+
+	$: deleteMutation = createMutation({
+		mutationFn: (data: DeleteChatopsData) => _integrationAPI.DeleteChatOps(data.uuid, data.type),
+		onSuccess() {
+			showModal = false;
+			queryClient.invalidateQueries({ queryKey: [CHATOPS_GET_ALL_QUERY_KEY] });
+			_toast.success('Slack Integration is sucessfully deleted');
+			webhookURL = '';
+		}
+	});
+
+	function onDelete() {
+		$deleteMutation.mutate({
+			type: 'slack',
+			uuid: uuid || ''
 		});
 	}
 </script>
@@ -62,11 +79,16 @@
 			bind:value={webhookURL}
 		/>
 	</div>
-	{#if $mutate.isError}
-		<p class="mb-5">{AxiosResponseErr($mutate.error)?.error_msg}</p>
+	{#if $mutation.isError}
+		<p class="mb-5">{AxiosResponseErr($mutation.error)?.error_msg}</p>
+	{/if}
+	{#if $deleteMutation.isError}
+		<p class="mb-5">{AxiosResponseErr($deleteMutation.error)?.error_msg}</p>
 	{/if}
 	<div class="mb-3 flex gap-4">
 		<Button on:click={onSave}>Save</Button>
-		<Button>Delete</Button>
+		{#if isConfigured}
+			<Button on:click={onDelete}>Delete</Button>
+		{/if}
 	</div>
 </IntegrationModalWithList>

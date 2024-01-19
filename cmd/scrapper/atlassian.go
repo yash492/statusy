@@ -57,6 +57,7 @@ type atlassianIncidentComponent struct {
 
 func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error {
 	var atlassian atlassianIncidentReq
+
 	_, err := client.R().SetHeader("Authorization", "OAuth 317d16908f244276a67169cc87dd65c0").SetResult(&atlassian).Get(a.incidentUrl)
 	if err != nil {
 		return err
@@ -118,6 +119,7 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 			ProviderImpact: incidentReq.Impact,
 			Impact:         incidentReq.Impact,
 			ProviderID:     incidentReq.ID,
+			ProviderCreatedAt: incidentUpdateReq[0].CreatedAt,
 		})
 
 		// Using Provider incident ID since, a standart incident ID is not available
@@ -153,7 +155,9 @@ func (a atlassianProvider) scrap(client *resty.Client, queue *queue.Queue) error
 
 			// Assuming first incident update will be in a triggered state
 			if i == 0 {
-				status = types.IncidentTriggered
+				if status != "resolved" && status != "postmortem" {
+					status = types.IncidentTriggered
+				}
 			}
 
 			return schema.IncidentUpdate{
@@ -264,6 +268,9 @@ func (a atlassianProvider) handleIncidentComponents(componentsMap map[string]sch
 }
 
 func publishUpdatesToDispatcher(dispatcherQueue *queue.Queue, incidentUpdates []schema.IncidentUpdate) {
+	if dispatcherQueue == nil {
+		return
+	}
 	for _, incidentUpdate := range incidentUpdates {
 		dispatcherQueue.Publish(queue.IncidentPayload{
 			State:          fmt.Sprintf("%v.%v", types.Incident, incidentUpdate.Status),

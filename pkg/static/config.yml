@@ -4,3 +4,5 @@ db:
   user: statusy
   password: statusy
   database_name: statusy
+app:
+  scrap_interval: 5

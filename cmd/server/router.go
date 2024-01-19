@@ -14,6 +14,8 @@ func registerRoutes(r chi.Router) {
 }
 
 func routes(r chi.Router) {
+	r.Method(http.MethodGet, "/dashboard", api.Handler(handlers.DashboardList))
+
 	r.Route("/services", servicesRoutes)
 	r.Route("/subscriptions", subscriptionRoutes)
 	r.Route("/integrations", integrationRoutes)
@@ -26,6 +28,8 @@ func subscriptionRoutes(r chi.Router) {
 	r.With(middlewares.Subscription).Route("/{subscriptionID}", func(r chi.Router) {
 		r.Method(http.MethodGet, "/", api.Handler(handlers.SubscriptionByID))
 		r.Method(http.MethodPut, "/", api.Handler(handlers.EditSubscription))
+		r.Method(http.MethodGet, "/incidents", api.Handler(handlers.SubscriptionIncidents))
+
 	})
 }
 
@@ -38,11 +42,20 @@ func servicesRoutes(r chi.Router) {
 func integrationRoutes(r chi.Router) {
 	r.Method(http.MethodPut, "/chatops", api.Handler(handlers.SaveChatOpsExtension))
 	r.Method(http.MethodPut, "/webhook", api.Handler(handlers.SaveWebhookExtension))
+
 	r.Method(http.MethodGet, "/chatops", api.Handler(handlers.GetChatopsExtension))
 	r.Method(http.MethodGet, "/webhook", api.Handler(handlers.GetWebhookExtension))
+
+	r.Method(http.MethodDelete, "/chatops/{uuid}", api.Handler(handlers.DeleteChatopsExtension))
+	r.Method(http.MethodDelete, "/webhook/{uuid}", api.Handler(handlers.DeleteWebhookExtension))
+
 	r.Route("/incident-management", func(r chi.Router) {
 		r.Method(http.MethodGet, "/", api.Handler(handlers.GetIncidentManagementExtension))
+
 		r.Method(http.MethodPut, "/squadcast", api.Handler(handlers.SaveSquadcastExtension))
 		r.Method(http.MethodPut, "/pagerduty", api.Handler(handlers.SavePagerdutyExtension))
+
+		r.Method(http.MethodDelete, "/squadcast/{uuid}", api.Handler(handlers.DeleteSquadcastExtension))
+		r.Method(http.MethodDelete, "/pagerduty/{uuid}", api.Handler(handlers.DeletePagerdutyExtension))
 	})
 }

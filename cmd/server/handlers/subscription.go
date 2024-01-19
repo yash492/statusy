@@ -41,7 +41,7 @@ func SubscriptionByID(w http.ResponseWriter, r *http.Request) *api.Response {
 
 	isAllComponents := true
 
-	components := lo.Map(subscription, func(sub schema.SubscriptionWithComponents, _ int) componentsForSubscription {
+	components := lo.Map(subscription, func(sub schema.SubscriptionWithComponent, _ int) componentsForSubscription {
 		if sub.IsConfigured {
 			isAllComponents = false
 		}

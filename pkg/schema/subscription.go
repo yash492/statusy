@@ -1,12 +1,13 @@
 package schema
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type ServicesForSubsciptions struct {
+type ServicesForSubsciption struct {
 	ServiceID   uint   `db:"service_id"`
 	ServiceName string `db:"service_name"`
 }
@@ -18,7 +19,7 @@ type Subscription struct {
 	IsAllComponents bool      `db:"is_all_components"`
 }
 
-type SubscriptionWithComponents struct {
+type SubscriptionWithComponent struct {
 	ServiceID     uint          `db:"service_id"`
 	ServiceName   string        `db:"service_name"`
 	UUID          uuid.NullUUID `db:"uuid"`
@@ -27,7 +28,7 @@ type SubscriptionWithComponents struct {
 	IsConfigured  bool          `db:"is_configured"`
 }
 
-type SubscriptionForIncidentUpdates struct {
+type SubscriptionForIncidentUpdate struct {
 	ServiceID                    uint      `db:"service_id"`
 	ServiceName                  string    `db:"service_name"`
 	ComponentID                  uint      `db:"component_id"`
@@ -42,4 +43,29 @@ type SubscriptionForIncidentUpdates struct {
 	IncidentUpdateStatus         string    `db:"incident_update_status"`
 	IncidentUpdateStatusTime     time.Time `db:"incident_update_status_time"`
 	IsAllComponents              bool      `db:"is_all_components"`
+}
+
+type DashboardSubscription struct {
+	SubscriptionsCount int64          `db:"subscriptions_count"`
+	IncidentID         sql.NullInt64  `db:"incident_id"`
+	ServiceID          uint           `db:"service_id"`
+	ServiceName        string         `db:"service_name"`
+	SubscriptionUUID   uuid.UUID      `db:"subscription_uuid"`
+	IncidentName       sql.NullString `db:"incident_name"`
+	IncidentLink       sql.NullString `db:"incident_link"`
+	IncidentImpact     sql.NullString `db:"incident_impact"`
+	IsDown             bool           `db:"is_down"`
+}
+
+type SubscriptionIncident struct {
+	TotalCount                int64     `db:"total_count"`
+	IncidentID                uint      `db:"incident_id"`
+	LastUpdatedStatusTime     time.Time `db:"last_updated_status_time"`
+	IncidentStatus            string    `db:"incident_status"`
+	IncidentCreatedAt         time.Time `db:"incident_created_at"`
+	IncidentName              string    `db:"incident_name"`
+	IncidentLink              string    `db:"incident_link"`
+	ServiceID                 uint      `db:"service_id"`
+	ServiceName               string    `db:"service_name"`
+	IsAllComponentsConfigured bool      `db:"is_all_components_configured"`
 }

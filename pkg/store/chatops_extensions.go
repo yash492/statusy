@@ -29,7 +29,7 @@ func (db chatOpsExtensionDBConn) Save(chatOpsType string, webhookURL string, uui
 }
 
 func (db chatOpsExtensionDBConn) Delete(uuid uuid.UUID) error {
-	query := `UPDATE chatops_extensions SET deleled_at = $1 WHERE uuid = $2`
+	query := `UPDATE chatops_extensions SET deleted_at = $1 WHERE uuid = $2`
 	_, err := db.pgConn.Exec(context.Background(), query, time.Now(), uuid.String())
 	return err
 }

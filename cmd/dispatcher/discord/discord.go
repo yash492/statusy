@@ -58,8 +58,13 @@ func dispatchDiscordMsg(event types.WorkerEvent) error {
 						Inline: true,
 					},
 					{
+						Name:   "Incident Impact",
+						Value:  cases.Title(language.AmericanEnglish).String(event.IncidentImpact),
+						Inline: true,
+					},
+					{
 						Name:   "Created At",
-						Value:  event.IncidentUpdateStatusTime.UTC().Format(time.RFC850),
+						Value:  event.IncidentUpdateStatusTime.UTC().Format(time.RFC822),
 						Inline: true,
 					},
 					{

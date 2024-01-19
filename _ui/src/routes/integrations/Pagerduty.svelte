@@ -33,6 +33,20 @@
 			uuid: isConfigured ? uuid : undefined
 		});
 	}
+
+	$: deleteMutation = createMutation({
+		mutationFn: (uuid: string) => _integrationAPI.DeletePagerduty(uuid),
+		onSuccess() {
+			showModal = false;
+			queryClient.invalidateQueries({ queryKey: [INCIDENT_MANAGEMENT_GET_QUERY_KEY] });
+			_toast.success('Pagerduty Integration is sucessfully deleted');
+			routingKey = '';
+		}
+	});
+
+	function onDelete() {
+		$deleteMutation.mutate(uuid || '');
+	}
 </script>
 
 <IntegrationModalWithList
@@ -60,8 +74,13 @@
 	{#if $mutation.isError}
 		<p class="mb-5">{AxiosResponseErr($mutation.error)?.error_msg}</p>
 	{/if}
+	{#if $deleteMutation.isError}
+		<p class="mb-5">{AxiosResponseErr($deleteMutation.error)?.error_msg}</p>
+	{/if}
 	<div class="mb-3 flex gap-4">
 		<Button on:click={onSave}>Add</Button>
-		<Button>Delete</Button>
+		{#if isConfigured}
+			<Button on:click={onDelete}>Delete</Button>
+		{/if}
 	</div>
 </IntegrationModalWithList>

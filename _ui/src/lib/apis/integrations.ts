@@ -38,8 +38,17 @@ export class IntegrationsAPI {
 		return axios.get<{ data: GetWebhook }>('integrations/webhook');
 	}
 
-	DeleteSquadcast() {}
-	DeletePagerduty() {}
-	DeleteChatOps() {}
-	DeleteWebhook() {}
+	async DeleteSquadcast(uuid: string) {
+		return axios.delete(`/integrations/incident-management/squadcast/${uuid}`);
+	}
+
+	async DeletePagerduty(uuid: string) {
+		return axios.delete(`/integrations/incident-management/pagerduty/${uuid}`);
+	}
+	async DeleteChatOps(uuid: string, type: string) {
+		return axios.delete(`/integrations/chatops/${uuid}?type=${type}`);
+	}
+	async DeleteWebhook(uuid: string) {
+		return axios.delete(`/integrations/webhook/${uuid}`);
+	}
 }

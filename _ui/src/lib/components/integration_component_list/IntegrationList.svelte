@@ -9,6 +9,11 @@
 		dotColor = 'text-green-500';
 		integratedDisplay = 'Integrated';
 	}
+
+	$: if (!isIntegrated) {
+		dotColor = 'text-red-500';
+		integratedDisplay = 'Not Integrated';
+	}
 </script>
 
 <div class="w-full md:w-1/2 py-1 flex justify-between items-center rounded-lg border-neutral-700">

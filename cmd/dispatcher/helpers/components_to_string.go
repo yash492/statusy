@@ -6,7 +6,7 @@ import (
 	"github.com/yash492/statusy/pkg/types"
 )
 
-func ConvertComponentsToStr(components []types.ComponentsForWorker) string {
+func ConvertComponentsToStr(components []types.ComponentsWithNameAndID) string {
 	var sb strings.Builder
 	for i, component := range components {
 		sb.WriteString(component.Name)

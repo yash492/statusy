@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/yash492/statusy/pkg/config"
 	"github.com/yash492/statusy/pkg/domain"
 	"github.com/yash492/statusy/pkg/queue"
 	"github.com/yash492/statusy/pkg/types"
@@ -35,8 +36,11 @@ func New(queue *queue.Queue, wg *sync.WaitGroup) {
 
 func scrapStatusPages(queue *queue.Queue, providerServices []scrapper) {
 	client := resty.New()
+	client.SetTimeout(time.Duration(1 * time.Minute))
 
-	ticker := time.NewTicker(2 * time.Second)
+	scrapInterval := config.ScrapIntervalInMins
+
+	ticker := time.NewTicker(time.Duration(scrapInterval) * time.Second)
 	done := make(chan bool)
 
 	for {

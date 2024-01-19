@@ -46,7 +46,7 @@ func makeSlackWebhookMessage(components string, event types.WorkerEvent) (slack.
 			Type: slack.MBTSection,
 			Text: &slack.TextBlockObject{
 				Type: slack.MarkdownType,
-				Text: fmt.Sprintf(":rotating_light: *%v*", helpers.SlackHyperlinkFormat(event.IncidentLink, event.ServiceName)),
+				Text: fmt.Sprintf(":rotating_light: *%v*", helpers.SlackHyperlinkFormat(event.IncidentLink, event.IncidentName)),
 			},
 			Fields: []*slack.TextBlockObject{
 				{
@@ -59,7 +59,11 @@ func makeSlackWebhookMessage(components string, event types.WorkerEvent) (slack.
 				},
 				{
 					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Created At:* `%v`", event.IncidentUpdateStatusTime.UTC().Format(time.RFC850)),
+					Text: fmt.Sprintf("*Impact:* %v", cases.Title(language.AmericanEnglish).String(event.IncidentImpact)),
+				},
+				{
+					Type: slack.MarkdownType,
+					Text: fmt.Sprintf("*Created At:* `%v`", event.IncidentUpdateStatusTime.UTC().Format(time.RFC822)),
 				},
 				{
 					Type: slack.MarkdownType,

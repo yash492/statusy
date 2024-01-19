@@ -26,11 +26,13 @@ type IncidentStore interface {
 }
 
 type SubscriptionStore interface {
-	GetAllServicesForSubscriptions(serviceName string) ([]schema.ServicesForSubsciptions, error)
+	GetAllServicesForSubscriptions(serviceName string) ([]schema.ServicesForSubsciption, error)
 	Create(serviceID uint, componentIDs []uint, isAllComponents bool) error
-	GetWithComponents(subscriptionID uuid.UUID) ([]schema.SubscriptionWithComponents, error)
+	GetWithComponents(subscriptionID uuid.UUID) ([]schema.SubscriptionWithComponent, error)
 	Update(subscriptionID uuid.UUID, componentIDs []uint, isAllComponents bool) error
-	GetForIncidentUpdates(incidentUpdateID uint) ([]schema.SubscriptionForIncidentUpdates, error)
+	GetForIncidentUpdates(incidentUpdateID uint) ([]schema.SubscriptionForIncidentUpdate, error)
+	DashboardSubscription(serviceName string, offset, limit uint) ([]schema.DashboardSubscription, error)
+	GetIncidentsForSubscription(subscriptionUUID uuid.UUID, offset, limit uint) ([]schema.SubscriptionIncident, error)
 }
 
 type SquadcastExtensionStore interface {

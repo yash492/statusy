@@ -40,6 +40,20 @@
 			secret: webhookSecret || ''
 		});
 	}
+
+	$: deleteMutation = createMutation({
+		mutationFn: (uuid: string) => _integrationAPI.DeleteWebhook(uuid),
+		onSuccess() {
+			showModal = false;
+			queryClient.invalidateQueries({ queryKey: [WEBHOOKS_GET_QUERY_KEY] });
+			_toast.success('Webhook Integration is sucessfully deleted');
+			webhookURL = '';
+		}
+	});
+
+	function onDelete() {
+		$deleteMutation.mutate(uuid || '');
+	}
 </script>
 
 <IntegrationModalWithList
@@ -68,8 +82,16 @@
 	{#if $mutation.isError}
 		<p class="mb-5">{AxiosResponseErr($mutation.error)?.error_msg}</p>
 	{/if}
+	{#if $deleteMutation.isError}
+		<p class="mb-5">{AxiosResponseErr($deleteMutation.error)?.error_msg}</p>
+	{/if}
 	<div class="mb-3 flex gap-4">
 		<Button on:click={onSave}>Save</Button>
-		<Button>Delete</Button>
+		{#if isConfigured}
+			<Button on:click={onDelete}>Delete</Button>
+			{#if $deleteMutation.isError}
+				<p class="mb-5">{AxiosResponseErr($deleteMutation.error)?.error_msg}</p>
+			{/if}
+		{/if}
 	</div>
 </IntegrationModalWithList>

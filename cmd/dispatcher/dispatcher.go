@@ -73,8 +73,8 @@ func fetchSubscriptionContext(incidentID uint, eventType string) (types.WorkerEv
 		return types.WorkerEvent{}, fmt.Errorf("no subscriptions were found for %v", incidentID)
 	}
 
-	components := lo.Map(subscriptions, func(subscription schema.SubscriptionForIncidentUpdates, _ int) types.ComponentsForWorker {
-		return types.ComponentsForWorker{
+	components := lo.Map(subscriptions, func(subscription schema.SubscriptionForIncidentUpdate, _ int) types.ComponentsWithNameAndID {
+		return types.ComponentsWithNameAndID{
 			Name: subscription.ComponentName,
 			ID:   (subscription.ComponentID),
 		}

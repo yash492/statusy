@@ -47,7 +47,10 @@ func dispatchMsTeamsMsg(event types.WorkerEvent) error {
 			newLine +
 			"**Created At**" +
 			newLine +
-			event.IncidentUpdateStatusTime.UTC().Format(time.RFC850) +
+			event.IncidentUpdateStatusTime.UTC().Format(time.RFC822) +
+			newLine +
+			"**Impact**" +
+			cases.Title(language.AmericanEnglish).String(event.IncidentImpact) +
 			newLine +
 			newLine +
 			"**Description:**" +

@@ -30,7 +30,7 @@ func (db webhookExtensionDBConn) Save(webhookURL string, secret sql.NullString, 
 }
 
 func (db webhookExtensionDBConn) Delete(uuid uuid.UUID) error {
-	query := `UPDATE webhook_extensions SET deleled_at = $1 WHERE uuid = $2`
+	query := `UPDATE webhook_extensions SET deleted_at = $1 WHERE uuid = $2`
 	_, err := db.pgConn.Exec(context.Background(), query, time.Now(), uuid.String())
 	return err
 }
