@@ -87,7 +87,7 @@
 	{:else if $query.isError}
 		<p>{AxiosResponseErr($query.error).error_msg}</p>
 	{:else}
-		<div class="w-3/4 mx-auto">
+		<div class="md:w-5/6 lg:w-4/5 mx-auto">
 			<h1 class="text-lg font-bold w-full">
 				{serviceName} Incidents
 			</h1>

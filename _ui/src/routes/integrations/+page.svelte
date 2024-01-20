@@ -6,7 +6,7 @@
 	import WebhookTab from './WebhookTab.svelte';
 </script>
 
-<div class="pt-12 ml-6">
+<div class="pt-12 md:ml-6">
 	<Tabs>
 		<Tab title="Incident Management" id="1">
 			<IncidentManagementTab />

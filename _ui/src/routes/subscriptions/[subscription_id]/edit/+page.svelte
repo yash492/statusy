@@ -2,7 +2,7 @@
 	import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { SubscriptionAPI } from '$lib/apis/subscriptions';
 	import { SUBSCRIPTION_BY_ID_QUERY_KEY } from '$lib/types/query_keys';
-	import ServiceSave from '$lib/components/service_save/ServiceSave.svelte';
+	import ServiceSave from '$lib/components/service_save_form/ServiceSaveForm.svelte';
 	import type { ComponentsForService } from '$lib/types/components';
 	import type { SaveSubscription } from '$lib/types/subscriptions';
 	import { Toast } from '$lib/toast/toast';
@@ -11,8 +11,6 @@
 
 	const _subscriptionAPI = new SubscriptionAPI();
 	const _toast = new Toast();
-
-	const queryClient = useQueryClient();
 
 	$: subscriptionIDFromParams = $page.params.subscription_id;
 	$: query = createQuery({
@@ -26,9 +24,13 @@
 
 	let components: ComponentsForService[] = [];
 	let customComponentCheckbox: number[] = [];
+	$: subscriptionComponents = subscriptionData?.components || [];
 
-	$: if (components.length < 1) {
-		for (const component of subscriptionData?.components || []) {
+	$: if (subscriptionComponents.length > 0) {
+		// To prevent appending of old subscription components
+		components = [];
+		customComponentCheckbox = [];
+		for (const component of subscriptionComponents) {
 			components.push({
 				id: component.id,
 				name: component.name
@@ -43,14 +45,13 @@
 	}
 
 	const mutation = createMutation<{}, {}, SaveSubscription>({
-		mutationFn: (subscription) => _subscriptionAPI.Update(subscription, subscriptionIDFromParams),
+		mutationFn: async (subscription) =>
+			await _subscriptionAPI.Update(subscription, subscriptionIDFromParams),
 		onSuccess: () => {
 			_toast.success(`${subscriptionData?.service_name} service successfully updated!`);
-			//TODO: Ask Aki
 			goto('/dashboard');
 		},
-		onError: () => {},
-		onSettled: () => queryClient.invalidateQueries({ queryKey: [SUBSCRIPTION_BY_ID_QUERY_KEY] })
+		onError: () => {}
 	});
 
 	function onSaveService(subscription: SaveSubscription) {
@@ -63,7 +64,7 @@
 	}
 </script>
 
-<div class="mx-auto w-fit pb-11">
+<div class="mx-auto w-full pb-11">
 	{#if $query.isLoading}
 		<p>Loading...</p>
 	{:else if $query.isError}

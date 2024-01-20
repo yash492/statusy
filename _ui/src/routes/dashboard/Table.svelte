@@ -39,7 +39,7 @@
 			{#each $table.getHeaderGroups() as headerGroup}
 				<tr>
 					{#each headerGroup.headers as header}
-						<th class="uppercase text-xs whitespace-nowrap last:w-auto last:text-center w-3/4 pb-2">
+						<th class="uppercase text-xs whitespace-nowrap last:w-auto w-3/4 pb-2 last:pl-3">
 							{#if !header.isPlaceholder}
 								<svelte:component
 									this={flexRender(header.column.columnDef.header, header.getContext())}
@@ -54,7 +54,7 @@
 			{#each $table.getRowModel().rows as row}
 				<tr>
 					{#each row.getVisibleCells() as cell}
-						<td class="py-1">
+						<td class="py-1 last:pl-3">
 							<svelte:component this={flexRender(cell.column.columnDef.cell, cell.getContext())} />
 						</td>
 					{/each}

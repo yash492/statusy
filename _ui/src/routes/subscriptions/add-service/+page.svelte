@@ -7,7 +7,7 @@
 	import { SERVICE_LIST_FOR_SUBSCRIPTION_QUERY_KEY } from '$lib/types/query_keys';
 	import { goto } from '$app/navigation';
 	import type { SaveSubscription } from '$lib/types/subscriptions';
-	import ServiceSave from '$lib/components/service_save/ServiceSave.svelte';
+	import ServiceSave from '$lib/components/service_save_form/ServiceSaveForm.svelte';
 	import toast from 'svelte-french-toast';
 	import { Toast } from '$lib/toast/toast';
 
@@ -59,7 +59,7 @@
 	}
 </script>
 
-<div class="mx-auto w-fit pb-11">
+<div class="mx-auto w-full pb-11 md:w-fit">
 	{#if $query.isLoading}
 		<p>Loading...</p>
 	{:else if $query.isError}

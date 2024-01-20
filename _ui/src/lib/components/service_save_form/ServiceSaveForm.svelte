@@ -5,17 +5,9 @@
 	import { MagnifyingGlass } from '@steeze-ui/heroicons';
 	import type { ComponentsForService } from '$lib/types/components';
 	import type { SaveSubscription } from '$lib/types/subscriptions';
-	import { afterNavigate } from '$app/navigation';
-	import { SUBSCRIPTION_BY_ID_QUERY_KEY } from '$lib/types/query_keys';
-	import { useQueryClient } from '@tanstack/svelte-query';
 
 	const ALL_COMPONENTS_RADIO_BUTTON = 'all-components';
 	const CUSTOM_COMPONENTS_RADIO_BUTTON = 'custom-components';
-
-	const queryClient = useQueryClient();
-	afterNavigate(() => {
-		queryClient.invalidateQueries({ queryKey: [SUBSCRIPTION_BY_ID_QUERY_KEY] });
-	});
 
 	export let onSaveService: (subscription: SaveSubscription) => void;
 	export let fetchServices:
@@ -34,13 +26,10 @@
 	export let editMode: boolean;
 	export let serviceName: string = '';
 
-	$: isAllComponents = isAllComponents;
-	$: components = components;
-	$: customComponentCheckbox = customComponentCheckbox;
-
 	let searchComponentsValue = '';
 	let searchingComponents = components;
-	let selectedComponentChoice = isAllComponents
+
+	$: selectedComponentChoice = isAllComponents
 		? ALL_COMPONENTS_RADIO_BUTTON
 		: CUSTOM_COMPONENTS_RADIO_BUTTON;
 
@@ -49,22 +38,20 @@
 			return component.name.toLowerCase().includes(searchComponentsValue.toLowerCase());
 		});
 	}
-
-	$: {
-		isAllComponents = selectedComponentChoice === ALL_COMPONENTS_RADIO_BUTTON ? true : false;
-		if (isAllComponents) {
-			customComponentCheckbox = [];
-		}
-	}
 </script>
 
 <form
-	on:submit|preventDefault={() =>
+	on:submit|preventDefault={() => {
+		const isAllComponents = selectedComponentChoice === ALL_COMPONENTS_RADIO_BUTTON;
+		if (isAllComponents) {
+			customComponentCheckbox = [];
+		}
 		onSaveService({
 			custom_components: customComponentCheckbox,
-			is_all_components: Boolean(isAllComponents),
+			is_all_components: isAllComponents,
 			service_id: selectedService || 0
-		})}
+		});
+	}}
 >
 	<h1 class="font-bold text-xl pt-5">
 		{editMode ? `Edit Service - ${serviceName} ` : 'Select a Service'}
@@ -152,7 +139,7 @@
 				</div>
 			</div>
 			<div class="mt-5">
-				<Button type="submit">{editMode ? 'Update Service' : 'Add Service'}</Button>
+				<Button type="submit">{editMode ? 'Update' : 'Add'} Subscription</Button>
 			</div>
 		{/if}
 	</div>

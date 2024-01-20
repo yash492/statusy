@@ -33,11 +33,11 @@
 	setContext<SelectedTabContext>(SELECTED_TAB_CONTEXT, selectedTabStore);
 </script>
 
-<div class="mb-10">
-	<div class="border-b border-gray-700 flex w-full text-sm md:text-base">
+<div>
+	<div class="border-b border-gray-700 flex w-full text-sm md:text-base h-full">
 		{#each titles as title}
 			<button
-				class={`font-medium rounded-t-md w-fit h-fit px-2 py-1 mr-4 hover:bg-purple-900 ${isTabActiveCssClasses(
+				class={`text-xs font-medium rounded-t-md w-fit h-fit px-1 py-1 mr-2 md:text-sm  hover:bg-purple-900 ${isTabActiveCssClasses(
 					title.id,
 					$selectedTabStore
 				)}`}

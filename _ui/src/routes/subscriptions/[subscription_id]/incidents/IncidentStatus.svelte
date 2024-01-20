@@ -3,7 +3,6 @@
 	export let status: string;
 
 	let bgColor = '';
-	let borderColor = '';
 
 	$: switch (normalisedStatus) {
 		case 'triggered':
@@ -18,6 +17,6 @@
 	}
 </script>
 
-<div class={` w-fit px-3 text-center font-semibold ${bgColor} rounded-lg`}>
+<div class={`w-fit px-3 text-center font-semibold ${bgColor} rounded-lg`}>
 	<p>{status}</p>
 </div>

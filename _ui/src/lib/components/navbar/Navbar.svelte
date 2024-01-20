@@ -21,21 +21,6 @@
 		</button>
 
 		<div class="left-0 top-0 hidden h-full items-center gap-8 font-bold md:flex">
-			<div class="flex items-center bg-neutral-800 border-gray-700 rounded-sm border pr-2">
-				<select
-					name="refresh"
-					id="refresh"
-					class="pl-2 py-1 bg-neutral-800 mr-4 hover:cursor-pointer"
-				>
-					<option value="5">5s</option>
-					<option value="10">10s</option>
-					<option value="30">30s</option>
-					<option value="60">60s</option>
-				</select>
-				<button class="hover:bg-neutral-700 px-[0.125rem] py-1">
-					<Icon src={ArrowPath} size={'20px'} class="stroke-white"></Icon>
-				</button>
-			</div>
 			<Navlinks navbarLinks={NavbarLinks} />
 		</div>
 		{#if toggleMobileNav}

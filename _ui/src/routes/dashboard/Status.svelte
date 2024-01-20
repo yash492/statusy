@@ -7,6 +7,8 @@
 	}
 </script>
 
-<div class={`uppercase font-bold text-sm text-center py-1 rounded-md border-2 ${cssClasses}`}>
+<div
+	class={`uppercase font-bold text-sm text-center py-1 rounded-md border-2 w-fit px-2 ${cssClasses}`}
+>
 	{isDown ? 'down' : 'up'}
 </div>
