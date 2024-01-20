@@ -312,6 +312,7 @@ func (db subscriptionDBConn) GetIncidentsForSubscription(subscriptionUUID uuid.U
 					incidents.id AS incident_id,
 					incident_updates.status_time AS last_updated_status_time,
 					incident_updates.provider_status AS incident_status,
+					incident_updates.status AS incident_normalised_status,
 					incidents.provider_created_at AS incident_created_at,
 					incidents.name AS incident_name,
 					incidents.link AS incident_link,
@@ -325,40 +326,57 @@ func (db subscriptionDBConn) GetIncidentsForSubscription(subscriptionUUID uuid.U
 				FROM
 					incidents
 					JOIN incident_updates ON incidents.id = incident_updates.incident_id
+				),
+				incident_list_cte AS (
+				SELECT
+					COUNT(incident_id) OVER () AS total_count,
+					incident_id,
+					last_updated_status_time,
+					incident_status,
+					incident_normalised_status,
+					incident_created_at,
+					incident_name,
+					incident_link,
+					subscriptions.id AS subscription_id
+				FROM
+					incidents_cte
+					JOIN subscriptions ON subscriptions.service_id = incidents_cte.service_id
+				WHERE
+					rank < 2
+					AND (
+					subscriptions.is_all_components = true
+					OR (
+						EXISTS (
+						SELECT
+							subscription_components.id
+						FROM
+							subscription_components
+							JOIN incident_components ON subscription_components.component_id = incident_components.component_id
+						WHERE
+							subscription_components.subscription_id = subscriptions.id
+							AND incident_components.incident_id = incidents_cte.incident_id
+						)
+					)
+					)
 				)
 			SELECT
 				COUNT(incident_id) OVER () AS total_count,
 				incident_id,
 				last_updated_status_time,
 				incident_status,
+				incident_normalised_status,
 				incident_created_at,
 				incident_name,
 				incident_link,
-				services.id AS service_id,
 				services.name AS service_name,
+				services.id AS service_id,
 				subscriptions.is_all_components AS is_all_components_configured
 			FROM
-				incidents_cte
-				JOIN services ON services.id = incidents_cte.service_id
-				JOIN subscriptions ON subscriptions.service_id = services.id
+				incident_list_cte
+				RIGHT JOIN subscriptions ON subscriptions.id = incident_list_cte.subscription_id
+				JOIN services ON services.id = subscriptions.service_id
 			WHERE
-				rank < 2
-				AND (
-				subscriptions.is_all_components = true
-				OR (
-					EXISTS (
-					SELECT
-						subscription_components.id
-					FROM
-						subscription_components
-						JOIN incident_components ON subscription_components.component_id = incident_components.component_id
-					WHERE
-						subscription_components.subscription_id = subscriptions.id
-						AND incident_components.incident_id = incidents_cte.incident_id
-					)
-				)
-				)
-				AND subscriptions.uuid = $1
+				subscriptions.uuid = $1
 			ORDER BY
 				incident_created_at DESC
 			OFFSET

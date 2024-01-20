@@ -41,3 +41,29 @@ export type GetAllSubscription = {
 	incident_impact: string;
 	is_down: boolean;
 };
+
+export type IncidentsForSubscription = {
+	service_name: string;
+	service_id: number;
+	is_all_components_configured: boolean;
+	components: { id: number; name: string }[]; // Adjust the type accordingly if components have a specific structure
+	incidents: Incident[];
+};
+
+export type Incident = {
+	id: number;
+	last_updated_status_time: string;
+	status: string;
+	created_at: Date;
+	name: string;
+	link: string;
+	normalised_status: string;
+};
+
+export type SubscriptionIncidentsTable = {
+	name: string;
+	status: string;
+	createdAt: Date;
+	link: string;
+	normalisedStatus: string;
+};

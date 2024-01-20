@@ -1,5 +1,7 @@
+import type { PaginationMeta } from '$lib/types/api';
 import type {
 	GetAllSubscription,
+	IncidentsForSubscription,
 	SaveSubscription,
 	ServiceForSubscription,
 	SubscriptionWithComponents
@@ -30,7 +32,7 @@ export class SubscriptionAPI {
 	async GetAll(serviceName: string, pageNumber: number, pageLimit: number) {
 		return axios.get<{
 			data: GetAllSubscription[];
-			meta: { total_count: number; page_number: number; page_limit: number };
+			meta: PaginationMeta;
 		}>('/dashboard', {
 			params: {
 				service_name: serviceName,
@@ -38,5 +40,17 @@ export class SubscriptionAPI {
 				pageLimit: pageLimit
 			}
 		});
+	}
+
+	async GetAllIncidents(subscriptionUUID: string, pageNumber: number, pageLimit: number) {
+		return axios.get<{ data: IncidentsForSubscription; meta: PaginationMeta }>(
+			`subscriptions/${subscriptionUUID}/incidents`,
+			{
+				params: {
+					page_number: pageNumber,
+					page_limit: pageLimit
+				}
+			}
+		);
 	}
 }

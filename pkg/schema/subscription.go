@@ -58,14 +58,15 @@ type DashboardSubscription struct {
 }
 
 type SubscriptionIncident struct {
-	TotalCount                int64     `db:"total_count"`
-	IncidentID                uint      `db:"incident_id"`
-	LastUpdatedStatusTime     time.Time `db:"last_updated_status_time"`
-	IncidentStatus            string    `db:"incident_status"`
-	IncidentCreatedAt         time.Time `db:"incident_created_at"`
-	IncidentName              string    `db:"incident_name"`
-	IncidentLink              string    `db:"incident_link"`
-	ServiceID                 uint      `db:"service_id"`
-	ServiceName               string    `db:"service_name"`
-	IsAllComponentsConfigured bool      `db:"is_all_components_configured"`
+	TotalCount                int64          `db:"total_count"`
+	IncidentID                sql.NullInt64  `db:"incident_id"`
+	LastUpdatedStatusTime     sql.NullTime   `db:"last_updated_status_time"`
+	IncidentStatus            sql.NullString `db:"incident_status"`
+	IncidentNormalisedStatus  sql.NullString `db:"incident_normalised_status"`
+	IncidentCreatedAt         sql.NullTime   `db:"incident_created_at"`
+	IncidentName              sql.NullString `db:"incident_name"`
+	IncidentLink              sql.NullString `db:"incident_link"`
+	ServiceID                 uint           `db:"service_id"`
+	ServiceName               string         `db:"service_name"`
+	IsAllComponentsConfigured bool           `db:"is_all_components_configured"`
 }

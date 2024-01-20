@@ -4,11 +4,20 @@
 	import { Icon } from '@steeze-ui/svelte-icon';
 	import { MagnifyingGlass } from '@steeze-ui/heroicons';
 	import type { ComponentsForService } from '$lib/types/components';
+	import type { SaveSubscription } from '$lib/types/subscriptions';
+	import { afterNavigate } from '$app/navigation';
+	import { SUBSCRIPTION_BY_ID_QUERY_KEY } from '$lib/types/query_keys';
+	import { useQueryClient } from '@tanstack/svelte-query';
 
 	const ALL_COMPONENTS_RADIO_BUTTON = 'all-components';
 	const CUSTOM_COMPONENTS_RADIO_BUTTON = 'custom-components';
 
-	export let onSaveService: () => void;
+	const queryClient = useQueryClient();
+	afterNavigate(() => {
+		queryClient.invalidateQueries({ queryKey: [SUBSCRIPTION_BY_ID_QUERY_KEY] });
+	});
+
+	export let onSaveService: (subscription: SaveSubscription) => void;
 	export let fetchServices:
 		| ((filterText: string) => Promise<
 				{
@@ -18,19 +27,22 @@
 		  >)
 		| null = null;
 	export let selectedService: number | undefined;
-	export let isAllComponents: boolean | undefined;
+	export let isAllComponents: boolean;
 
 	export let components: ComponentsForService[];
 	export let customComponentCheckbox: number[];
 	export let editMode: boolean;
 	export let serviceName: string = '';
 
+	$: isAllComponents = isAllComponents;
+	$: components = components;
+	$: customComponentCheckbox = customComponentCheckbox;
+
 	let searchComponentsValue = '';
 	let searchingComponents = components;
 	let selectedComponentChoice = isAllComponents
 		? ALL_COMPONENTS_RADIO_BUTTON
 		: CUSTOM_COMPONENTS_RADIO_BUTTON;
-	$: selectedComponent = selectedComponentChoice;
 
 	$: {
 		searchingComponents = components.filter((component) => {
@@ -39,16 +51,21 @@
 	}
 
 	$: {
-		isAllComponents = selectedComponent === ALL_COMPONENTS_RADIO_BUTTON ? true : false;
+		isAllComponents = selectedComponentChoice === ALL_COMPONENTS_RADIO_BUTTON ? true : false;
 		if (isAllComponents) {
 			customComponentCheckbox = [];
 		}
 	}
-
-	$: console.log(selectedComponent, 'is_all_components');
 </script>
 
-<form on:submit|preventDefault={onSaveService}>
+<form
+	on:submit|preventDefault={() =>
+		onSaveService({
+			custom_components: customComponentCheckbox,
+			is_all_components: Boolean(isAllComponents),
+			service_id: selectedService || 0
+		})}
+>
 	<h1 class="font-bold text-xl pt-5">
 		{editMode ? `Edit Service - ${serviceName} ` : 'Select a Service'}
 	</h1>

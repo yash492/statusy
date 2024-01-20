@@ -11,6 +11,7 @@
 	import ServiceColumn from './ServiceColumn.svelte';
 	import { Icon } from '@steeze-ui/svelte-icon';
 	import { MagnifyingGlass } from '@steeze-ui/heroicons';
+	import { DASHBOARD_SUBSCRIPTION_LIST_QUERY_KEY } from '$lib/types/query_keys';
 
 	const _subscriptionAPI = new SubscriptionAPI();
 	let serviceName = '';
@@ -19,6 +20,7 @@
 	let totalCount = 0;
 
 	$: query = createQuery({
+		queryKey: [DASHBOARD_SUBSCRIPTION_LIST_QUERY_KEY],
 		queryFn: async () => await _subscriptionAPI.GetAll(serviceName, pageNumber, pageLimit)
 	});
 
@@ -46,7 +48,7 @@
 
 	$: if ($query.isSuccess) {
 		const data = $query.data.data.data;
-		const tableSubscriptionData = data.map<DashboardTable>((subscription) => {
+		const tableSubscriptionData = data?.map<DashboardTable>((subscription) => {
 			const tableData: DashboardTable = {
 				incident: subscription.incident_name,
 				serviceName: subscription.service_name,

@@ -31,8 +31,6 @@
 	});
 
 	$: table = createSvelteTable(options);
-
-	$: console.log($table.getPageCount(), $table.getCanNextPage(), $table.getCanPreviousPage());
 </script>
 
 <div class="mt-2 overflow-x-auto py-2 px-5 border-neutral-600 border rounded-sm">
@@ -69,12 +67,14 @@
 	<button
 		class="border rounded-sm p-1 border-neutral-600 hover:bg-neutral-800"
 		hidden={!$table.getCanPreviousPage()}
+		on:click={() => (pageNumber -= 1)}
 	>
 		<Icon src={ChevronLeft} size="23px" />
 	</button>
 	<button
 		class="border rounded-sm p-1 border-neutral-600 hover:bg-neutral-800"
 		hidden={!$table.getCanNextPage()}
+		on:click={() => (pageNumber += 1)}
 	>
 		<Icon src={ChevronRight} size="23px" />
 	</button>

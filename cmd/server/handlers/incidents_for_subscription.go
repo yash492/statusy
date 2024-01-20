@@ -13,53 +13,63 @@ import (
 )
 
 type subscriptionIncidentsResp struct {
-	ServiceName               string                          `json:"service_name"`
-	ServiceID                 uint                            `json:"service_id"`
-	IsAllComponentsConfigured bool                            `json:"is_all_components_configured"`
-	Components                []types.ComponentsWithNameAndID `json:"components"`
-	Incidents                 []incidentRespHelper            `json:"incidents"`
+	ServiceName               string                           `json:"service_name"`
+	ServiceID                 uint                             `json:"service_id"`
+	IsAllComponentsConfigured bool                             `json:"is_all_components_configured"`
+	Components                []subscriptionIncidentComponents `json:"components"`
+	Incidents                 []incidentRespHelper             `json:"incidents"`
 }
 
 type incidentRespHelper struct {
 	ID                    uint      `json:"id"`
 	LastUpdatedStatusTime time.Time `json:"last_updated_status_time"`
+	NormalisedStatus      string    `json:"normalised_status"`
 	Status                string    `json:"status"`
 	CreatedAt             time.Time `json:"created_at"`
 	Name                  string    `json:"name"`
 	Link                  string    `json:"link"`
 }
 
+type subscriptionIncidentComponents struct {
+	Name string `json:"name"`
+	ID   uint   `json:"id"`
+}
+
 func SubscriptionIncidents(w http.ResponseWriter, r *http.Request) *api.Response {
 	ctx := r.Context()
 	subscriptionUUID := ctx.Value(types.SubscriptionIDCtx).(uuid.UUID)
+	queryParams := r.URL.Query()
+	pageNumberStr := queryParams.Get("page_number")
+	pageLimitStr := queryParams.Get("page_limit")
 
-	subscriptionIncidents, err := domain.Subscription.GetIncidentsForSubscription(subscriptionUUID, 0, 10)
+	pageNumber := parsePaginationParams(pageNumberStr, 0)
+	pageLimit := parsePaginationParams(pageLimitStr, 5)
+
+	subscriptionIncidents, err := domain.Subscription.GetIncidentsForSubscription(subscriptionUUID, pageNumber*pageLimit, pageLimit)
 	if err != nil {
 		return api.Errorf(w, http.StatusInternalServerError, "cannot fetch incidents for the given subscription %v, err: %v", subscriptionUUID.String(), err.Error())
-	}
-
-	if len(subscriptionIncidents) < 1 {
-		return api.Send(w, http.StatusOK, []any{}, types.JSON{
-			"total_count": 0,
-		})
 	}
 
 	totalCount := subscriptionIncidents[0].TotalCount
 	isAllComponentsConfigured := subscriptionIncidents[0].IsAllComponentsConfigured
 	serviceName := subscriptionIncidents[0].ServiceName
 	serviceID := subscriptionIncidents[0].ServiceID
-	var components []types.ComponentsWithNameAndID
+	components := []subscriptionIncidentComponents{}
+	incidentsResp := []incidentRespHelper{}
 
-	incidentsResp := lo.Map(subscriptionIncidents, func(incident schema.SubscriptionIncident, _ int) incidentRespHelper {
-		return incidentRespHelper{
-			ID:                    incident.IncidentID,
-			LastUpdatedStatusTime: incident.LastUpdatedStatusTime,
-			Status:                incident.IncidentStatus,
-			CreatedAt:             incident.IncidentCreatedAt,
-			Name:                  incident.IncidentName,
-			Link:                  incident.IncidentLink,
-		}
-	})
+	if totalCount > 0 {
+		incidentsResp = lo.Map(subscriptionIncidents, func(incident schema.SubscriptionIncident, _ int) incidentRespHelper {
+			return incidentRespHelper{
+				ID:                    uint(incident.IncidentID.Int64),
+				LastUpdatedStatusTime: incident.LastUpdatedStatusTime.Time,
+				Status:                incident.IncidentStatus.String,
+				CreatedAt:             incident.IncidentCreatedAt.Time,
+				Name:                  incident.IncidentName.String,
+				Link:                  incident.IncidentLink.String,
+				NormalisedStatus:      incident.IncidentNormalisedStatus.String,
+			}
+		})
+	}
 
 	if !isAllComponentsConfigured {
 		subscriptionComponents, err := domain.Subscription.GetWithComponents(subscriptionUUID)
@@ -67,12 +77,14 @@ func SubscriptionIncidents(w http.ResponseWriter, r *http.Request) *api.Response
 			return api.Errorf(w, http.StatusInternalServerError, "cannot fetch components for the given subscription %v, err: %v", subscriptionUUID.String(), err.Error())
 		}
 
-		components = lo.Map(subscriptionComponents, func(component schema.SubscriptionWithComponent, _ int) types.ComponentsWithNameAndID {
-			return types.ComponentsWithNameAndID{
-				Name: component.ComponentName,
-				ID:   component.ComponentID,
+		for _, component := range subscriptionComponents {
+			if component.IsConfigured {
+				components = append(components, subscriptionIncidentComponents{
+					Name: component.ComponentName,
+					ID:   component.ComponentID,
+				})
 			}
-		})
+		}
 	}
 
 	resp := subscriptionIncidentsResp{
@@ -85,6 +97,8 @@ func SubscriptionIncidents(w http.ResponseWriter, r *http.Request) *api.Response
 
 	meta := types.JSON{
 		"total_count": totalCount,
+		"page_number": pageNumber,
+		"page_limit":  pageLimit,
 	}
 	return api.Send(w, http.StatusOK, resp, meta)
 

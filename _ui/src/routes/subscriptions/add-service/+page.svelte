@@ -49,13 +49,7 @@
 		onError: () => {}
 	});
 
-	async function onSaveService() {
-		const subscription: SaveSubscription = {
-			custom_components: customComponentCheckbox,
-			is_all_components: isAllComponents,
-			service_id: selectedServiceID || 0
-		};
-
+	async function onSaveService(subscription: SaveSubscription) {
 		if (!subscription.is_all_components && subscription.custom_components.length === 0) {
 			_toast.error('Please choose components for custom components option');
 			return;
@@ -75,10 +69,10 @@
 			{fetchServices}
 			editMode={false}
 			{onSaveService}
-			bind:selectedService={selectedServiceID}
+			selectedService={selectedServiceID}
 			{components}
-			bind:customComponentCheckbox
-			bind:isAllComponents
+			{customComponentCheckbox}
+			isAllComponents
 		/>
 	{/if}
 </div>
