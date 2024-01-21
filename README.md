@@ -6,7 +6,7 @@
 
 At Squadcast, where I contribute as a Software Developer, our dependency on various SaaS tools is critical for the success of our operations. However, when these tools encounter issues, we often find ourselves in the dark about the root causes, resorting to manual checks on multiple status pages. This not only proves to be time-consuming but also inefficient for our team.
 
-The motivation behind Statusy lies in addressing this challenge. Statusy is designed to revolutionize service monitoring by centralizing information from different SaaS tools, eliminating the need for manual checks on scattered status pages. The goal is to empower teams like ours with timely alerts and notifications, ensuring prompt awareness of any service disruptions or issues.
+The motivation behind Statusy lies in addressing this challenge. Statusy is designed to transform service monitoring by centralizing information from different SaaS tools, eliminating the need for manual checks on scattered status pages. The goal is to empower teams like ours with timely alerts and notifications, ensuring prompt awareness of any service disruptions or issues.
 
 In essence, Statusy tackles the pain points of relying on disparate status pages, offering a centralized hub for monitoring and dispatching notifications that seamlessly integrate with our primary alerting tools. This not only enhances our operational efficiency but also provides a more proactive approach to addressing potential service disruptions. Statusy is not just a tool; it's a solution crafted to elevate the way teams handle and respond to issues in the dynamic landscape of SaaS dependencies.
 
