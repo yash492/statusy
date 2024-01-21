@@ -6,12 +6,12 @@ import (
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/knadh/koanf/v2"
-	"github.com/yash492/statusy/pkg/static"
+	app "github.com/yash492/statusy"
 )
 
 func New() {
 	k := koanf.New(".")
-	configBytes, err := static.Fs.ReadFile("config.yml")
+	configBytes, err := app.Fs.ReadFile("config.yml")
 	if err != nil {
 		log.Fatalf("error reading config yml: %v", err)
 	}

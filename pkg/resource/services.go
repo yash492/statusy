@@ -5,9 +5,9 @@ import (
 	"log/slog"
 
 	"github.com/gosimple/slug"
+	app "github.com/yash492/statusy"
 	"github.com/yash492/statusy/pkg/domain"
 	"github.com/yash492/statusy/pkg/schema"
-	"github.com/yash492/statusy/pkg/static"
 	"gopkg.in/yaml.v3"
 )
 
@@ -40,7 +40,7 @@ func fetchServiceFromFile() ([]schema.Service, error) {
 	var servicesYml []services
 
 	// Reading service yaml content in bytes
-	bytes, err := static.Fs.ReadFile("services.yml")
+	bytes, err := app.Fs.ReadFile("services.yml")
 	if err != nil {
 		slog.Error(err.Error())
 		return nil, err

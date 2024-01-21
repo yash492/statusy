@@ -134,8 +134,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_pagerduty_extension_uuid ON pagerduty_exte
 
 CREATE TABLE chatops_extensions (
 	id SERIAL PRIMARY KEY,
-	-- type - slack, msteams, discord
 	uuid UUID NOT NULL DEFAULT (uuid_generate_v4()),
+	-- type - slack, msteams, discord
 	type TEXT NOT NULL,
 	webhook_url TEXT NOT NULL,
 	created_at TIMESTAMPTZ DEFAULT NOW(),

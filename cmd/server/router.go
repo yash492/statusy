@@ -10,6 +10,7 @@ import (
 )
 
 func registerRoutes(r chi.Router) {
+	r.Get("/*", handlers.ServeFrontendHandler)
 	r.Route("/api", routes)
 }
 
