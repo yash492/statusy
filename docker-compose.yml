@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:15.3
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+    restart: always
+    environment:
+      - POSTGRES_USER=statusy
+      - POSTGRES_PASSWORD=statusy
+      - POSTGRES_DB=statusy
+
+  statusy:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: statusy-be:latest
+    ports:
+      - "8080:8080"
+    links:
+      - db
+    restart: always
+    environment:
+      DB_HOST: db
+
+volumes:
+  db: {}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"sync"
 
 	"github.com/yash492/statusy/cmd/dispatcher"
@@ -21,7 +22,10 @@ func main() {
 	config.New()
 	store.New()
 	domain.New()
-	resource.New()
+	err := resource.New()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	dispatcherQueue := queue.New(1000)
 	wg := sync.WaitGroup{}

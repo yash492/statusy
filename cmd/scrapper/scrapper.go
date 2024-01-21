@@ -16,22 +16,32 @@ type scrapper interface {
 	scrap(client *resty.Client, queue *queue.Queue) error
 }
 
-func New(queue *queue.Queue, wg *sync.WaitGroup) {
-	var providerServices []scrapper
-	services, _ := domain.Service.GetAll()
+func New(queue *queue.Queue, wg *sync.WaitGroup) error {
+	services, err := getServices()
+	if err != nil {
+		return err
+	}
+	scrapStatusPages(queue, services)
+	wg.Done()
+	return nil
+
+}
+
+func ScrapStatusPagesDuringAppInitialization() error {
+	services, err := getServices()
+	if err != nil {
+		return err
+	}
+	client := resty.New()
+	client.SetTimeout(time.Duration(1 * time.Minute))
 
 	for _, service := range services {
-		if service.ProviderType == types.AtlassianProviderType {
-			providerServices = append(providerServices, atlassianProvider{
-				incidentUrl: service.IncidentURL,
-				serviceID:   service.ID,
-			})
+		if err := service.scrap(client, nil); err != nil {
+			slog.Error("error while scraping", err)
 		}
 	}
 
-	scrapStatusPages(queue, providerServices)
-	wg.Done()
-
+	return nil
 }
 
 func scrapStatusPages(queue *queue.Queue, providerServices []scrapper) {
@@ -40,7 +50,7 @@ func scrapStatusPages(queue *queue.Queue, providerServices []scrapper) {
 
 	scrapInterval := config.ScrapIntervalInMins
 
-	ticker := time.NewTicker(time.Duration(scrapInterval) * time.Second)
+	ticker := time.NewTicker(time.Duration(scrapInterval) * time.Minute)
 	done := make(chan bool)
 
 	for {
@@ -55,4 +65,23 @@ func scrapStatusPages(queue *queue.Queue, providerServices []scrapper) {
 			}
 		}
 	}
+}
+
+func getServices() ([]scrapper, error) {
+	var providerServices []scrapper
+	services, err := domain.Service.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, service := range services {
+		if service.ProviderType == types.AtlassianProviderType {
+			providerServices = append(providerServices, atlassianProvider{
+				incidentUrl: service.IncidentURL,
+				serviceID:   service.ID,
+			})
+		}
+	}
+
+	return providerServices, nil
 }

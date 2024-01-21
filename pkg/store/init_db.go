@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
+	app "github.com/yash492/statusy"
 	"github.com/yash492/statusy/pkg/config"
 )
 
@@ -32,9 +33,14 @@ func New() error {
 	conn, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
 		log.Fatalln(err)
+
 	}
 
 	if err = conn.Ping(context.Background()); err != nil {
+		log.Fatalln(err)
+	}
+
+	if err = migrateTables(conn); err != nil {
 		log.Fatalln(err)
 	}
 
@@ -52,4 +58,13 @@ func InitDbVar() db {
 func dbConnectionStr() string {
 	str := fmt.Sprintf("postgres://%s:%s@%s:5432/%s", config.PGUser, config.PGPassword, config.PGHost, config.PGDatabaseName)
 	return str
+}
+
+func migrateTables(pgConn *pgxpool.Pool) error {
+	bytes, err := app.Fs.ReadFile("models.sql")
+	if err != nil {
+		return err
+	}
+	_, err = pgConn.Exec(context.Background(), string(bytes))
+	return err
 }
