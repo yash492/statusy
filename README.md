@@ -1,8 +1,14 @@
 # Statusy: Your All-In-One Status Page Aggregator
 
-**Stay on top of service health with ease.**
-
 **Statusy** lets you aggregate publicly available status pages from various services into a single, centralized view, keeping you informed about potential disruptions and updates. It's built with Go for efficiency and offers flexible notification options to suit your workflow.
+
+## Motivation 
+
+At Squadcast, where I contribute as a Software Developer, our dependency on various SaaS tools is critical for the success of our operations. However, when these tools encounter issues, we often find ourselves in the dark about the root causes, resorting to manual checks on multiple status pages. This not only proves to be time-consuming but also inefficient for our team.
+
+The motivation behind Statusy lies in addressing this challenge. Statusy is designed to revolutionize service monitoring by centralizing information from different SaaS tools, eliminating the need for manual checks on scattered status pages. The goal is to empower teams like ours with timely alerts and notifications, ensuring prompt awareness of any service disruptions or issues.
+
+In essence, Statusy tackles the pain points of relying on disparate status pages, offering a centralized hub for monitoring and dispatching notifications that seamlessly integrate with our primary alerting tools. This not only enhances our operational efficiency but also provides a more proactive approach to addressing potential service disruptions. Statusy is not just a tool; it's a solution crafted to elevate the way teams handle and respond to issues in the dynamic landscape of SaaS dependencies.
 
 
 ## Features
@@ -15,7 +21,7 @@
 - **Versatile notifications:** Receive alerts through:
     - **Incident management tools:** Squadcast, PagerDuty
     - **ChatOps platforms:** Slack, Microsoft Teams, Discord
-    - **Custom webhooks:** Integrate with any system that supports them
+    - **Outgoing Webhooks:** Integrate with external systems
 
 
 ## Getting Started
@@ -35,9 +41,9 @@
     ```
 
 
-**Need a status page added?**
+## Need a status page added?
 
-If the status page you're looking for is not yet available in StatuSy, you can either:
+If the status page you're looking for is not yet available in Statusy, you can either:
 
 
 1. **Create a pull request**: If you're comfortable with code, feel free to add the status page yourself and contribute through a pull request.
@@ -49,4 +55,3 @@ If the status page you're looking for is not yet available in StatuSy, you can e
 This project is licensed under the GNU Affero General Public License v3.0 (AGPLv3). See the `LICENSE` file for details.
 
 
-**Let Statusy be your eyes on service health.**
