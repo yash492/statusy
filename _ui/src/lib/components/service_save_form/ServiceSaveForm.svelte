@@ -54,7 +54,7 @@
 	}}
 >
 	<h1 class="font-bold text-xl pt-5">
-		{editMode ? `Edit Service - ${serviceName} ` : 'Select a Service'}
+		{editMode ? `Edit Service - ${serviceName} ` : 'Add Service'}
 	</h1>
 	<div class="md:w-[40rem] mt-4">
 		<div>

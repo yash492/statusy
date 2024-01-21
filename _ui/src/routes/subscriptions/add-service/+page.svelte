@@ -8,7 +8,6 @@
 	import { goto } from '$app/navigation';
 	import type { SaveSubscription } from '$lib/types/subscriptions';
 	import ServiceSave from '$lib/components/service_save_form/ServiceSaveForm.svelte';
-	import toast from 'svelte-french-toast';
 	import { Toast } from '$lib/toast/toast';
 
 	const _subscriptionAPI = new SubscriptionAPI();
@@ -59,7 +58,7 @@
 	}
 </script>
 
-<div class="mx-auto w-full pb-11 md:w-fit">
+<div class="mx-auto w-full pb-11 md:w-fit lg:w-1/2">
 	{#if $query.isLoading}
 		<p>Loading...</p>
 	{:else if $query.isError}

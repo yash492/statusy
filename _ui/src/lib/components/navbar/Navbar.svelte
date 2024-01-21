@@ -11,7 +11,9 @@
 	<div
 		class="fixed left-0 top-0 mx-auto flex h-16 w-full items-center justify-between bg-purple-950 px-4 z-50"
 	>
-		<h1 class="text-xl font-extrabold">Statusy</h1>
+		<h1 class="text-xl font-extrabold">
+			<a href="/dashboard">Statusy</a>
+		</h1>
 		<button class="md:hidden" on:click={() => (toggleMobileNav = !toggleMobileNav)}>
 			{#if toggleMobileNav}
 				<Icon src={XMark} size={'23px'} class="stroke-white"></Icon>

@@ -64,7 +64,7 @@
 	}
 </script>
 
-<div class="mx-auto w-full pb-11">
+<div class="mx-auto w-full pb-11 lg:w-1/2">
 	{#if $query.isLoading}
 		<p>Loading...</p>
 	{:else if $query.isError}

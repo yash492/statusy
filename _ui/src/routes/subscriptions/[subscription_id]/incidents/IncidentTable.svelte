@@ -42,7 +42,9 @@
 			{#each $table.getHeaderGroups() as headerGroup}
 				<tr>
 					{#each headerGroup.headers as header}
-						<th class="uppercase text-xs whitespace-nowrap pb-2 last:w-1/6 first:w-1/4 first:pl-5">
+						<th
+							class="uppercase text-xs whitespace-nowrap pb-2 last:w-1/6 first:w-1/3 md:first:w-1/4 first:pl-5"
+						>
 							{#if !header.isPlaceholder}
 								<svelte:component
 									this={flexRender(header.column.columnDef.header, header.getContext())}
