@@ -5,17 +5,16 @@ go 1.21.4
 require (
 	github.com/atc0005/go-teams-notify/v2 v2.8.0
 	github.com/bwmarrin/discordgo v0.27.1
-	github.com/go-resty/resty/v2 v2.10.0
+	github.com/go-resty/resty/v2 v2.11.0
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/knadh/koanf/parsers/yaml v0.1.0
 	github.com/knadh/koanf/v2 v2.0.1
 	github.com/samber/lo v1.39.0
-	github.com/stretchr/testify v1.8.4
+	golang.org/x/text v0.14.0
 )
 
 require (
 	github.com/cockroachdb/apd v1.1.0 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
@@ -26,13 +25,11 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )
 
