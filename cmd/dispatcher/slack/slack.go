@@ -41,6 +41,34 @@ func dispatchSlackMsg(event types.WorkerEvent) error {
 }
 
 func makeSlackWebhookMessage(components string, event types.WorkerEvent) (slack.Message, slack.Attachment) {
+
+	fields := []*slack.TextBlockObject{
+		{
+			Type: slack.MarkdownType,
+			Text: fmt.Sprintf("*Service:* %v", event.ServiceName),
+		},
+		{
+			Type: slack.MarkdownType,
+			Text: fmt.Sprintf("*Status:* `%v`", cases.Title(language.AmericanEnglish).String(event.IncidentUpdateProviderStatus)),
+		},
+	}
+
+	if event.IncidentImpact != "" {
+		fields = append(fields, &slack.TextBlockObject{
+			Type: slack.MarkdownType,
+			Text: fmt.Sprintf("*Impact:* %v", cases.Title(language.AmericanEnglish).String(event.IncidentImpact)),
+		})
+	}
+
+	fields = append(fields, &slack.TextBlockObject{
+		Type: slack.MarkdownType,
+		Text: fmt.Sprintf("*Created At:* `%v`", event.IncidentUpdateStatusTime.UTC().Format(time.RFC822)),
+	},
+		&slack.TextBlockObject{
+			Type: slack.MarkdownType,
+			Text: fmt.Sprintf("*Affected Components:*\n %v", components),
+		})
+
 	msg := slack.NewBlockMessage(
 		slack.SectionBlock{
 			Type: slack.MBTSection,
@@ -48,28 +76,7 @@ func makeSlackWebhookMessage(components string, event types.WorkerEvent) (slack.
 				Type: slack.MarkdownType,
 				Text: fmt.Sprintf(":rotating_light: *%v*", helpers.SlackHyperlinkFormat(event.IncidentLink, event.IncidentName)),
 			},
-			Fields: []*slack.TextBlockObject{
-				{
-					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Service:* %v", event.ServiceName),
-				},
-				{
-					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Status:* `%v`", cases.Title(language.AmericanEnglish).String(event.IncidentUpdateProviderStatus)),
-				},
-				{
-					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Impact:* %v", cases.Title(language.AmericanEnglish).String(event.IncidentImpact)),
-				},
-				{
-					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Created At:* `%v`", event.IncidentUpdateStatusTime.UTC().Format(time.RFC822)),
-				},
-				{
-					Type: slack.MarkdownType,
-					Text: fmt.Sprintf("*Affected Components:*\n %v", components),
-				},
-			},
+			Fields: fields,
 		},
 	)
 

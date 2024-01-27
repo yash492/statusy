@@ -55,13 +55,22 @@ func (db incidentDBConn) Create(incidents []schema.Incident) ([]schema.Incident,
 
 }
 
-func (db incidentDBConn) GetByProviderID(providerID string) (schema.Incident, error) {
-	query := "SELECT * FROM incidents WHERE provider_id = $1 AND deleted_at IS NULL"
-	rows, err := db.pgConn.Query(context.Background(), query, providerID)
+func (db incidentDBConn) GetByProviderIDs(providerIDs []string) ([]schema.Incident, error) {
+	query := "SELECT * FROM incidents WHERE provider_id = ANY($1) AND deleted_at IS NULL"
+	rows, err := db.pgConn.Query(context.Background(), query, providerIDs)
 	if err != nil {
-		return schema.Incident{}, err
+		return nil, err
 	}
-	return pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.Incident])
+	return pgx.CollectRows(rows, pgx.RowToStructByName[schema.Incident])
+}
+
+func (db incidentDBConn) GetIncidentUpdatesByProviderIDs(providerIDs []string) ([]schema.IncidentUpdate, error) {
+	query := "SELECT * FROM incident_updates WHERE provider_id = ANY($1) AND deleted_at IS NULL"
+	rows, err := db.pgConn.Query(context.Background(), query, providerIDs)
+	if err != nil {
+		return nil, err
+	}
+	return pgx.CollectRows(rows, pgx.RowToStructByName[schema.IncidentUpdate])
 }
 
 func (db incidentDBConn) CreateIncidentUpdates(incidentUpdates []schema.IncidentUpdate) ([]schema.IncidentUpdate, error) {

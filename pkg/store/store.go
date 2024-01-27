@@ -19,10 +19,10 @@ type ComponentStore interface {
 
 type IncidentStore interface {
 	Create([]schema.Incident) ([]schema.Incident, error)
-	GetByProviderID(providerID string) (schema.Incident, error)
+	GetByProviderIDs(providerIDs []string) ([]schema.Incident, error)
 	CreateIncidentUpdates(incidentUpdates []schema.IncidentUpdate) ([]schema.IncidentUpdate, error)
-	GetLastIncidentUpdatesTimeByService(serviceID uint, incidentIDs []uint) ([]schema.LastIncidentUpdateForIncident, error)
 	CreateIncidentComponents(incidentComponents []schema.IncidentComponent) error
+	GetIncidentUpdatesByProviderIDs(providerIDs []string) ([]schema.IncidentUpdate, error)
 }
 
 type SubscriptionStore interface {

@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS services (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -34,8 +36,8 @@ CREATE TABLE IF NOT EXISTS incidents (
 	id SERIAL PRIMARY KEY,
 	name TEXT NOT NULL,
 	link TEXT NOT NULL,
-	provider_impact TEXT NOT NULL,
-	impact TEXT NOT NULL,
+	provider_impact TEXT,
+	impact TEXT,
 	service_id INT NOT NULL,
 	provider_id TEXT NOT NULL,
 	provider_created_at TIMESTAMPTZ NOT NULL,

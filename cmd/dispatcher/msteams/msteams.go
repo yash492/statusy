@@ -2,6 +2,7 @@ package msteams
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
@@ -34,28 +35,40 @@ func dispatchMsTeamsMsg(event types.WorkerEvent) error {
 	msgCard := messagecard.NewMessageCard()
 	msgCard.Title = fmt.Sprintf("🚨 %v", event.IncidentName)
 
-	msgCard.Text =
-		fmt.Sprintf("**%v**", helpers.MarkdownHyperLinkFormat("Incident Link", event.IncidentLink)) +
-			newLine +
-			fmt.Sprintf("**Service:** %v", event.ServiceName) +
-			newLine +
-			fmt.Sprintf("**Incident Status:** %v", cases.Title(language.AmericanEnglish).String(event.IncidentUpdateProviderStatus)) +
-			newLine +
-			"**Affected Components:**" +
-			newLine +
-			affectedComponents +
-			newLine +
-			"**Created At**" +
-			newLine +
-			event.IncidentUpdateStatusTime.UTC().Format(time.RFC822) +
-			newLine +
-			"**Impact**" +
-			cases.Title(language.AmericanEnglish).String(event.IncidentImpact) +
-			newLine +
-			newLine +
-			"**Description:**" +
-			newLine +
-			event.IncidentUpdate
+	msgCardText := []string{
+		fmt.Sprintf("**%v**", helpers.MarkdownHyperLinkFormat("Incident Link", event.IncidentLink)),
+		newLine,
+		fmt.Sprintf("**Service:** %v", event.ServiceName),
+		newLine,
+		fmt.Sprintf("**Incident Status:** %v", cases.Title(language.AmericanEnglish).String(event.IncidentUpdateProviderStatus)),
+		newLine,
+		"**Affected Components:**",
+		newLine,
+		affectedComponents,
+		newLine,
+		"**Created At**",
+		newLine,
+		event.IncidentUpdateStatusTime.UTC().Format(time.RFC822),
+		newLine,
+	}
+
+	if event.IncidentImpact != "" {
+		msgCardText = append(msgCardText,
+			"**Impact**",
+			newLine,
+			cases.Title(language.AmericanEnglish).String(event.IncidentImpact),
+			newLine,
+		)
+	}
+
+	msgCardText = append(msgCardText,
+		newLine,
+		"**Description:**",
+		newLine,
+		event.IncidentUpdate,
+	)
+
+	msgCard.Text = strings.Join(msgCardText, "")
 
 	// Send the message with default timeout/retry settings.
 	return mstClient.Send(webhook, msgCard)

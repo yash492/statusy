@@ -87,7 +87,7 @@ func fetchSubscriptionContext(incidentID uint, eventType string) (types.WorkerEv
 		IncidentID:                   subscriptions[0].IncidentID,
 		IncidentName:                 subscriptions[0].IncidentName,
 		IncidentLink:                 subscriptions[0].IncidentLink,
-		IncidentImpact:               subscriptions[0].IncidentImpact,
+		IncidentImpact:               subscriptions[0].IncidentImpact.String,
 		IncidentUpdate:               subscriptions[0].IncidentUpdate,
 		IncidentUpdateProviderStatus: subscriptions[0].IncidentUpdateProviderStatus,
 		IncidentUpdateStatus:         subscriptions[0].IncidentUpdateStatus,

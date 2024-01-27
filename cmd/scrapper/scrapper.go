@@ -81,6 +81,13 @@ func getServices() ([]scrapper, error) {
 				serviceID:   service.ID,
 			})
 		}
+
+		if service.ProviderType == types.SquadcastProviderType {
+			providerServices = append(providerServices, squadcastProvider{
+				incidentUrl: service.IncidentURL,
+				serviceID:   service.ID,
+			})
+		}
 	}
 
 	return providerServices, nil

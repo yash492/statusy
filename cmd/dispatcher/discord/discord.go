@@ -40,42 +40,49 @@ func dispatchDiscordMsg(event types.WorkerEvent) error {
 	result := types.JSON{}
 	client := resty.New()
 
+	fields := []*discordgo.MessageEmbedField{
+		{
+			Name:   "Service",
+			Value:  event.ServiceName,
+			Inline: true,
+		},
+		{
+			Name:   "Incident Status",
+			Value:  cases.Title(language.AmericanEnglish).String(event.IncidentUpdateProviderStatus),
+			Inline: true,
+		},
+	}
+
+	if event.IncidentImpact != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Incident Impact",
+			Value:  cases.Title(language.AmericanEnglish).String(event.IncidentImpact),
+			Inline: true,
+		})
+
+	}
+
+	fields = append(fields, &discordgo.MessageEmbedField{
+		Name:   "Created At",
+		Value:  event.IncidentUpdateStatusTime.UTC().Format(time.RFC822),
+		Inline: true,
+	},
+		&discordgo.MessageEmbedField{
+			Name:  "Affected Components",
+			Value: helpers.ConvertComponentsToStr(event.Components),
+		},
+		&discordgo.MessageEmbedField{
+			Name:  "Description",
+			Value: event.IncidentUpdate,
+		})
+
 	discordMsg := discordgo.Message{
 		Embeds: []*discordgo.MessageEmbed{
 			{
-				Title: fmt.Sprintf(":rotating_light: **%v**", event.IncidentName),
-				URL:   event.IncidentLink,
-				Color: msgColor[event.EventType],
-				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:   "Service",
-						Value:  event.ServiceName,
-						Inline: true,
-					},
-					{
-						Name:   "Incident Status",
-						Value:  cases.Title(language.AmericanEnglish).String(event.IncidentUpdateProviderStatus),
-						Inline: true,
-					},
-					{
-						Name:   "Incident Impact",
-						Value:  cases.Title(language.AmericanEnglish).String(event.IncidentImpact),
-						Inline: true,
-					},
-					{
-						Name:   "Created At",
-						Value:  event.IncidentUpdateStatusTime.UTC().Format(time.RFC822),
-						Inline: true,
-					},
-					{
-						Name:  "Affected Components",
-						Value: helpers.ConvertComponentsToStr(event.Components),
-					},
-					{
-						Name:  "Description",
-						Value: event.IncidentUpdate,
-					},
-				},
+				Title:  fmt.Sprintf(":rotating_light: **%v**", event.IncidentName),
+				URL:    event.IncidentLink,
+				Color:  msgColor[event.EventType],
+				Fields: fields,
 			},
 		},
 	}

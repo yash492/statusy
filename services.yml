@@ -21,3 +21,11 @@
   schedule_maintenance_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/scheduled-maintenances.json
   components_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/components.json
   provider_type: atlassian
+
+- name: Test Squadcast
+  link: https://status.squadcast.com
+  should_scrap_website: false
+  incident_url: https://status.squadcast.com/
+  schedule_maintenance_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/scheduled-maintenances.json
+  components_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/components.json
+  provider_type: squadcast

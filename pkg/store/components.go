@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/yash492/statusy/pkg/schema"
@@ -33,6 +34,9 @@ func (db componentDBConn) Create(components []schema.Component) ([]schema.Compon
 			Query(func(rows pgx.Rows) error {
 				returnedComponent, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.Component])
 				if err != nil {
+					if errors.Is(pgx.ErrNoRows, err) {
+						return nil
+					}
 					return err
 				}
 				returnedComponents = append(returnedComponents, returnedComponent)

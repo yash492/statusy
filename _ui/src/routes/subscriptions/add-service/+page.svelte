@@ -68,8 +68,8 @@
 			{fetchServices}
 			editMode={false}
 			{onSaveService}
-			selectedService={selectedServiceID}
-			{components}
+			bind:selectedService={selectedServiceID}
+			bind:components
 			{customComponentCheckbox}
 			isAllComponents
 		/>
