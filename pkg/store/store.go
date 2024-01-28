@@ -28,6 +28,7 @@ type IncidentStore interface {
 type SubscriptionStore interface {
 	GetAllServicesForSubscriptions(serviceName string) ([]schema.ServicesForSubsciption, error)
 	Create(serviceID uint, componentIDs []uint, isAllComponents bool) error
+	GetByID(subscriptionID uuid.UUID) (schema.SubscriptionWithService, error)
 	GetWithComponents(subscriptionID uuid.UUID) ([]schema.SubscriptionWithComponent, error)
 	Update(subscriptionID uuid.UUID, componentIDs []uint, isAllComponents bool) error
 	GetForIncidentUpdates(incidentUpdateID uint) ([]schema.SubscriptionForIncidentUpdate, error)

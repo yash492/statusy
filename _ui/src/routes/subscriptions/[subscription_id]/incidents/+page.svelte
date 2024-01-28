@@ -54,6 +54,8 @@
 			components = subscriptionIncidentDetails?.components
 				.map((component) => component.name)
 				.join(', ');
+		} else {
+			components = 'All';
 		}
 	}
 

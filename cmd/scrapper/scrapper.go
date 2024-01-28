@@ -75,19 +75,27 @@ func getServices() ([]scrapper, error) {
 	}
 
 	for _, service := range services {
-		if service.ProviderType == types.AtlassianProviderType {
+		switch service.ProviderType {
+
+		case types.AtlassianProviderType:
 			providerServices = append(providerServices, atlassianProvider{
+				incidentUrl: service.IncidentURL,
+				serviceID:   service.ID,
+			})
+
+		case types.SquadcastProviderType:
+			providerServices = append(providerServices, squadcastProvider{
+				incidentUrl: service.IncidentURL,
+				serviceID:   service.ID,
+			})
+
+		case types.StatusioProviderType:
+			providerServices = append(providerServices, statusioProvider{
 				incidentUrl: service.IncidentURL,
 				serviceID:   service.ID,
 			})
 		}
 
-		if service.ProviderType == types.SquadcastProviderType {
-			providerServices = append(providerServices, squadcastProvider{
-				incidentUrl: service.IncidentURL,
-				serviceID:   service.ID,
-			})
-		}
 	}
 
 	return providerServices, nil

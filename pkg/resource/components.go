@@ -1,10 +1,15 @@
 package resource
 
 import (
+	"bytes"
 	"log/slog"
+	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/go-resty/resty/v2"
+	"github.com/gosimple/slug"
+	"github.com/samber/lo"
 	"github.com/yash492/statusy/pkg/domain"
 	"github.com/yash492/statusy/pkg/schema"
 	"github.com/yash492/statusy/pkg/types"
@@ -33,6 +38,7 @@ type parseProviderComponentsFunc func(client *resty.Client, serviceId uint, comp
 
 var componentsParseMap = map[string]parseProviderComponentsFunc{
 	types.AtlassianProviderType: parseAtlassianComponents,
+	types.StatusioProviderType:  parseStatusioComponents,
 }
 
 func initComponents() error {
@@ -87,6 +93,38 @@ func parseAtlassianComponents(
 			ProviderID: componentReq.ID,
 		})
 	}
+
+	return components, nil
+
+}
+
+func parseStatusioComponents(
+	client *resty.Client,
+	serviceId uint,
+	componentsUrl string) ([]schema.Component, error) {
+
+	resp, err := client.R().Get(componentsUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(resp.Body()))
+	if err != nil {
+		return nil, err
+	}
+
+	componentNames := make([]string, 0)
+	doc.Find("#statusio_components .component_name").Each(func(i int, s *goquery.Selection) {
+		componentNames = append(componentNames, strings.TrimSpace(s.Text()))
+	})
+
+	components := lo.Map(componentNames, func(componentName string, _ int) schema.Component {
+		return schema.Component{
+			Name:       componentName,
+			ProviderID: slug.Make(componentName),
+			ServiceID:  serviceId,
+		}
+	})
 
 	return components, nil
 

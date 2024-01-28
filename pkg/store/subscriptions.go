@@ -391,3 +391,24 @@ func (db subscriptionDBConn) GetIncidentsForSubscription(subscriptionUUID uuid.U
 
 	return pgx.CollectRows(rows, pgx.RowToStructByName[schema.SubscriptionIncident])
 }
+
+func (d subscriptionDBConn) GetByID(subscriptionUUID uuid.UUID) (schema.SubscriptionWithService, error) {
+	query := `SELECT
+				subscriptions.uuid AS uuid,
+				services.name AS service_name,
+				services.id AS service_id
+			FROM
+				subscriptions
+				JOIN services ON services.id = subscriptions.service_id
+			WHERE
+				uuid = $1
+			AND 
+				subscriptions.deleted_at IS NULL`
+
+	rows, err := d.pgConn.Query(context.Background(), query, subscriptionUUID.String())
+	if err != nil {
+		return schema.SubscriptionWithService{}, err
+	}
+
+	return pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.SubscriptionWithService])
+}

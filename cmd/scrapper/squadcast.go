@@ -58,7 +58,7 @@ type states struct {
 }
 
 func (s squadcastProvider) scrap(client *resty.Client, queue *queue.Queue) error {
-	resp, err := client.R().Execute(resty.MethodGet, s.incidentUrl)
+	resp, err := client.R().Get(s.incidentUrl)
 	if err != nil {
 		return err
 	}
@@ -107,10 +107,10 @@ func (s squadcastProvider) normaliseIncidents(histories []historyReq) []StatusPa
 				incidentProviderStatus := state.Name
 				for i, message := range state.Messages {
 
-					status := normaliseProviderState(incidentProviderStatus)
+					status := s.normaliseProviderState(incidentProviderStatus)
 					// If it's the first incident status update we want the
 					// normalised statusy status to triggered
-					if i == 0 && incidentProviderStatus == "Investigating" {
+					if i == 0 && incidentProviderStatus != "Resolved" {
 						status = types.IncidentTriggered
 					}
 
@@ -141,7 +141,7 @@ func (s squadcastProvider) normaliseIncidents(histories []historyReq) []StatusPa
 	return statusPageIncidents
 }
 
-func normaliseProviderState(providerState string) string {
+func (squadcastProvider) normaliseProviderState(providerState string) string {
 	stateMap := map[string]string{
 		"Investigating": types.IncidentInProgress,
 		"Identified":    types.IncidentInProgress,

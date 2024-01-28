@@ -14,18 +14,11 @@
   components_url: https://status.plivo.com/api/v2/components.json
   provider_type: atlassian
 
-- name: Test Atlassian
-  link: https://status.plivo.com
-  should_scrap_website: false
-  incident_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/incidents.json
-  schedule_maintenance_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/scheduled-maintenances.json
-  components_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/components.json
-  provider_type: atlassian
-
-- name: Test Squadcast
+- name: Squadcast
   link: https://status.squadcast.com
   should_scrap_website: false
-  incident_url: https://status.squadcast.com/
-  schedule_maintenance_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/scheduled-maintenances.json
-  components_url: https://4bvmx2ddh6lc.statuspage.io/api/v2/components.json
+  incident_url: https://status.squadcast.com
+  schedule_maintenance_url: 
+  components_url:
   provider_type: squadcast
+

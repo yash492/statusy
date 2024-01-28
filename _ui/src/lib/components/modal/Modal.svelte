@@ -25,7 +25,7 @@
 	on:introstart
 	on:outroend
 	bind:this={dialog}
-	class="w-4/5 md:w-1/2 rounded-md shadow-md backdrop:bg-neutral-800 backdrop:opacity-60 bg-neutral-800 text-white border-2 border-neutral-700 mt-20"
+	class="w-4/5 md:w-1/2 rounded-md shadow-md backdrop:bg-neutral-900 backdrop:opacity-70 backdrop:blur-sm bg-neutral-800 text-white border-2 border-neutral-700 mt-32"
 >
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div on:click|stopPropagation class="w-full h-full px-3 py-2">

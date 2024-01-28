@@ -39,6 +39,24 @@ func SubscriptionByID(w http.ResponseWriter, r *http.Request) *api.Response {
 		return api.Errorf(w, http.StatusInternalServerError, "cannot retrieve subscription ID for %v, err: %v", subscriptionID, err.Error())
 	}
 
+	// An hack for those subscriptions which have no components configured
+	if len(subscription) == 0 {
+		subscription, err := domain.Subscription.GetByID(subscriptionID)
+		if err != nil {
+			return api.Errorf(w, http.StatusInternalServerError, "cannot retrieve subscription ID for %v, err: %v", subscriptionID, err.Error())
+		}
+
+		subscriptionResp := subscriptionByIDResponse{
+			ServiceID:       subscription.ServiceID,
+			ServiceName:     subscription.ServiceName,
+			UUID:            subscriptionID.String(),
+			IsAllComponents: true,
+			Components:      []componentsForSubscription{},
+		}
+
+		return api.Send(w, http.StatusOK, subscriptionResp, nil)
+	}
+
 	isAllComponents := true
 
 	components := lo.Map(subscription, func(sub schema.SubscriptionWithComponent, _ int) componentsForSubscription {

@@ -28,6 +28,12 @@ type SubscriptionWithComponent struct {
 	IsConfigured  bool          `db:"is_configured"`
 }
 
+type SubscriptionWithService struct {
+	ServiceID   uint          `db:"service_id"`
+	ServiceName string        `db:"service_name"`
+	UUID        uuid.NullUUID `db:"uuid"`
+}
+
 type SubscriptionForIncidentUpdate struct {
 	ServiceID                    uint           `db:"service_id"`
 	ServiceName                  string         `db:"service_name"`
