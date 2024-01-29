@@ -34,6 +34,7 @@ type SubscriptionStore interface {
 	GetForIncidentUpdates(incidentUpdateID uint) ([]schema.SubscriptionForIncidentUpdate, error)
 	DashboardSubscription(serviceName string, offset, limit uint) ([]schema.DashboardSubscription, error)
 	GetIncidentsForSubscription(subscriptionUUID uuid.UUID, offset, limit uint) ([]schema.SubscriptionIncident, error)
+	Delete(subscriptionID uuid.UUID) error
 }
 
 type SquadcastExtensionStore interface {

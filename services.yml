@@ -22,3 +22,50 @@
   components_url:
   provider_type: squadcast
 
+- name: Circle CI
+  link: https://status.circleci.com
+  should_scrap_website: false
+  incident_url: https://status.circleci.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.circleci.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.circleci.com/api/v2/components.json
+  provider_type: atlassian
+
+- name: Dropbox
+  link: https://status.dropbox.com
+  should_scrap_website: false
+  incident_url: https://status.dropbox.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.dropbox.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.dropbox.com/api/v2/components.json
+  provider_type: atlassian
+
+- name: Zoom
+  link: https://status.zoom.us
+  should_scrap_website: false
+  incident_url: https://status.zoom.us/api/v2/incidents.json
+  schedule_maintenance_url: https://status.zoom.us/api/v2/scheduled-maintenances.json
+  components_url: https://status.zoom.us/api/v2/components.json
+  provider_type: atlassian
+
+- name: LastPass
+  link: https://status.lastpass.com
+  should_scrap_website: false
+  incident_url: https://status.lastpass.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.lastpass.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.lastpass.com/api/v2/components.json
+  provider_type: atlassian
+
+- name: Zapier
+  link: https://status.zapier.com
+  should_scrap_website: false
+  incident_url: https://status.zapier.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.zapier.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.zapier.com/api/v2/components.json
+  provider_type: atlassian
+
+- name: Digital Ocean
+  link: https://status.digitalocean.com
+  should_scrap_website: false
+  incident_url: https://status.digitalocean.com/api/v2/incidents.json
+  schedule_maintenance_url: https://status.digitalocean.com/api/v2/scheduled-maintenances.json
+  components_url: https://status.digitalocean.com/api/v2/components.json
+  provider_type: atlassian

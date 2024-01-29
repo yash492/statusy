@@ -29,6 +29,10 @@ export class SubscriptionAPI {
 		return axios.put<{ data: { msg: string } }>(`/subscriptions/${subscriptionID}`, subscription);
 	}
 
+	async Delete(subscriptionID: string) {
+		return axios.delete<{ data: { msg: string } }>(`/subscriptions/${subscriptionID}`);
+	}
+
 	async GetAll(serviceName: string, pageNumber: number, pageLimit: number) {
 		return axios.get<{
 			data: GetAllSubscription[];

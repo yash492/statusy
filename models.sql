@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS components (
 		REFERENCES services(id)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_components_name_service_id ON components (service_id, name); 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_components_provider_id_service_id ON components (service_id, provider_id); 
 
 CREATE TABLE IF NOT EXISTS incidents (
 	id SERIAL PRIMARY KEY,

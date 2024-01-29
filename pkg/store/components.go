@@ -25,7 +25,7 @@ func (db componentDBConn) Create(components []schema.Component) ([]schema.Compon
 	query := `INSERT INTO components 
 			(name, service_id, provider_id)
 			VALUES ($1, $2, $3)
-			ON CONFLICT(name, service_id) DO NOTHING
+			ON CONFLICT(provider_id, service_id) DO NOTHING
 			RETURNING *`
 
 	for _, component := range components {

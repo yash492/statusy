@@ -27,6 +27,7 @@ func subscriptionRoutes(r chi.Router) {
 	r.Method(http.MethodPost, "/", api.Handler(handlers.AddSubscription))
 	r.Method(http.MethodGet, "/services", api.Handler(handlers.ServicesForSubsciptions))
 	r.With(middlewares.Subscription).Route("/{subscriptionID}", func(r chi.Router) {
+		r.Method(http.MethodDelete, "/", api.Handler(handlers.DeleteSubscription))
 		r.Method(http.MethodGet, "/", api.Handler(handlers.SubscriptionByID))
 		r.Method(http.MethodPut, "/", api.Handler(handlers.EditSubscription))
 		r.Method(http.MethodGet, "/incidents", api.Handler(handlers.SubscriptionIncidents))

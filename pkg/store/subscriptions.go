@@ -412,3 +412,24 @@ func (d subscriptionDBConn) GetByID(subscriptionUUID uuid.UUID) (schema.Subscrip
 
 	return pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.SubscriptionWithService])
 }
+
+func (db subscriptionDBConn) Delete(subscriptionUUID uuid.UUID) error {
+	deleteSubscriptionQuery := `UPDATE subscriptions SET deleted_at = $1 WHERE uuid = $2 RETURNING *`
+	deleteSubscriptionComponentsQuery := `UPDATE subscription_components SET deleted_at = $1 WHERE subscription_id = $2`
+
+	rows, err := db.pgConn.Query(context.Background(), deleteSubscriptionQuery, time.Now(), subscriptionUUID.String())
+	if err != nil {
+		return err
+	}
+	subscription, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[schema.Subscription])
+	if err != nil {
+		return err
+	}
+
+	_, err = db.pgConn.Exec(context.Background(), deleteSubscriptionComponentsQuery, time.Now(), subscription.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

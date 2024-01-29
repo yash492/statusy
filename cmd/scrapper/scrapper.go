@@ -33,8 +33,6 @@ func ScrapStatusPagesDuringAppInitialization() error {
 		return err
 	}
 	client := resty.New()
-	client.SetTimeout(time.Duration(1 * time.Minute))
-
 	for _, service := range services {
 		if err := service.scrap(client, nil); err != nil {
 			slog.Error("error while scraping", err)
