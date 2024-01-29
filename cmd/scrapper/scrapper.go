@@ -34,6 +34,7 @@ func ScrapStatusPagesDuringAppInitialization() error {
 	}
 	client := resty.New()
 	for _, service := range services {
+		
 		if err := service.scrap(client, nil); err != nil {
 			slog.Error("error while scraping", err)
 		}

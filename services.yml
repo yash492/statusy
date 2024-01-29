@@ -69,3 +69,11 @@
   schedule_maintenance_url: https://status.digitalocean.com/api/v2/scheduled-maintenances.json
   components_url: https://status.digitalocean.com/api/v2/components.json
   provider_type: atlassian
+
+- name: Test Squadcast Provider Status Page
+  link: https://statuspage.squadcast.com/squadcast/statusy
+  should_scrap_website: false
+  incident_url: https://statuspage.squadcast.com/squadcast/statusy
+  schedule_maintenance_url: 
+  components_url:
+  provider_type: squadcast
