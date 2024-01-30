@@ -12,6 +12,8 @@ import (
 	"github.com/yash492/statusy/pkg/types"
 )
 
+const workerCount = 10
+
 type scrapper interface {
 	scrap(client *resty.Client, queue *queue.Queue) error
 }
@@ -32,20 +34,30 @@ func ScrapStatusPagesDuringAppInitialization() error {
 	if err != nil {
 		return err
 	}
+
+	wg := &sync.WaitGroup{}
 	client := resty.New()
-	for _, service := range services {
-		
-		if err := service.scrap(client, nil); err != nil {
-			slog.Error("error while scraping", err)
+	for i, service := range services {
+		if i%workerCount == 0 && i != 0 {
+			wg.Wait()
 		}
+		wg.Add(1)
+		go func(wg *sync.WaitGroup, service scrapper) {
+			if err := service.scrap(client, nil); err != nil {
+				slog.Error("error while scraping", err)
+			}
+
+			wg.Done()
+		}(wg, service)
 	}
+
+	wg.Wait()
 
 	return nil
 }
 
 func scrapStatusPages(queue *queue.Queue, providerServices []scrapper) {
 	client := resty.New()
-	client.SetTimeout(time.Duration(1 * time.Minute))
 
 	scrapInterval := config.ScrapIntervalInMins
 
@@ -57,11 +69,22 @@ func scrapStatusPages(queue *queue.Queue, providerServices []scrapper) {
 		case <-done:
 			return
 		case <-ticker.C:
-			for _, service := range providerServices {
-				if err := service.scrap(client, queue); err != nil {
-					slog.Error("error while scraping", err)
+			wg := &sync.WaitGroup{}
+
+			for i, service := range providerServices {
+				if i%workerCount == 0 && i != 0 {
+					wg.Wait()
 				}
+				wg.Add(1)
+				go func(wg *sync.WaitGroup, service scrapper) {
+					if err := service.scrap(client, nil); err != nil {
+						slog.Error("error while scraping", err)
+					}
+
+					wg.Done()
+				}(wg, service)
 			}
+			wg.Wait()
 		}
 	}
 }

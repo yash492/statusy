@@ -7,6 +7,11 @@ import (
 )
 
 func ConvertComponentsToStr(components []types.ComponentsWithNameAndID) string {
+
+	if len(components) < 1 {
+		return "N/A"
+	}
+
 	var sb strings.Builder
 	for i, component := range components {
 		sb.WriteString(component.Name)

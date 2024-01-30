@@ -75,8 +75,8 @@ func fetchSubscriptionContext(incidentID uint, eventType string) (types.WorkerEv
 
 	components := lo.Map(subscriptions, func(subscription schema.SubscriptionForIncidentUpdate, _ int) types.ComponentsWithNameAndID {
 		return types.ComponentsWithNameAndID{
-			Name: subscription.ComponentName,
-			ID:   (subscription.ComponentID),
+			Name: subscription.ComponentName.String,
+			ID:   (uint(subscription.ComponentID.Int64)),
 		}
 	})
 

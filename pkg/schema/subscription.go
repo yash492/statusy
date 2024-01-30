@@ -37,8 +37,8 @@ type SubscriptionWithService struct {
 type SubscriptionForIncidentUpdate struct {
 	ServiceID                    uint           `db:"service_id"`
 	ServiceName                  string         `db:"service_name"`
-	ComponentID                  uint           `db:"component_id"`
-	ComponentName                string         `db:"component_name"`
+	ComponentID                  sql.NullInt64  `db:"component_id"`
+	ComponentName                sql.NullString `db:"component_name"`
 	IncidentID                   uint           `db:"incident_id"`
 	IncidentName                 string         `db:"incident_name"`
 	IncidentLink                 string         `db:"incident_link"`

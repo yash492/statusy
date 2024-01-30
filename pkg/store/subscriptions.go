@@ -179,9 +179,9 @@ func (db subscriptionDBConn) GetForIncidentUpdates(incidentUpdateID uint) ([]sch
 			FROM
 				incident_updates
 				JOIN incidents ON incidents.id = incident_updates.incident_id
-				JOIN incident_components ON incident_components.incident_id = incidents.id
+				LEFT JOIN incident_components ON incident_components.incident_id = incidents.id
 				JOIN services ON services.id = incidents.service_id
-				JOIN components ON incident_components.component_id = components.id
+				LEFT JOIN components ON incident_components.component_id = components.id
 				JOIN subscriptions ON subscriptions.service_id = services.id
 			WHERE
 				(
