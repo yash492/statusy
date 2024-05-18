@@ -10,12 +10,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Node.js for SvelteKit UI
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+        working-directory: _ui
+      
+      - name: Install NPM Packages for SvelteKit UI
+        run: npm install
+        working-directory: _ui
+
+      - name: Build SvelteKit UI App
+        run: npm run build
+        working-directory: _ui      
+
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.21.4'
+
       - name: Install Dependencies
         run: go get .
+
       - name: Build
         run: go build -v ./...
       
