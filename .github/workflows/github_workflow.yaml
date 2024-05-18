@@ -19,9 +19,12 @@ jobs:
       
       - name: Install NPM Packages for SvelteKit UI
         run: npm install
+        working-directory: _ui
 
       - name: Build SvelteKit UI App
         run: npm run build
+        working-directory: _ui
+
 
       - name: Setup Go
         uses: actions/setup-go@v5
