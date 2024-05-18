@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
 
-  build-sveltekit:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,6 +34,6 @@ jobs:
       - name: Install Dependencies
         run: go get .
 
-      - name: Build
+      - name: Build Statusy
         run: go build -v ./...
     
