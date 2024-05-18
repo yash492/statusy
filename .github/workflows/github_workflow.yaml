@@ -7,11 +7,6 @@ jobs:
   build-sveltekit:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: _ui
-
-
     steps:
       - uses: actions/checkout@v4
 
@@ -20,18 +15,13 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: _ui/package-lock.json
       
       - name: Install NPM Packages for SvelteKit UI
         run: npm install
 
       - name: Build SvelteKit UI App
         run: npm run build
-
-  build-go:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Setup Go
         uses: actions/setup-go@v5
