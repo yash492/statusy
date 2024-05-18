@@ -4,7 +4,10 @@ on: [push]
 
 jobs:
 
-  build:
+  build-sveltekit:
+    defaults:
+      run:
+          working-directory: _ui
 
     runs-on: ubuntu-latest
 
@@ -13,27 +16,25 @@ jobs:
 
       - name: Install Node.js for SvelteKit UI
         uses: actions/setup-node@v4
-        working-directory: ./_ui
         with:
           node-version: 20
           cache: npm
       
       - name: Install NPM Packages for SvelteKit UI
         run: npm install
-        working-directory: ./_ui
 
       - name: Build SvelteKit UI App
         run: npm run build
-        working-directory: ./_ui      
 
-      - name: Setup Go
+  build-go:
+    - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.21.4'
 
-      - name: Install Dependencies
-        run: go get .
+    - name: Install Dependencies
+      run: go get .
 
-      - name: Build
-        run: go build -v ./...
-      
+    - name: Build
+      run: go build -v ./...
+    
