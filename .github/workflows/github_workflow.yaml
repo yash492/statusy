@@ -5,11 +5,12 @@ on: [push]
 jobs:
 
   build-sveltekit:
+    runs-on: ubuntu-latest
+
     defaults:
       run:
-        working-directory: /_ui
+        working-directory: _ui
 
-    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
