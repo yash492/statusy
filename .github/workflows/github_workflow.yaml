@@ -13,18 +13,18 @@ jobs:
 
       - name: Install Node.js for SvelteKit UI
         uses: actions/setup-node@v4
-        working-directory: /_ui
+        working-directory: ./_ui
         with:
           node-version: 20
           cache: npm
       
       - name: Install NPM Packages for SvelteKit UI
         run: npm install
-        working-directory: /_ui
+        working-directory: ./_ui
 
       - name: Build SvelteKit UI App
         run: npm run build
-        working-directory: /_ui      
+        working-directory: ./_ui      
 
       - name: Setup Go
         uses: actions/setup-go@v5
