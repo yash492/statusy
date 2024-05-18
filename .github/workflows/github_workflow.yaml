@@ -16,7 +16,6 @@ jobs:
         with:
           node-version: 20
           cache: npm
-        working-directory: _ui
       
       - name: Install NPM Packages for SvelteKit UI
         run: npm install
