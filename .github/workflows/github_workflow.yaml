@@ -7,7 +7,7 @@ jobs:
   build-sveltekit:
     defaults:
       run:
-          working-directory: _ui
+          working-directory: /_ui
 
     runs-on: ubuntu-latest
 
