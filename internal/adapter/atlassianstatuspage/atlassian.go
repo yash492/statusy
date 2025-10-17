@@ -56,7 +56,7 @@ type atlassianComponent struct {
 	Position           int       `json:"position"`
 	Description        *string   `json:"description"`
 	Showcase           bool      `json:"showcase"`
-	GroupID            string    `json:"group_id"`
+	GroupID            *string   `json:"group_id"`
 	PageID             string    `json:"page_id"`
 	Group              bool      `json:"group"`
 	OnlyShowIfDegraded bool      `json:"only_show_if_degraded"`

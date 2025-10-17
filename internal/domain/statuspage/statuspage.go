@@ -11,18 +11,19 @@ type ProviderType string
 type StatusPage interface {
 	ScrapIncidents()
 	// ScrapScheduleMaintainance()
-	FetchComponents() (ComponentGroups, error)
+	FetchComponents() (AggregateComponents, error)
 	Slug() string
 }
 
-type ComponentGroups []ComponentGroups
+type AggregateComponents struct {
+	GroupedComponents   []ComponentGroup
+	UngroupedComponents []Component
+}
 
 type ComponentGroup struct {
 	Name       string
+	ProviderID string
 	Components []Component
-	// If there is no component grouping from the provider,
-	// then it should show under any groups.
-	IsGrouped bool
 }
 
 type Component struct {
@@ -30,6 +31,7 @@ type Component struct {
 	ServiceSlug string
 	ProviderID  string
 }
+
 
 type IncidentUpdate struct {
 	Description        string
