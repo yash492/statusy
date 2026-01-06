@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "sqlc/queries.sql"
+    schema: "sqlc/schema.sql"
+    gen:
+      go:
+        package: "db"
+        out: "database/sqlc"
+        sql_package: "pgx/v5"
+        emit_db_tags: true 

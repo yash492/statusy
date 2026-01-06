@@ -2,11 +2,6 @@ package atlassianstatuspage
 
 import "time"
 
-type atlassianProvider struct {
-	incidentUrl string
-	serviceID   uint
-}
-
 type atlassianIncidentReq struct {
 	Incidents []atlassianIncident `json:"incidents"`
 }

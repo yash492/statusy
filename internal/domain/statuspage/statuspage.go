@@ -8,8 +8,8 @@ import (
 
 type ProviderType string
 
-type StatusPage interface {
-	ScrapIncidents()
+type StatusPageProvider interface {
+	ScrapIncidents() ([]Incident, error)
 	// ScrapScheduleMaintainance()
 	FetchComponents() (AggregateComponents, error)
 	Slug() string
@@ -28,10 +28,8 @@ type ComponentGroup struct {
 
 type Component struct {
 	Name        string
-	ServiceSlug string
 	ProviderID  string
 }
-
 
 type IncidentUpdate struct {
 	Description        string
@@ -50,5 +48,6 @@ type Incident struct {
 	Impact            common.Nullable[string]
 	ProviderID        string
 	ProviderCreatedAt time.Time
+	Updates           []IncidentUpdate
 	Components        []Component
 }
