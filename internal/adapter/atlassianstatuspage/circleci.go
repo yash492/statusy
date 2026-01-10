@@ -31,7 +31,7 @@ func New(
 var _ statuspage.StatusPageProvider = CircleCi{}
 
 // FetchComponents implements statuspage.Statuspage.
-func (c CircleCi) FetchComponents() (statuspage.AggregateComponents, error) {
+func (c CircleCi) ScrapComponents() (statuspage.AggregateComponents, error) {
 	circleciComponents := atlassianComponentsReq{}
 	_, err := c.RestyClient.
 		R().

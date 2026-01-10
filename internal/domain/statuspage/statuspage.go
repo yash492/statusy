@@ -11,11 +11,17 @@ type ProviderType string
 type StatusPageProvider interface {
 	ScrapIncidents() ([]Incident, error)
 	// ScrapScheduleMaintainance()
-	FetchComponents() (AggregateComponents, error)
+	ScrapComponents() (AggregateComponents, error)
 	Slug() string
 }
 
+type Service struct {
+	ID   uint
+	Name string
+}
+
 type AggregateComponents struct {
+	Service             Service
 	GroupedComponents   []ComponentGroup
 	UngroupedComponents []Component
 }
@@ -27,8 +33,8 @@ type ComponentGroup struct {
 }
 
 type Component struct {
-	Name        string
-	ProviderID  string
+	Name       string
+	ProviderID string
 }
 
 type IncidentUpdate struct {

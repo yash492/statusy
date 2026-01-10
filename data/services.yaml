@@ -1,0 +1,5 @@
+- name: "Plivo"
+  slug: "plivo"
+  incidents_url: ""
+  components_url: ""
+  scheduled_maintenance_url: ""
