@@ -8,26 +8,26 @@ import (
 )
 
 type Config struct {
-	Debug      bool             `yaml:"debug"`
-	PostgresDB PostgresDBConfig `yaml:"postgresdb"`
+	Debug      bool             `mapstructure:"debug"`
+	PostgresDB PostgresDBConfig `mapstructure:"postgresdb"`
 }
 
 type PostgresDBConfig struct {
-	ReadDB  DBConfig `yaml:"read"`
-	WriteDB DBConfig `yaml:"read"`
+	ReadDB  DBConfig `mapstructure:"read"`
+	WriteDB DBConfig `mapstructure:"write"`
 }
 
 type DBConfig struct {
-	Host     string `yaml:"host"`
-	Port     uint   `yaml:"port"`
-	Password string `yaml:"password"`
-	Database string `yaml:"database"`
-	User     string `yaml:"user"`
+	Host     string `mapstructure:"host"`
+	Port     uint   `mapstructure:"port"`
+	Password string `mapstructure:"password"`
+	Database string `mapstructure:"database"`
+	User     string `mapstructure:"user"`
 }
 
 func LoadConfig(filePath string) Config {
 	path := "./config"
-	if path != "" {
+	if filePath != "" {
 		path = filePath
 	}
 
