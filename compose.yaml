@@ -1,0 +1,12 @@
+volumes:
+  psql:
+services:
+  psql:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: statusy
+      POSTGRES_PASSWORD: password # only do this in development
+    volumes:
+      - psql:/var/lib/postgresql # save data between restarts
+    ports:
+      - 5432:5432 # binds port 5432 on your computer to the postgres port!

@@ -1,5 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE IF NOT EXISTS services (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -13,6 +11,19 @@ CREATE TABLE IF NOT EXISTS services (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at TIMESTAMPTZ
   );
+
+CREATE TABLE IF NOT EXISTS component_groups (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    service_id INT NOT NULL,
+    provider_id TEXT NOT NULL,
+    created_at TIMESTAMPTZ NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NULL DEFAULT now(),
+    deleted_at TIMESTAMPTZ,
+    CONSTRAINT fk_service_id_component_groups
+		FOREIGN KEY(service_id) 
+		REFERENCES services(id)
+);
 
 CREATE TABLE IF NOT EXISTS components (
     id SERIAL PRIMARY KEY,
@@ -32,17 +43,6 @@ CREATE TABLE IF NOT EXISTS components (
     
 );
 
-CREATE TABLE IF NOT EXISTS component_groups (
-    name TEXT NOT NULL,
-    service_id INT NOT NULL,
-    provider_id TEXT NOT NULL,
-    created_at TIMESTAMPTZ NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NULL DEFAULT now(),
-    deleted_at TIMESTAMPTZ,
-    CONSTRAINT fk_service_id_component_groups
-		FOREIGN KEY(service_id) 
-		REFERENCES services(id)
-);
 
 CREATE TABLE IF NOT EXISTS incidents (
 	id SERIAL PRIMARY KEY,
