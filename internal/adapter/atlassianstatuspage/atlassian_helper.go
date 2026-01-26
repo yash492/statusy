@@ -6,7 +6,7 @@ import (
 	"github.com/yash492/statusy/internal/domain/statuspage"
 )
 
-func fetchComponentsHelper(req atlassianComponentsReq, serviceSlug string) statuspage.AggregateComponents {
+func fetchComponentsHelper(req atlassianComponentsReq) statuspage.AggregateComponents {
 
 	ungroupedComponents := []statuspage.Component{}
 	groupedComponentsIDNameMap := map[string]string{}

@@ -5,8 +5,6 @@ import (
 	"resty.dev/v3"
 )
 
-const circleciSlug = "circleci"
-
 type CircleCi struct {
 	ScheduleMaintenanceUrl string
 	IncidentsUrl           string
@@ -42,13 +40,13 @@ func (c CircleCi) ScrapComponents() (statuspage.AggregateComponents, error) {
 		return statuspage.AggregateComponents{}, err
 	}
 
-	componentGroups := fetchComponentsHelper(circleciComponents, c.Slug())
+	componentGroups := fetchComponentsHelper(circleciComponents)
 	return componentGroups, nil
 }
 
 // Name implements statuspage.Statuspage.
-func (c CircleCi) Slug() string {
-	return circleciSlug
+func (c CircleCi) Slug() statuspage.ServiceSlug {
+	return circleci
 }
 
 // ScrapIncidents implements statuspage.Statuspage.
@@ -62,7 +60,7 @@ func (c CircleCi) ScrapIncidents() ([]statuspage.Incident, error) {
 		return nil, err
 	}
 
-	incidents := fetchIncidentsHelper(req, c.Slug())
+	incidents := fetchIncidentsHelper(req, c.Slug().String())
 
 	return incidents, nil
 }
@@ -78,7 +76,7 @@ func (c CircleCi) ScrapScheduleMaintainance() ([]statuspage.Incident, error) {
 		return nil, err
 	}
 
-	incidents := fetchIncidentsHelper(req, c.Slug())
+	incidents := fetchIncidentsHelper(req, c.Slug().String())
 
 	return incidents, nil
 }

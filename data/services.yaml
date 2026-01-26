@@ -1,5 +1,5 @@
 - name: "Plivo"
   slug: "plivo"
-  incidents_url: ""
-  components_url: ""
-  scheduled_maintenance_url: ""
+  incidents_url: "https://status.plivo.com/api/v2/incidents.json"
+  components_url: "https://status.plivo.com/api/v2/components.json"
+  scheduled_maintenance_url: "https://status.plivo.com/api/v2/scheduled-maintenances.json"

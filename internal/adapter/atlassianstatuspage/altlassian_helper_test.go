@@ -157,7 +157,7 @@ func TestCircleciComponents(t *testing.T) {
 					}
 				]
 			}	`,
-				serviceSlug: circleciSlug,
+				serviceSlug: circleci.String(),
 			},
 			expectedOutput: statuspage.AggregateComponents{
 				GroupedComponents: []statuspage.ComponentGroup{
@@ -193,7 +193,7 @@ func TestCircleciComponents(t *testing.T) {
 			t.Fatalf("unmarshalling circleci components went wrong %s", err.Error())
 		}
 
-		components := fetchComponentsHelper(atlassianComponents, tt.input.serviceSlug)
+		components := fetchComponentsHelper(atlassianComponents)
 		resultOutputComponentMap := map[string]statuspage.Component{}
 		for _, ungroupedComponent := range components.UngroupedComponents {
 			resultOutputComponentMap[ungroupedComponent.ProviderID] = ungroupedComponent

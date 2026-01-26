@@ -7,12 +7,13 @@ import (
 )
 
 type ProviderType string
+type ServiceSlug string
 
 type StatusPageProvider interface {
 	ScrapIncidents() ([]Incident, error)
 	// ScrapScheduleMaintainance()
 	ScrapComponents() (AggregateComponents, error)
-	Slug() string
+	Slug() ServiceSlug
 }
 
 type Service struct {
@@ -56,4 +57,8 @@ type Incident struct {
 	ProviderCreatedAt time.Time
 	Updates           []IncidentUpdate
 	Components        []Component
+}
+
+func (s ServiceSlug) String() string {
+	return string(s)
 }

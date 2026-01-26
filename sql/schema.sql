@@ -1,12 +1,11 @@
 CREATE TABLE IF NOT EXISTS services (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    link TEXT NOT NULL,
     slug TEXT NOT NULL,
     provider_type TEXT NOT NULL,
-    incident_url TEXT NOT NULL,
-    schedule_maintenance_url TEXT NOT NULL,
-    components_url TEXT NULL,
+    incidents_url TEXT NOT NULL,
+    schedule_maintenances_url TEXT NOT NULL,
+    components_url TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at TIMESTAMPTZ
