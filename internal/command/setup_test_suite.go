@@ -1,19 +1,18 @@
-package tests
+package command
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/suite"
-	"github.com/yash492/statusy/internal/config"
 )
 
 type TestSuite struct {
 	suite.Suite
 	TestDb *pgxpool.Pool
-	Cfg    config.Config
 }
 
 func (t *TestSuite) SetupSuite() {
@@ -21,15 +20,14 @@ func (t *TestSuite) SetupSuite() {
 		AddSource: true,
 	}))
 
-	cfg := config.LoadConfig("")
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", "statusy", "password", "localhost", 5432, "statusy")
 
-	writeDBPool, err := pgxpool.New(context.Background(), cfg.PostgresDB.WriteDB.String())
+	writeDBPool, err := pgxpool.New(context.Background(), connString)
 
 	if err != nil {
 		logger.Error("unable to establish the connection with write db", err)
 		os.Exit(1)
 	}
 
-	t.Cfg = cfg
 	t.TestDb = writeDBPool
 }

@@ -62,3 +62,7 @@ type Incident struct {
 func (s ServiceSlug) String() string {
 	return string(s)
 }
+
+func (s ProviderType) String() string {
+	return string(s)
+}
