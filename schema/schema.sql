@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS services (
     deleted_at TIMESTAMPTZ
   );
 
+CREATE UNIQUE INDEX ON services (slug);
+
 CREATE TABLE IF NOT EXISTS component_groups (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -23,6 +25,9 @@ CREATE TABLE IF NOT EXISTS component_groups (
 		FOREIGN KEY(service_id) 
 		REFERENCES services(id)
 );
+
+CREATE UNIQUE INDEX ON component_groups (provider_id);
+
 
 CREATE TABLE IF NOT EXISTS components (
     id SERIAL PRIMARY KEY,
@@ -41,6 +46,9 @@ CREATE TABLE IF NOT EXISTS components (
 		REFERENCES component_groups(id)
     
 );
+
+CREATE UNIQUE INDEX ON components (provider_id);
+
 
 
 CREATE TABLE IF NOT EXISTS incidents (

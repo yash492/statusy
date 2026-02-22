@@ -1,11 +1,10 @@
-package postgres
+package services
 
 import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yash492/statusy/internal/repository/services"
-	"github.com/yash492/statusy/sqlc/db"
 )
 
 var _ services.ServiceRepository = &PostgresServiceRepository{}
@@ -26,16 +25,4 @@ func NewPostgresServiceRepository(
 		writeDB: writeDB,
 		readDB:  readDB,
 	}
-}
-
-func (p *PostgresServiceRepository) write(fn func(q *db.Queries) error) error {
-	queries := db.New(p.writeDB)
-	err := fn(queries)
-	return err
-}
-
-func (p *PostgresServiceRepository) read(fn func(q *db.Queries) error) error {
-	queries := db.New(p.writeDB)
-	err := fn(queries)
-	return err
 }

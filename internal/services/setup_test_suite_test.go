@@ -1,10 +1,11 @@
-package command
+package applications
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 	"os"
+	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/suite"
@@ -13,6 +14,7 @@ import (
 type TestSuite struct {
 	suite.Suite
 	TestDb *pgxpool.Pool
+	Logger *slog.Logger
 }
 
 func (t *TestSuite) SetupSuite() {
@@ -25,9 +27,18 @@ func (t *TestSuite) SetupSuite() {
 	writeDBPool, err := pgxpool.New(context.Background(), connString)
 
 	if err != nil {
-		logger.Error("unable to establish the connection with write db", err)
+		logger.Error("unable to establish the connection with write db", slog.Any("err", err))
 		os.Exit(1)
 	}
 
 	t.TestDb = writeDBPool
+	t.Logger = logger
+}
+
+func (t *TestSuite) TearDownSuite() {
+	t.TestDb.Close()
+}
+
+func TestSuiteRun(t *testing.T) {
+	suite.Run(t, new(TestSuite))
 }

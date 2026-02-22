@@ -10,12 +10,22 @@ type CircleCi struct {
 	IncidentsUrl           string
 	ComponentsUrl          string
 	RestyClient            *resty.Client
+	ServiceID              uint
 }
 
-func New(
+func (c CircleCi) ID() uint {
+	return c.ServiceID
+}
+
+func (c CircleCi) Name() string {
+	return "Circle CI"
+}
+
+func NewCircleCIProvider(
 	componentsUrl string,
 	incidentsUrl string,
 	scheduleMaintenanceUrl string,
+	serviceID uint,
 	restyClient *resty.Client,
 ) CircleCi {
 	return CircleCi{
@@ -23,6 +33,7 @@ func New(
 		ComponentsUrl:          componentsUrl,
 		ScheduleMaintenanceUrl: scheduleMaintenanceUrl,
 		RestyClient:            restyClient,
+		ServiceID:              serviceID,
 	}
 }
 

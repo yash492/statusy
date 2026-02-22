@@ -17,8 +17,8 @@ func fetchComponentsHelper(req atlassianComponentsReq) statuspage.AggregateCompo
 		if atlassianComponent.GroupID == nil {
 			if !atlassianComponent.Group {
 				ungroupedComponents = append(ungroupedComponents, statuspage.Component{
-					Name:        atlassianComponent.Name,
-					ProviderID:  atlassianComponent.ID,
+					Name:       atlassianComponent.Name,
+					ProviderID: atlassianComponent.ID,
 				})
 
 			} else if atlassianComponent.Group {
@@ -44,8 +44,8 @@ func fetchComponentsHelper(req atlassianComponentsReq) statuspage.AggregateCompo
 			}
 		}
 		component := statuspage.Component{
-			Name:        altassianComponent.Name,
-			ProviderID:  altassianComponent.ID,
+			Name:       altassianComponent.Name,
+			ProviderID: altassianComponent.ID,
 		}
 
 		groupedComponent.Components = append(groupedComponent.Components, component)
@@ -85,8 +85,8 @@ func fetchIncidentsHelper(req atlassianIncidentReq, serviceSlug string) []status
 
 		incident.Components = lo.Map(incidentReq.IncidentComponents, func(component atlassianIncidentComponent, _ int) statuspage.Component {
 			return statuspage.Component{
-				Name:        component.Name,
-				ProviderID:  serviceSlug,
+				Name:       component.Name,
+				ProviderID: serviceSlug,
 			}
 		})
 		incidents = append(incidents, incident)

@@ -14,6 +14,8 @@ type StatusPageProvider interface {
 	// ScrapScheduleMaintainance()
 	ScrapComponents() (AggregateComponents, error)
 	Slug() ServiceSlug
+	ID() uint
+	Name() string
 }
 
 type Service struct {
@@ -28,12 +30,14 @@ type AggregateComponents struct {
 }
 
 type ComponentGroup struct {
+	ID         uint
 	Name       string
 	ProviderID string
 	Components []Component
 }
 
 type Component struct {
+	ID         uint
 	Name       string
 	ProviderID string
 }
