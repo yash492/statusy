@@ -1,4 +1,4 @@
-package services
+package servicesdb
 
 import (
 	"log/slog"

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/goccy/go-yaml"
-	postgres "github.com/yash492/statusy/internal/adapter/postgres/services"
+	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	domainservices "github.com/yash492/statusy/internal/domain/services"
 )
 
@@ -54,7 +54,7 @@ func (t *TestSuite) TestLoadServices() {
 		},
 	}
 
-	repo := postgres.NewPostgresServiceRepository(t.Logger, t.TestDb, t.TestDb)
+	repo := servicesdb.NewPostgresServiceRepository(t.Logger, t.TestDb, t.TestDb)
 
 	for _, tt := range tests {
 

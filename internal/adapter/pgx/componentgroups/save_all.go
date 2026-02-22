@@ -1,4 +1,4 @@
-package componentgroups
+package componentgroupsdb
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package componentgroups
+package componentsdb
 
 import (
 	"log/slog"
@@ -7,20 +7,20 @@ import (
 	domaincomponents "github.com/yash492/statusy/internal/domain/components"
 )
 
-var _ domaincomponents.GroupRepository = &PostgresComponentGroupsRepository{}
+var _ domaincomponents.Repository = &PostgresComponentRepository{}
 
-type PostgresComponentGroupsRepository struct {
+type PostgresComponentRepository struct {
 	lg      *slog.Logger
 	writeDB *pgxpool.Pool
 	readDB  *pgxpool.Pool
 }
 
-func NewPostgresComponentGroupsRepository(
+func NewPostgresComponentRepository(
 	lg *slog.Logger,
 	readDB *pgxpool.Pool,
 	writeDB *pgxpool.Pool,
-) *PostgresComponentGroupsRepository {
-	return &PostgresComponentGroupsRepository{
+) *PostgresComponentRepository {
+	return &PostgresComponentRepository{
 		lg:      lg,
 		writeDB: writeDB,
 		readDB:  readDB,
