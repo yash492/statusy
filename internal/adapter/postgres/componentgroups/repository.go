@@ -4,10 +4,10 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/yash492/statusy/internal/repository/componentgroups"
+	domaincomponents "github.com/yash492/statusy/internal/domain/components"
 )
 
-var _ componentgroups.ComponentsGroupRepository = &PostgresComponentGroupsRepository{}
+var _ domaincomponents.GroupRepository = &PostgresComponentGroupsRepository{}
 
 type PostgresComponentGroupsRepository struct {
 	lg      *slog.Logger

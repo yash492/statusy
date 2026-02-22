@@ -4,10 +4,10 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/yash492/statusy/internal/repository/services"
+	domainservices "github.com/yash492/statusy/internal/domain/services"
 )
 
-var _ services.ServiceRepository = &PostgresServiceRepository{}
+var _ domainservices.Repository = &PostgresServiceRepository{}
 
 type PostgresServiceRepository struct {
 	lg      *slog.Logger

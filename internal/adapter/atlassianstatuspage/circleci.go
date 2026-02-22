@@ -1,6 +1,8 @@
 package atlassianstatuspage
 
 import (
+	"github.com/yash492/statusy/internal/domain/components"
+	"github.com/yash492/statusy/internal/domain/incidents"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 	"resty.dev/v3"
 )
@@ -40,7 +42,7 @@ func NewCircleCIProvider(
 var _ statuspage.StatusPageProvider = CircleCi{}
 
 // FetchComponents implements statuspage.Statuspage.
-func (c CircleCi) ScrapComponents() (statuspage.AggregateComponents, error) {
+func (c CircleCi) ScrapComponents() (components.AggregateComponents, error) {
 	circleciComponents := atlassianComponentsReq{}
 	_, err := c.RestyClient.
 		R().
@@ -48,7 +50,7 @@ func (c CircleCi) ScrapComponents() (statuspage.AggregateComponents, error) {
 		EnableRetryDefaultConditions().
 		Get(c.ComponentsUrl)
 	if err != nil {
-		return statuspage.AggregateComponents{}, err
+		return components.AggregateComponents{}, err
 	}
 
 	componentGroups := fetchComponentsHelper(circleciComponents)
@@ -61,7 +63,7 @@ func (c CircleCi) Slug() statuspage.ServiceSlug {
 }
 
 // ScrapIncidents implements statuspage.Statuspage.
-func (c CircleCi) ScrapIncidents() ([]statuspage.Incident, error) {
+func (c CircleCi) ScrapIncidents() ([]incidents.Incident, error) {
 	var req atlassianIncidentReq
 	_, err := c.RestyClient.
 		R().
@@ -77,7 +79,7 @@ func (c CircleCi) ScrapIncidents() ([]statuspage.Incident, error) {
 }
 
 // ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (c CircleCi) ScrapScheduleMaintainance() ([]statuspage.Incident, error) {
+func (c CircleCi) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
 	var req atlassianIncidentReq
 	_, err := c.RestyClient.
 		R().

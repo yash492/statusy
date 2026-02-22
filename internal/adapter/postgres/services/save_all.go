@@ -6,16 +6,16 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/yash492/statusy/internal/repository/services"
+	domainservices "github.com/yash492/statusy/internal/domain/services"
 )
 
 //go:embed queries/insert_services.sql
 var insertServiceQuery string
 
-func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []services.ServiceParams) ([]services.ServiceResult, error) {
+func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []domainservices.ServiceParams) ([]domainservices.ServiceResult, error) {
 
 	batchInserts := &pgx.Batch{}
-	servicesResponse := []services.ServiceResult{}
+	servicesResponse := []domainservices.ServiceResult{}
 
 	for _, service := range servicesYaml {
 		queryArgs := pgx.NamedArgs{
@@ -33,7 +33,7 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			service, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[services.ServiceResult])
+			service, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[domainservices.ServiceResult])
 			if err != nil {
 				s.lg.ErrorContext(ctx, "error collecting service %s from batch", service.Slug, slog.Any("err", err))
 				return err

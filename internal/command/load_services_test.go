@@ -5,35 +5,35 @@ import (
 
 	"github.com/goccy/go-yaml"
 	postgres "github.com/yash492/statusy/internal/adapter/postgres/services"
-	"github.com/yash492/statusy/internal/repository/services"
+	domainservices "github.com/yash492/statusy/internal/domain/services"
 )
 
 func (t *TestSuite) TestLoadServices() {
 
 	tests := []struct {
 		inputYaml      []map[string]any
-		expectedResult []services.ServiceResult
+		expectedResult []domainservices.ServiceResult
 	}{
 		{
 			inputYaml: []map[string]any{
 				{
-					"name":                       "Plivo",
-					"slug":                       "plivo",
-					"incidents_url":              "https://status.plivo.com/api/v2/incidents.json",
-					"components_url":             "https://status.plivo.com/api/v2/components.json",
+					"name":                      "Plivo",
+					"slug":                      "plivo",
+					"incidents_url":             "https://status.plivo.com/api/v2/incidents.json",
+					"components_url":            "https://status.plivo.com/api/v2/components.json",
 					"schedule_maintenances_url": "https://status.plivo.com/api/v2/scheduled-maintenances.json",
-					"provider_type":              "atlassian",
+					"provider_type":             "atlassian",
 				},
 				{
-					"name":                       "Circle CI",
-					"slug":                       "circleci",
-					"incidents_url":              "https://status.circleci.com/api/v2/incidents.json",
-					"components_url":             "https://status.circleci.com/api/v2/components.json",
+					"name":                      "Circle CI",
+					"slug":                      "circleci",
+					"incidents_url":             "https://status.circleci.com/api/v2/incidents.json",
+					"components_url":            "https://status.circleci.com/api/v2/components.json",
 					"schedule_maintenances_url": "https://status.circleci.com/api/v2/scheduled-maintenances.json",
-					"provider_type":              "atlassian",
+					"provider_type":             "atlassian",
 				},
 			},
-			expectedResult: []services.ServiceResult{
+			expectedResult: []domainservices.ServiceResult{
 				{
 					Name:                    "Plivo",
 					Slug:                    "plivo",

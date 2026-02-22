@@ -1,17 +1,17 @@
-package componentgroups
+package components
 
 import (
 	"context"
 	"time"
 )
 
-type ComponentsGroupParams struct {
+type GroupParams struct {
 	Name       string
 	ProviderID string
 	ServiceID  uint
 }
 
-type ComponentsGroupResult struct {
+type GroupResult struct {
 	ID         uint       `db:"id"`
 	Name       string     `db:"name"`
 	ProviderID string     `db:"provider_id"`
@@ -21,6 +21,6 @@ type ComponentsGroupResult struct {
 	DeletedAt  *time.Time `db:"deleted_at"`
 }
 
-type ComponentsGroupRepository interface {
-	SaveAll(ctx context.Context, params []ComponentsGroupParams) ([]ComponentsGroupResult, error)
+type GroupRepository interface {
+	SaveAll(ctx context.Context, params []GroupParams) ([]GroupResult, error)
 }

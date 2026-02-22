@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/yash492/statusy/internal/domain/statuspage"
+	"github.com/yash492/statusy/internal/domain/components"
 )
 
 func TestCircleciComponents(t *testing.T) {
@@ -14,7 +14,7 @@ func TestCircleciComponents(t *testing.T) {
 			inputJson   string
 			serviceSlug string
 		}
-		expectedOutput statuspage.AggregateComponents
+		expectedOutput components.AggregateComponents
 	}
 
 	tests := []testAtlassianComponent{
@@ -159,12 +159,12 @@ func TestCircleciComponents(t *testing.T) {
 			}	`,
 				serviceSlug: circleci.String(),
 			},
-			expectedOutput: statuspage.AggregateComponents{
-				GroupedComponents: []statuspage.ComponentGroup{
+			expectedOutput: components.AggregateComponents{
+				GroupedComponents: []components.ComponentGroup{
 					{
 						Name:       "CircleCI Dependencies",
 						ProviderID: "5051gf6x40v1",
-						Components: []statuspage.Component{
+						Components: []components.Component{
 							{Name: "AWS", ProviderID: "31vvcfzgyyzk"},
 							{Name: "Google Cloud Platform Google Cloud DNS", ProviderID: "sj405f2dg5ny"},
 						},
@@ -172,13 +172,13 @@ func TestCircleciComponents(t *testing.T) {
 					{
 						Name:       "Upstream Services",
 						ProviderID: "s21fdjds0k15",
-						Components: []statuspage.Component{
+						Components: []components.Component{
 							{Name: "Atlassian Bitbucket API", ProviderID: "8gmrsrb87lxr"},
 							{Name: "Atlassian Bitbucket Source downloads", ProviderID: "9vxrymzc4lh5"},
 						},
 					},
 				},
-				UngroupedComponents: []statuspage.Component{
+				UngroupedComponents: []components.Component{
 					{Name: "CircleCI Releases", ProviderID: "k7z3xkf61sff"},
 					{Name: "Billing & Account", ProviderID: "gx397f9wvq4w"},
 				},
@@ -193,9 +193,9 @@ func TestCircleciComponents(t *testing.T) {
 			t.Fatalf("unmarshalling circleci components went wrong %s", err.Error())
 		}
 
-		components := fetchComponentsHelper(atlassianComponents)
-		resultOutputComponentMap := map[string]statuspage.Component{}
-		for _, ungroupedComponent := range components.UngroupedComponents {
+		normalizedComponents := fetchComponentsHelper(atlassianComponents)
+		resultOutputComponentMap := map[string]components.Component{}
+		for _, ungroupedComponent := range normalizedComponents.UngroupedComponents {
 			resultOutputComponentMap[ungroupedComponent.ProviderID] = ungroupedComponent
 		}
 
@@ -215,15 +215,15 @@ func TestCircleciComponents(t *testing.T) {
 
 		}
 
-		resultOutputComponentMapForComponentGroup := map[string]map[string]statuspage.Component{}
-		resultOutputComponentGroupMap := map[string]statuspage.ComponentGroup{}
+		resultOutputComponentMapForComponentGroup := map[string]map[string]components.Component{}
+		resultOutputComponentGroupMap := map[string]components.ComponentGroup{}
 
-		for _, groupedComponent := range components.GroupedComponents {
+		for _, groupedComponent := range normalizedComponents.GroupedComponents {
 			resultOutputComponentGroupMap[groupedComponent.ProviderID] = groupedComponent
 			for _, component := range groupedComponent.Components {
 				output, ok := resultOutputComponentMapForComponentGroup[groupedComponent.ProviderID]
 				if !ok {
-					resultOutputComponentMapForComponentGroup[groupedComponent.ProviderID] = map[string]statuspage.Component{
+					resultOutputComponentMapForComponentGroup[groupedComponent.ProviderID] = map[string]components.Component{
 						component.ProviderID: component,
 					}
 				} else {

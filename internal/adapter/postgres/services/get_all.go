@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/yash492/statusy/internal/repository/services"
+	domainservices "github.com/yash492/statusy/internal/domain/services"
 )
 
-func (s *PostgresServiceRepository) GetAll(ctx context.Context) ([]services.ServiceResult, error) {
+func (s *PostgresServiceRepository) GetAll(ctx context.Context) ([]domainservices.ServiceResult, error) {
 	return nil, nil
 }

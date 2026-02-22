@@ -6,15 +6,15 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/yash492/statusy/internal/repository/components"
+	domaincomponents "github.com/yash492/statusy/internal/domain/components"
 )
 
 //go:embed queries/insert_component.sql
 var insertComponentQuery string
 
-func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []components.ComponentParams) ([]components.ComponentResult, error) {
+func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []domaincomponents.ComponentParams) ([]domaincomponents.ComponentResult, error) {
 	batchInserts := &pgx.Batch{}
-	componentsResponse := []components.ComponentResult{}
+	componentsResponse := []domaincomponents.ComponentResult{}
 
 	for _, component := range params {
 		queryArgs := pgx.NamedArgs{
@@ -30,7 +30,7 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []comp
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			component, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[components.ComponentResult])
+			component, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[domaincomponents.ComponentResult])
 			if err != nil {
 				c.lg.ErrorContext(ctx, "error collecting service %s from batch", component.Name, slog.Any("err", err))
 				return err

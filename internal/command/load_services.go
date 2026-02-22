@@ -5,20 +5,20 @@ import (
 	"log/slog"
 
 	"github.com/goccy/go-yaml"
-	servicesRepo "github.com/yash492/statusy/internal/repository/services"
+	domainservices "github.com/yash492/statusy/internal/domain/services"
 )
 
 type LoadServicesCmd struct {
 	lg                *slog.Logger
 	servicesYamlBytes []byte
-	serviceRepo       servicesRepo.ServiceRepository
+	serviceRepo       domainservices.Repository
 	
 }
 
 func NewLoadServiceCmd(
 	lg *slog.Logger,
 	serviceYamlBytes []byte,
-	serviceRepo servicesRepo.ServiceRepository) *LoadServicesCmd {
+	serviceRepo domainservices.Repository) *LoadServicesCmd {
 	return &LoadServicesCmd{
 		lg:                lg.With("cmd", "LoadServicesCmd"),
 		servicesYamlBytes: serviceYamlBytes,
@@ -26,10 +26,10 @@ func NewLoadServiceCmd(
 	}
 }
 
-func (s *LoadServicesCmd) Execute(ctx context.Context) ([]servicesRepo.ServiceResult, error) {
+func (s *LoadServicesCmd) Execute(ctx context.Context) ([]domainservices.ServiceResult, error) {
 	lg := s.lg
 
-	var servicesYaml []servicesRepo.ServiceParams
+	var servicesYaml []domainservices.ServiceParams
 
 	err := yaml.UnmarshalContext(ctx, s.servicesYamlBytes, &servicesYaml)
 	if err != nil {

@@ -11,6 +11,7 @@ type ComponentParams struct {
 	ServiceID        uint   `db:"service_id"`
 	ComponentGroupID *uint  `db:"component_group_id"`
 }
+
 type ComponentResult struct {
 	ID               uint       `db:"id"`
 	Name             string     `db:"name"`
@@ -22,6 +23,6 @@ type ComponentResult struct {
 	DeletedAt        *time.Time `db:"deleted_at"`
 }
 
-type ComponentRepository interface {
+type Repository interface {
 	SaveAll(ctx context.Context, params []ComponentParams) ([]ComponentResult, error)
 }
