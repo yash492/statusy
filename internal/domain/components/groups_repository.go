@@ -3,6 +3,8 @@ package components
 import (
 	"context"
 	"time"
+
+	"github.com/yash492/statusy/internal/common"
 )
 
 type GroupParams struct {
@@ -11,16 +13,16 @@ type GroupParams struct {
 	ServiceID  uint
 }
 
-type GroupResult struct {
-	ID         uint       `db:"id"`
-	Name       string     `db:"name"`
-	ProviderID string     `db:"provider_id"`
-	ServiceID  uint       `db:"service_id"`
-	CreatedAt  time.Time  `db:"created_at"`
-	UpdatedAt  time.Time  `db:"updated_at"`
-	DeletedAt  *time.Time `db:"deleted_at"`
+type ComponentGroupResult struct {
+	ID         uint
+	Name       string
+	ProviderID string
+	ServiceID  uint
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	DeletedAt  common.Nullable[time.Time]
 }
 
 type GroupRepository interface {
-	SaveAll(ctx context.Context, params []GroupParams) ([]GroupResult, error)
+	SaveAll(ctx context.Context, params []GroupParams) ([]ComponentGroupResult, error)
 }

@@ -4,18 +4,35 @@ import (
 	"context"
 	_ "embed"
 	"log/slog"
+	"time"
 
 	"github.com/jackc/pgx/v5"
-	domainservices "github.com/yash492/statusy/internal/domain/services"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/domain/services"
 )
 
 //go:embed queries/insert_services.sql
 var insertServiceQuery string
 
-func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []domainservices.ServiceParams) ([]domainservices.ServiceResult, error) {
+type serviceDto struct {
+	ID                      uint
+	Name                    string
+	Slug                    string
+	IncidentsUrl            string
+	ScheduleMaintenancesUrl string
+	ComponentsUrl           string
+	ProviderType            string
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
+	DeletedAt               pgtype.Timestamptz
+}
+
+func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []services.ServiceParams) ([]services.ServiceResult, error) {
 
 	batchInserts := &pgx.Batch{}
-	servicesResponse := []domainservices.ServiceResult{}
+	servicesResponse := []serviceDto{}
 
 	for _, service := range servicesYaml {
 		queryArgs := pgx.NamedArgs{
@@ -33,7 +50,7 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			service, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[domainservices.ServiceResult])
+			service, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[serviceDto])
 			if err != nil {
 				s.lg.ErrorContext(ctx, "error collecting service %s from batch", service.Slug, slog.Any("err", err))
 				return err
@@ -50,5 +67,24 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 		s.lg.ErrorContext(ctx, "error while bulk inserting services", slog.Any("err", err))
 		return nil, err
 	}
-	return servicesResponse, nil
+
+	result := lo.Map(servicesResponse, func(item serviceDto, _ int) services.ServiceResult {
+		return services.ServiceResult{
+			ID:                      item.ID,
+			Name:                    item.Name,
+			Slug:                    item.Slug,
+			IncidentsUrl:            item.IncidentsUrl,
+			ScheduleMaintenancesUrl: item.ScheduleMaintenancesUrl,
+			ComponentsUrl:           item.ComponentsUrl,
+			ProviderType:            services.ProviderType(item.ProviderType),
+			CreatedAt:               item.CreatedAt,
+			UpdatedAt:               item.UpdatedAt,
+			DeletedAt: common.Nullable[time.Time]{
+				Value: item.DeletedAt.Time,
+				Valid: item.DeletedAt.Valid,
+			},
+		}
+	})
+
+	return result, nil
 }

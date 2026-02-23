@@ -11,6 +11,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/componentgroupsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
+	"github.com/yash492/statusy/internal/common"
 	domaincomponents "github.com/yash492/statusy/internal/domain/components"
 	domainservices "github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
@@ -113,12 +114,12 @@ func StartScrapper(deps Deps) {
 		deps.Logger.ErrorContext(ctx, "error saving component groups", slog.Any("err", err))
 	}
 
-	componentMap := map[uint]map[string]domaincomponents.GroupResult{}
+	componentMap := map[uint]map[string]domaincomponents.ComponentResult{}
 
 	for _, componentGroup := range componentGroupResult {
 		componentgroupMap, ok := componentMap[componentGroup.ServiceID]
 		if !ok {
-			componentgroupMap = make(map[string]domaincomponents.GroupResult)
+			componentgroupMap = make(map[string]domaincomponents.Result)
 		}
 		componentgroupMap[componentGroup.ProviderID] = componentGroup
 		componentMap[componentGroup.ServiceID] = componentgroupMap
@@ -129,17 +130,13 @@ func StartScrapper(deps Deps) {
 	for _, component := range componentsList {
 		for _, gcc := range component.GroupedComponents {
 			for _, gc := range gcc.Components {
-				componentGroup, ok := componentMap[component.Service.ID][gcc.ProviderID]
-				var componentGroupID *uint
-				if ok {
-					componentGroupID = &componentGroup.ID
-				}
+				componentGroup := componentMap[component.Service.ID][gcc.ProviderID]
 
 				componentsToBeSaved = append(componentsToBeSaved, domaincomponents.ComponentParams{
 					Name:             gc.Name,
 					ProviderID:       gc.ProviderID,
 					ServiceID:        component.Service.ID,
-					ComponentGroupID: componentGroupID,
+					ComponentGroupID: common.Nullable[uint]{},
 				})
 			}
 		}

@@ -3,24 +3,26 @@ package components
 import (
 	"context"
 	"time"
+
+	"github.com/yash492/statusy/internal/common"
 )
 
 type ComponentParams struct {
-	Name             string `db:"name"`
-	ProviderID       string `db:"provider_id"`
-	ServiceID        uint   `db:"service_id"`
-	ComponentGroupID *uint  `db:"component_group_id"`
+	Name             string
+	ProviderID       string
+	ServiceID        uint
+	ComponentGroupID common.Nullable[uint]
 }
 
 type ComponentResult struct {
-	ID               uint       `db:"id"`
-	Name             string     `db:"name"`
-	ProviderID       string     `db:"provider_id"`
-	ServiceID        uint       `db:"service_id"`
-	ComponentGroupID *uint      `db:"component_group_id"`
-	CreatedAt        time.Time  `db:"created_at"`
-	UpdatedAt        time.Time  `db:"updated_at"`
-	DeletedAt        *time.Time `db:"deleted_at"`
+	ID               uint
+	Name             string
+	ProviderID       string
+	ServiceID        uint
+	ComponentGroupID common.Nullable[uint]
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        common.Nullable[time.Time]
 }
 
 type Repository interface {

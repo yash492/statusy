@@ -3,19 +3,21 @@ package services
 import (
 	"context"
 	"time"
+
+	"github.com/yash492/statusy/internal/common"
 )
 
 type ServiceResult struct {
-	ID                      uint         `db:"id"`
-	Name                    string       `db:"name"`
-	Slug                    string       `db:"slug"`
-	IncidentsUrl            string       `db:"incidents_url"`
-	ScheduleMaintenancesUrl string       `db:"schedule_maintenances_url"`
-	ComponentsUrl           string       `db:"components_url"`
-	ProviderType            ProviderType `db:"provider_type"`
-	CreatedAt               time.Time    `db:"created_at"`
-	UpdatedAt               time.Time    `db:"updated_at"`
-	DeletedAt               *time.Time   `db:"deleted_at"`
+	ID                      uint
+	Name                    string
+	Slug                    string
+	IncidentsUrl            string
+	ScheduleMaintenancesUrl string
+	ComponentsUrl           string
+	ProviderType            ProviderType
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
+	DeletedAt               common.Nullable[time.Time]
 }
 
 type ServiceParams struct {

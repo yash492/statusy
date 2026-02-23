@@ -4,17 +4,32 @@ import (
 	"context"
 	_ "embed"
 	"log/slog"
+	"time"
 
 	"github.com/jackc/pgx/v5"
-	domaincomponents "github.com/yash492/statusy/internal/domain/components"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/domain/components"
 )
 
 //go:embed queries/insert_component.sql
 var insertComponentQuery string
 
-func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []domaincomponents.ComponentParams) ([]domaincomponents.ComponentResult, error) {
+type componentDto struct {
+	ID               uint
+	Name             string
+	ProviderID       string
+	ServiceID        uint
+	ComponentGroupID pgtype.Uint64
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        pgtype.Timestamptz
+}
+
+func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []components.ComponentParams) ([]components.ComponentResult, error) {
 	batchInserts := &pgx.Batch{}
-	componentsResponse := []domaincomponents.ComponentResult{}
+	componentsResponse := []componentDto{}
 
 	for _, component := range params {
 		queryArgs := pgx.NamedArgs{
@@ -30,9 +45,9 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []doma
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			component, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[domaincomponents.ComponentResult])
+			component, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[componentDto])
 			if err != nil {
-				c.lg.ErrorContext(ctx, "error collecting service %s from batch", component.Name, slog.Any("err", err))
+				c.lg.ErrorContext(ctx, "error collecting component %s for service %s from batch", component.ProviderID, component.ServiceID, slog.Any("err", err))
 				return err
 			}
 
@@ -47,5 +62,25 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []doma
 		c.lg.ErrorContext(ctx, "error while bulk inserting services", slog.Any("err", err))
 		return nil, err
 	}
-	return componentsResponse, nil
+
+	response := lo.Map(componentsResponse, func(item componentDto, _ int) components.ComponentResult {
+		return components.ComponentResult{
+			ID:         item.ID,
+			Name:       item.Name,
+			ProviderID: item.ProviderID,
+			ServiceID:  item.ServiceID,
+			ComponentGroupID: common.Nullable[uint]{
+				Value: uint(item.ComponentGroupID.Uint64),
+				Valid: item.ComponentGroupID.Valid,
+			},
+			CreatedAt: item.CreatedAt,
+			UpdatedAt: item.UpdatedAt,
+			DeletedAt: common.Nullable[time.Time]{
+				Value: item.DeletedAt.Time,
+				Valid: item.DeletedAt.Valid,
+			},
+		}
+	})
+
+	return response, nil
 }

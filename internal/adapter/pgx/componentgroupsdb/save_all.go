@@ -4,17 +4,31 @@ import (
 	"context"
 	_ "embed"
 	"log/slog"
+	"time"
 
 	"github.com/jackc/pgx/v5"
-	domaincomponents "github.com/yash492/statusy/internal/domain/components"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/domain/components"
 )
 
 //go:embed queries/insert_component_groups.sql
-var insertComponentsGroupQuery string
+var insertComponentgroupQuery string
 
-func (c *PostgresComponentGroupsRepository) SaveAll(ctx context.Context, params []domaincomponents.GroupParams) ([]domaincomponents.GroupResult, error) {
+type componentGroupDto struct {
+	ID         uint             `db:"id"`
+	Name       string           `db:"name"`
+	ProviderID string           `db:"provider_id"`
+	ServiceID  uint             `db:"service_id"`
+	CreatedAt  time.Time        `db:"created_at"`
+	UpdatedAt  time.Time        `db:"updated_at"`
+	DeletedAt  pgtype.Timestamp `db:"deleted_at"`
+}
+
+func (c *PostgresComponentGroupsRepository) SaveAll(ctx context.Context, params []components.GroupParams) ([]components.ComponentGroupResult, error) {
 	batchInserts := &pgx.Batch{}
-	componentsGroupResponse := []domaincomponents.GroupResult{}
+	componentgroupResponse := []componentGroupDto{}
 
 	for _, component := range params {
 		queryArgs := pgx.NamedArgs{
@@ -24,18 +38,18 @@ func (c *PostgresComponentGroupsRepository) SaveAll(ctx context.Context, params 
 		}
 
 		preparedQuery := batchInserts.Queue(
-			insertComponentsGroupQuery,
+			insertComponentgroupQuery,
 			queryArgs,
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			componentGroup, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[domaincomponents.GroupResult])
+			componentGroup, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[componentGroupDto])
 			if err != nil {
 				c.lg.ErrorContext(ctx, "error collecting service %s from batch", componentGroup.Name, slog.Any("err", err))
 				return err
 			}
 
-			componentsGroupResponse = append(componentsGroupResponse, *componentGroup)
+			componentgroupResponse = append(componentgroupResponse, *componentGroup)
 			return nil
 		})
 
@@ -46,5 +60,20 @@ func (c *PostgresComponentGroupsRepository) SaveAll(ctx context.Context, params 
 		c.lg.ErrorContext(ctx, "error while bulk inserting services", slog.Any("err", err))
 		return nil, err
 	}
-	return componentsGroupResponse, nil
+
+	response := lo.Map(componentgroupResponse, func(item componentGroupDto, _ int) components.ComponentGroupResult {
+		return components.ComponentGroupResult{
+			ID:         item.ID,
+			Name:       item.Name,
+			ProviderID: item.ProviderID,
+			ServiceID:  item.ServiceID,
+			CreatedAt:  item.CreatedAt,
+			UpdatedAt:  item.CreatedAt,
+			DeletedAt: common.Nullable[time.Time]{
+				Value: item.DeletedAt.Time,
+				Valid: item.DeletedAt.Valid,
+			},
+		}
+	})
+	return response, nil
 }
