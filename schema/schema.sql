@@ -68,6 +68,9 @@ CREATE TABLE IF NOT EXISTS incidents (
 		REFERENCES services(id)
 );
 
+CREATE UNIQUE INDEX ON incidents(provider_id);
+
+
 CREATE TABLE IF NOT EXISTS incident_updates (
 	id SERIAL PRIMARY KEY,
     incident_id INT NOT NULL,

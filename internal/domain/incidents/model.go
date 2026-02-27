@@ -8,6 +8,7 @@ import (
 )
 
 type IncidentUpdate struct {
+	IncidentID         uint
 	Description        string
 	IncidentProviderID string
 	ProviderID         string
@@ -19,7 +20,7 @@ type IncidentUpdate struct {
 type Incident struct {
 	Name              string
 	Link              string
-	ServiceSlug       string
+	ServiceID         uint
 	ProviderImpact    common.Nullable[string]
 	Impact            common.Nullable[string]
 	ProviderID        string
