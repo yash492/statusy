@@ -66,7 +66,6 @@ func fetchIncidentsHelper(req atlassianIncidentReq, serviceSlug string) []incide
 		incident := incidents.Incident{
 			Name:              incidentReq.Name,
 			Link:              incidentReq.Shortlink,
-			ServiceSlug:       serviceSlug,
 			ProviderImpact:    common.SetNullableValue(incidentReq.Impact),
 			Impact:            common.SetNullableValue(incidentReq.Impact),
 			ProviderID:        incidentReq.ID,

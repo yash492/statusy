@@ -15,12 +15,14 @@ import (
 )
 
 type ScrapperOrchestrator struct {
-	ServicesYaml        []byte
-	ServicesRepo        services.Repository
-	IncidentsRepo       incidents.Repository
-	ComponentsRepo      components.Repository
-	ComponentGroupsRepo components.GroupRepository
-	logger              *slog.Logger
+	ServicesYaml           []byte
+	ServicesRepo           services.Repository
+	IncidentsRepo          incidents.Repository
+	IncidentUpdatesRepo    incidents.UpdatesRepository
+	IncidentComponentsRepo incidents.ComponentsRepository
+	ComponentsRepo         components.Repository
+	ComponentGroupsRepo    components.GroupRepository
+	logger                 *slog.Logger
 }
 
 type providerBuilder func(service services.ServiceResult) statuspage.StatusPageProvider
@@ -107,12 +109,48 @@ func (s *ScrapperOrchestrator) saveIncidents(
 		return err
 	}
 
-	// TODO: save incident_updates using savedIncidents[i].ID + incident.Updates
-	// TODO: save incident_components using savedIncidents[i].ID + componentsProviderMap to resolve component IDs
-	_ = savedIncidents
-	_ = componentsProviderMap
+	// Build a map from provider_id -> saved incident for quick lookup
+	savedIncidentsByProviderID := make(map[string]incidents.IncidentResult, len(savedIncidents))
+	for _, saved := range savedIncidents {
+		savedIncidentsByProviderID[saved.ProviderID] = saved
+	}
 
-	return nil
+	updateParams := make([]incidents.IncidentUpdateParams, 0)
+	componentParams := make([]incidents.IncidentComponentParams, 0)
+
+	for _, incident := range scrappedIncidents {
+		saved := savedIncidentsByProviderID[incident.ProviderID]
+
+		for _, update := range incident.Updates {
+			updateParams = append(updateParams, incidents.IncidentUpdateParams{
+				IncidentID:     saved.ID,
+				Description:    update.Description,
+				ProviderID:     update.ProviderID,
+				ProviderStatus: update.ProviderStatus,
+				Status:         update.Status,
+				StatusTime:     update.StatusTime,
+			})
+		}
+
+		for _, component := range incident.Components {
+			componentID, ok := componentsProviderMap[component.ProviderID]
+			if !ok {
+				continue
+			}
+			componentParams = append(componentParams, incidents.IncidentComponentParams{
+				IncidentID:  saved.ID,
+				ComponentID: componentID,
+			})
+		}
+	}
+
+	_, err = s.IncidentUpdatesRepo.SaveAll(ctx, updateParams)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.IncidentComponentsRepo.SaveAll(ctx, componentParams)
+	return err
 }
 
 func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedComponents []components.AggregateComponents) (map[string]uint, error) {
