@@ -36,10 +36,16 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 
 	for _, param := range params {
 		queryArgs := pgx.NamedArgs{
-			"name":                param.Name,
-			"link":                param.Link,
-			"provider_impact":     param.ProviderImpact,
-			"impact":              param.Impact,
+			"name": param.Name,
+			"link": param.Link,
+			"provider_impact": pgtype.Text{
+				String: param.ProviderImpact.Value,
+				Valid:  param.ProviderImpact.Valid,
+			},
+			"impact": pgtype.Text{
+				String: param.Impact.Value,
+				Valid:  param.Impact.Valid,
+			},
 			"service_id":          param.ServiceID,
 			"provider_id":         param.ProviderID,
 			"provider_created_at": param.ProviderCreatedAt,
@@ -65,7 +71,7 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 
 	err := c.writeDB.SendBatch(ctx, batchInserts).Close()
 	if err != nil {
-		c.lg.ErrorContext(ctx, "error while bulk inserting services", slog.Any("err", err))
+		c.lg.ErrorContext(ctx, "error while bulk inserting incidents", slog.Any("err", err))
 		return nil, err
 	}
 

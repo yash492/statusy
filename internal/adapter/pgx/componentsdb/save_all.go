@@ -33,10 +33,13 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []comp
 
 	for _, component := range params {
 		queryArgs := pgx.NamedArgs{
-			"name":               component.Name,
-			"provider_id":        component.ProviderID,
-			"service_id":         component.ServiceID,
-			"component_group_id": component.ComponentGroupID,
+			"name":        component.Name,
+			"provider_id": component.ProviderID,
+			"service_id":  component.ServiceID,
+			"component_group_id": pgtype.Uint64{
+				Uint64: uint64(component.ComponentGroupID.Value),
+				Valid:  component.ComponentGroupID.Valid,
+			},
 		}
 
 		preparedQuery := batchInserts.Queue(

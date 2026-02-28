@@ -61,16 +61,20 @@ func (s *ScrapperOrchestrator) Orchestrate() error {
 	for _, service := range registeredServices {
 		scrappedComponentForService, err := service.ScrapComponents()
 		if err != nil {
-			s.logger.ErrorContext(ctx, "error while scrapping components for service %s", service.Slug(), slog.Any("error", err))
+			s.logger.ErrorContext(ctx, "error while scrapping components for service %s", string(service.Slug()), slog.Any("error", err))
 		}
 
 		scrappedIncidentForService, err := service.ScrapIncidents()
 		if err != nil {
-			s.logger.ErrorContext(ctx, "error while scrapping components for service %s", service.Slug(), slog.Any("error", err))
+			s.logger.ErrorContext(ctx, "error while scrapping components for service %s", string(service.Slug()), slog.Any("error", err))
 		}
 
+		scrappedComponentForService.Service.ID = service.ID()
 		scrappedComponents = append(scrappedComponents, scrappedComponentForService)
-		scrappedIncidents = append(scrappedIncidents, scrappedIncidentForService...)
+		for _, incident := range scrappedIncidentForService {
+			incident.ServiceID = service.ID()
+			scrappedIncidents = append(scrappedIncidents, incident)
+		}
 	}
 
 	componentsProviderMap, err := s.saveComponents(ctx, scrappedComponents)
@@ -221,7 +225,7 @@ func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedCompo
 		}
 	}
 
-	savedComponents, err := s.ComponentsRepo.SaveAll(ctx, componentParams)
+ 	savedComponents, err := s.ComponentsRepo.SaveAll(ctx, componentParams)
 	if err != nil {
 		return nil, err
 	}
