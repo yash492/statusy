@@ -1,9 +1,9 @@
-# - name: "Plivo"
-#   slug: "plivo"
-#   incidents_url: "https://status.plivo.com/api/v2/incidents.json"
-#   components_url: "https://status.plivo.com/api/v2/components.json"
-#   scheduled_maintenance_url: "https://status.plivo.com/api/v2/scheduled-maintenances.json"
-#   provider_type: atlassian
+- name: "Plivo"
+  slug: "plivo"
+  incidents_url: "https://status.plivo.com/api/v2/incidents.json"
+  components_url: "https://status.plivo.com/api/v2/components.json"
+  scheduled_maintenance_url: "https://status.plivo.com/api/v2/scheduled-maintenances.json"
+  provider_type: atlassian
 
 - name: "CircleCI"
   slug: "circleci"

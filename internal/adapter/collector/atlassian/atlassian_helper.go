@@ -1,4 +1,4 @@
-package atlassianstatuspage
+package atlassian
 
 import (
 	"github.com/samber/lo"
@@ -7,11 +7,11 @@ import (
 	"github.com/yash492/statusy/internal/domain/incidents"
 )
 
-func fetchComponentsHelper(req atlassianComponentsReq) components.AggregateComponents {
+func FetchComponentsHelper(req ComponentsReq) components.AggregateComponents {
 
 	ungroupedComponents := []components.Component{}
 	groupedComponentsIDNameMap := map[string]string{}
-	componentsToBeGrouped := []atlassianComponent{}
+	componentsToBeGrouped := []Component{}
 	groupedComponents := map[string]components.ComponentGroup{}
 
 	for _, atlassianComponent := range req.Components {
@@ -60,7 +60,7 @@ func fetchComponentsHelper(req atlassianComponentsReq) components.AggregateCompo
 	}
 }
 
-func fetchIncidentsHelper(req atlassianIncidentReq, serviceSlug string) []incidents.Incident {
+func FetchIncidentsHelper(req IncidentReq) []incidents.Incident {
 	incidentList := []incidents.Incident{}
 	for _, incidentReq := range req.Incidents {
 		incident := incidents.Incident{
@@ -72,7 +72,7 @@ func fetchIncidentsHelper(req atlassianIncidentReq, serviceSlug string) []incide
 			ProviderCreatedAt: incidentReq.CreatedAt,
 		}
 
-		incident.Updates = lo.Map(incidentReq.IncidentUpdates, func(update atlassianIncidentUpdate, _ int) incidents.IncidentUpdate {
+		incident.Updates = lo.Map(incidentReq.IncidentUpdates, func(update IncidentUpdate, _ int) incidents.IncidentUpdate {
 			return incidents.IncidentUpdate{
 				Description:        update.Body,
 				IncidentProviderID: incident.ProviderID,
@@ -83,10 +83,10 @@ func fetchIncidentsHelper(req atlassianIncidentReq, serviceSlug string) []incide
 			}
 		})
 
-		incident.Components = lo.Map(incidentReq.IncidentComponents, func(component atlassianIncidentComponent, _ int) components.Component {
+		incident.Components = lo.Map(incidentReq.IncidentComponents, func(component IncidentComponent, _ int) components.Component {
 			return components.Component{
 				Name:       component.Name,
-				ProviderID: serviceSlug,
+				ProviderID: component.ID,
 			}
 		})
 		incidentList = append(incidentList, incident)

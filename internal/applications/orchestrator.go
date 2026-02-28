@@ -5,16 +5,16 @@ import (
 	"log/slog"
 
 	"github.com/goccy/go-yaml"
-	"github.com/yash492/statusy/internal/adapter/atlassianstatuspage"
+	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/common"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
-	"resty.dev/v3"
 )
 
 type ScrapperOrchestrator struct {
+	RegisteredStatuspages  map[string]registry.ProviderBuilderFunc
 	ServicesYaml           []byte
 	ServicesRepo           services.Repository
 	IncidentsRepo          incidents.Repository
@@ -23,20 +23,6 @@ type ScrapperOrchestrator struct {
 	ComponentsRepo         components.Repository
 	ComponentGroupsRepo    components.GroupRepository
 	logger                 *slog.Logger
-}
-
-type providerBuilder func(service services.ServiceResult) statuspage.StatusPageProvider
-
-var providerBuilders = map[string]providerBuilder{
-	"circleci": func(service services.ServiceResult) statuspage.StatusPageProvider {
-		return atlassianstatuspage.NewCircleCIProvider(
-			service.ComponentsUrl,
-			service.IncidentsUrl,
-			service.ScheduleMaintenancesUrl,
-			service.ID,
-			resty.New(),
-		)
-	},
 }
 
 func (s *ScrapperOrchestrator) Orchestrate() error {
@@ -225,7 +211,7 @@ func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedCompo
 		}
 	}
 
- 	savedComponents, err := s.ComponentsRepo.SaveAll(ctx, componentParams)
+	savedComponents, err := s.ComponentsRepo.SaveAll(ctx, componentParams)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +230,7 @@ func (s *ScrapperOrchestrator) buildProviders(servicesResult []services.ServiceR
 	servicesToBeScraped := make([]statuspage.StatusPageProvider, 0, len(servicesResult))
 
 	for _, service := range servicesResult {
-		builder, ok := providerBuilders[service.Slug]
+		builder, ok := s.RegisteredStatuspages[service.Slug]
 		if !ok {
 			s.logger.Warn("unsupported service slug", slog.String("slug", service.Slug))
 			continue

@@ -1,4 +1,4 @@
-package atlassianstatuspage
+package atlassian
 
 import (
 	"encoding/json"
@@ -157,7 +157,7 @@ func TestCircleciComponents(t *testing.T) {
 					}
 				]
 			}	`,
-				serviceSlug: circleci.String(),
+				serviceSlug: "circleci",
 			},
 			expectedOutput: components.AggregateComponents{
 				GroupedComponents: []components.ComponentGroup{
@@ -187,13 +187,13 @@ func TestCircleciComponents(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		var atlassianComponents atlassianComponentsReq
+		var atlassianComponents ComponentsReq
 		err := json.Unmarshal([]byte(tt.input.inputJson), &atlassianComponents)
 		if err != nil {
 			t.Fatalf("unmarshalling circleci components went wrong %s", err.Error())
 		}
 
-		normalizedComponents := fetchComponentsHelper(atlassianComponents)
+		normalizedComponents := FetchComponentsHelper(atlassianComponents)
 		resultOutputComponentMap := map[string]components.Component{}
 		for _, ungroupedComponent := range normalizedComponents.UngroupedComponents {
 			resultOutputComponentMap[ungroupedComponent.ProviderID] = ungroupedComponent
