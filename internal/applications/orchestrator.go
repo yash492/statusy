@@ -6,7 +6,7 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/yash492/statusy/internal/adapter/collector/registry"
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
 	"github.com/yash492/statusy/internal/domain/services"
@@ -183,7 +183,7 @@ func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedCompo
 					Name:       component.Name,
 					ProviderID: component.ProviderID,
 					ServiceID:  scrappedComponent.Service.ID,
-					ComponentGroupID: common.Nullable[uint]{
+					ComponentGroupID: nullable.Nullable[uint]{
 						Value: componentGroup.ID,
 						Valid: true,
 					},
@@ -194,9 +194,9 @@ func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedCompo
 
 		for _, component := range scrappedComponent.UngroupedComponents {
 			componentGroup, ok := serviceComponentGroupMap[scrappedComponent.Service.ID][component.ProviderID]
-			var componentGroupID common.Nullable[uint]
+			var componentGroupID nullable.Nullable[uint]
 			if ok {
-				componentGroupID = common.Nullable[uint]{
+				componentGroupID = nullable.Nullable[uint]{
 					Value: componentGroup.ID,
 					Valid: true,
 				}

@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 )
 
 type ComponentParams struct {
 	Name             string
 	ProviderID       string
 	ServiceID        uint
-	ComponentGroupID common.Nullable[uint]
+	ComponentGroupID nullable.Nullable[uint]
 }
 
 type ComponentResult struct {
@@ -19,10 +19,10 @@ type ComponentResult struct {
 	Name             string
 	ProviderID       string
 	ServiceID        uint
-	ComponentGroupID common.Nullable[uint]
+	ComponentGroupID nullable.Nullable[uint]
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
-	DeletedAt        common.Nullable[time.Time]
+	DeletedAt        nullable.Nullable[time.Time]
 }
 
 type Repository interface {

@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/incidents"
 )
 
@@ -80,11 +80,11 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 			ID:   item.ID,
 			Name: item.Name,
 			Link: item.Link,
-			ProviderImpact: common.Nullable[string]{
+			ProviderImpact: nullable.Nullable[string]{
 				Value: item.ProviderImpact.String,
 				Valid: item.ProviderImpact.Valid,
 			},
-			Impact: common.Nullable[string]{
+			Impact: nullable.Nullable[string]{
 				Value: item.Impact.String,
 				Valid: item.Impact.Valid,
 			},
@@ -93,7 +93,7 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 			ProviderCreatedAt: item.ProviderCreatedAt,
 			CreatedAt:         item.CreatedAt,
 			UpdatedAt:         item.UpdatedAt,
-			DeletedAt: common.Nullable[time.Time]{
+			DeletedAt: nullable.Nullable[time.Time]{
 				Value: item.DeletedAt.Time,
 				Valid: item.DeletedAt.Valid,
 			},

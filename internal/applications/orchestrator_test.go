@@ -3,21 +3,25 @@ package applications
 import (
 	"os"
 
+	"github.com/yash492/statusy/internal/adapter/collector"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentgroupsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentcomponentsdb"
-	"github.com/yash492/statusy/internal/adapter/pgx/incidentupdatesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/incidentupdatesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 )
- 
+
 func (t *TestSuite) TestOrchestrate() {
-     	servicesYaml, err := os.ReadFile("../../data/services.yaml")
+	servicesYaml, err := os.ReadFile("../../data/services.yaml")
 	if err != nil {
 		t.T().Fatalf("failed to read services.yaml: %s", err)
 	}
 
+	registeredStatusPage := collector.RegisterAll()
+
 	orchestrator := &ScrapperOrchestrator{
+		RegisteredStatuspages:  registeredStatusPage,
 		ServicesYaml:           servicesYaml,
 		ServicesRepo:           servicesdb.NewPostgresServiceRepository(t.Logger, t.TestDb, t.TestDb),
 		IncidentsRepo:          incidentsdb.NewPostgresIncidentRepository(t.Logger, t.TestDb, t.TestDb),
@@ -29,7 +33,7 @@ func (t *TestSuite) TestOrchestrate() {
 	}
 
 	err = orchestrator.Orchestrate()
-	if err != nil { 
+	if err != nil {
 		t.T().Fatalf("orchestrate failed: %s", err)
 	}
 }

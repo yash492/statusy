@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 )
 
@@ -72,13 +72,13 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []comp
 			Name:       item.Name,
 			ProviderID: item.ProviderID,
 			ServiceID:  item.ServiceID,
-			ComponentGroupID: common.Nullable[uint]{
+			ComponentGroupID: nullable.Nullable[uint]{
 				Value: uint(item.ComponentGroupID.Uint64),
 				Valid: item.ComponentGroupID.Valid,
 			},
 			CreatedAt: item.CreatedAt,
 			UpdatedAt: item.UpdatedAt,
-			DeletedAt: common.Nullable[time.Time]{
+			DeletedAt: nullable.Nullable[time.Time]{
 				Value: item.DeletedAt.Time,
 				Valid: item.DeletedAt.Valid,
 			},

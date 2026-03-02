@@ -74,7 +74,7 @@ func (c circleCi) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
 	_, err := c.RestyClient.
 		R().
 		SetResult(&req).
-		Get(c.IncidentsUrl)
+		Get(c.ScheduleMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

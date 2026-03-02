@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 )
 
 type GroupParams struct {
@@ -20,7 +20,7 @@ type ComponentGroupResult struct {
 	ServiceID  uint
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
-	DeletedAt  common.Nullable[time.Time]
+	DeletedAt  nullable.Nullable[time.Time]
 }
 
 type GroupRepository interface {

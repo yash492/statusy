@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 )
 
 type ServiceResult struct {
@@ -17,7 +17,7 @@ type ServiceResult struct {
 	ProviderType            ProviderType
 	CreatedAt               time.Time
 	UpdatedAt               time.Time
-	DeletedAt               common.Nullable[time.Time]
+	DeletedAt               nullable.Nullable[time.Time]
 }
 
 type ServiceParams struct {

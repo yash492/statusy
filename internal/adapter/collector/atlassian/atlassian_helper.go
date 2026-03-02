@@ -2,7 +2,7 @@ package atlassian
 
 import (
 	"github.com/samber/lo"
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
 )
@@ -66,8 +66,8 @@ func FetchIncidentsHelper(req IncidentReq) []incidents.Incident {
 		incident := incidents.Incident{
 			Name:              incidentReq.Name,
 			Link:              incidentReq.Shortlink,
-			ProviderImpact:    common.SetNullableValue(incidentReq.Impact),
-			Impact:            common.SetNullableValue(incidentReq.Impact),
+			ProviderImpact:    nullable.SetValue(incidentReq.Impact),
+			Impact:            nullable.SetValue(incidentReq.Impact),
 			ProviderID:        incidentReq.ID,
 			ProviderCreatedAt: incidentReq.CreatedAt,
 		}

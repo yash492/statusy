@@ -3,7 +3,7 @@ package incidents
 import (
 	"time"
 
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 )
 
@@ -21,8 +21,8 @@ type Incident struct {
 	Name              string
 	Link              string
 	ServiceID         uint
-	ProviderImpact    common.Nullable[string]
-	Impact            common.Nullable[string]
+	ProviderImpact    nullable.Nullable[string]
+	Impact            nullable.Nullable[string]
 	ProviderID        string
 	ProviderCreatedAt time.Time
 	Updates           []IncidentUpdate

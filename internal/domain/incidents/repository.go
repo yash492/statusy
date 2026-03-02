@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 )
 
 type IncidentParams struct {
 	Name              string
 	Link              string
-	ProviderImpact    common.Nullable[string]
-	Impact            common.Nullable[string]
+	ProviderImpact    nullable.Nullable[string]
+	Impact            nullable.Nullable[string]
 	ServiceID         uint
 	ProviderID        string
 	ProviderCreatedAt time.Time
@@ -21,14 +21,14 @@ type IncidentResult struct {
 	ID                uint
 	Name              string
 	Link              string
-	ProviderImpact    common.Nullable[string]
-	Impact            common.Nullable[string]
+	ProviderImpact    nullable.Nullable[string]
+	Impact            nullable.Nullable[string]
 	ServiceID         uint
 	ProviderID        string
 	ProviderCreatedAt time.Time
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
-	DeletedAt         common.Nullable[time.Time]
+	DeletedAt         nullable.Nullable[time.Time]
 }
 
 type IncidentUpdateParams struct {
@@ -50,7 +50,7 @@ type IncidentUpdateResult struct {
 	StatusTime     time.Time
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
-	DeletedAt      common.Nullable[time.Time]
+	DeletedAt      nullable.Nullable[time.Time]
 }
 
 type IncidentComponentParams struct {
@@ -64,7 +64,7 @@ type IncidentComponentResult struct {
 	ComponentID uint
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	DeletedAt   common.Nullable[time.Time]
+	DeletedAt   nullable.Nullable[time.Time]
 }
 
 type Repository interface {

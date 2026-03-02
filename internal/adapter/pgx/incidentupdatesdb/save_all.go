@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
-	"github.com/yash492/statusy/internal/common"
+	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/incidents"
 )
 
@@ -74,7 +74,7 @@ func (r *PostgresIncidentUpdatesRepository) SaveAll(ctx context.Context, params 
 			StatusTime:     item.StatusTime,
 			CreatedAt:      item.CreatedAt,
 			UpdatedAt:      item.UpdatedAt,
-			DeletedAt: common.Nullable[time.Time]{
+			DeletedAt: nullable.Nullable[time.Time]{
 				Value: item.DeletedAt.Time,
 				Valid: item.DeletedAt.Valid,
 			},
