@@ -48,7 +48,7 @@ func (c circleCi) ScrapComponents() (components.AggregateComponents, error) {
 }
 
 // Name implements statuspage.Statuspage.
-func (c circleCi) Slug() statuspage.ServiceSlug {
+func (c circleCi) Slug() services.ServiceSlug {
 	return slug
 }
 

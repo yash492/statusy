@@ -10,6 +10,8 @@ import (
 type Config struct {
 	Debug      bool             `mapstructure:"debug"`
 	PostgresDB PostgresDBConfig `mapstructure:"postgresdb"`
+	// Interval in seconds
+	ScrappingInterval int `mapstructure:"scrapping_interval"`
 }
 
 type PostgresDBConfig struct {

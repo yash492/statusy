@@ -21,7 +21,7 @@ func StartScrapper(deps Deps) {
 }
 
 func LoadServicesFromYaml(ctx context.Context, lg *slog.Logger) ([]byte, error) {
-	filePath := "../../data/services.yaml"
+	filePath := "../../resources/services/services.yaml"
 	yamlBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		lg.ErrorContext(ctx, "error while reading sevices from yaml", slog.Any("err", err))

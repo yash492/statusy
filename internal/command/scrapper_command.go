@@ -1,4 +1,4 @@
-package applications
+package command
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/yash492/statusy/internal/domain/statuspage"
 )
 
-type ScrapperOrchestrator struct {
+type ScrapperCmd struct {
 	RegisteredStatuspages  map[string]registry.ProviderBuilderFunc
 	ServicesYaml           []byte
 	ServicesRepo           services.Repository
@@ -25,9 +25,7 @@ type ScrapperOrchestrator struct {
 	logger                 *slog.Logger
 }
 
-func (s *ScrapperOrchestrator) Orchestrate() error {
-	ctx := context.Background()
-
+func (s *ScrapperCmd) Execute(ctx context.Context) error {
 	var serviceParams []services.ServiceParams
 	err := yaml.UnmarshalContext(ctx, s.ServicesYaml, &serviceParams)
 	if err != nil {
@@ -76,7 +74,7 @@ func (s *ScrapperOrchestrator) Orchestrate() error {
 	return nil
 }
 
-func (s *ScrapperOrchestrator) saveIncidents(
+func (s *ScrapperCmd) saveIncidents(
 	ctx context.Context,
 	scrappedIncidents []incidents.Incident,
 	componentsProviderMap map[string]uint) error {
@@ -143,7 +141,7 @@ func (s *ScrapperOrchestrator) saveIncidents(
 	return err
 }
 
-func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedComponents []components.AggregateComponents) (map[string]uint, error) {
+func (s *ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []components.AggregateComponents) (map[string]uint, error) {
 
 	componentGroupsToBeScraped := make([]components.GroupParams, 0)
 	for _, component := range scrappedComponents {
@@ -177,16 +175,13 @@ func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedCompo
 	for _, scrappedComponent := range scrappedComponents {
 		for _, groupcomponent := range scrappedComponent.GroupedComponents {
 			for _, component := range groupcomponent.Components {
-				componentGroup := serviceComponentGroupMap[scrappedComponent.Service.ID][groupcomponent.ProviderID]
+				providerComponentGroup := serviceComponentGroupMap[scrappedComponent.Service.ID][groupcomponent.ProviderID]
 
 				componentParams = append(componentParams, components.ComponentParams{
-					Name:       component.Name,
-					ProviderID: component.ProviderID,
-					ServiceID:  scrappedComponent.Service.ID,
-					ComponentGroupID: nullable.Nullable[uint]{
-						Value: componentGroup.ID,
-						Valid: true,
-					},
+					Name:             component.Name,
+					ProviderID:       component.ProviderID,
+					ServiceID:        scrappedComponent.Service.ID,
+					ComponentGroupID: nullable.SetValue(providerComponentGroup.ID),
 				})
 
 			}
@@ -196,10 +191,7 @@ func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedCompo
 			componentGroup, ok := serviceComponentGroupMap[scrappedComponent.Service.ID][component.ProviderID]
 			var componentGroupID nullable.Nullable[uint]
 			if ok {
-				componentGroupID = nullable.Nullable[uint]{
-					Value: componentGroup.ID,
-					Valid: true,
-				}
+				componentGroupID = nullable.SetValue(componentGroup.ID)
 			}
 
 			componentParams = append(componentParams, components.ComponentParams{
@@ -226,7 +218,7 @@ func (s *ScrapperOrchestrator) saveComponents(ctx context.Context, scrappedCompo
 
 }
 
-func (s *ScrapperOrchestrator) buildProviders(servicesResult []services.ServiceResult) []statuspage.StatusPageProvider {
+func (s *ScrapperCmd) buildProviders(servicesResult []services.ServiceResult) []statuspage.StatusPageProvider {
 	servicesToBeScraped := make([]statuspage.StatusPageProvider, 0, len(servicesResult))
 
 	for _, service := range servicesResult {
