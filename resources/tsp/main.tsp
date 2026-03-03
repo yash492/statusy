@@ -13,5 +13,5 @@ model Service {
 model Incident {
   id: int;
   title: string;
-  description
+  
 }
