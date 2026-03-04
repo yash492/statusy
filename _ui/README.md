@@ -15,7 +15,7 @@ To recreate this project with the same configuration:
 
 ```sh
 # recreate this project
-npx sv@0.12.4 create --template demo --types ts --add prettier eslint --install npm _ui
+bun x sv@0.12.4 create --template minimal --types ts --add prettier eslint tailwindcss="plugins:typography,forms" --install bun _ui
 ```
 
 ## Developing
