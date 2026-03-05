@@ -1,7 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
 	import { buttonVariants } from '$lib/components/ui/button';
-	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import * as Kbd from '$lib/components/ui/kbd';
@@ -11,13 +10,13 @@
 	import './layout.css';
 	let { children } = $props();
 
-	let modifierKeyPrefix = $state('Ctrl');
+	let modifierKeyPrefix = $state('');
 
 	modifierKeyPrefix =
 		navigator.userAgent.toLowerCase().includes('mac') ||
 		navigator.userAgent.toLowerCase().includes('iphone')
-			? '⌘' // command key
-			: 'Ctrl'; // control key
+			? '⌘ + K' // command key
+			: 'Ctrl + K'; // control key
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
@@ -30,7 +29,7 @@
 		</div>
 		<div class="flex gap-2">
 			<Dialog.Root>
-				<form class="w-4/5">
+				<form class="">
 					<Dialog.Trigger
 						type="button"
 						class={buttonVariants({
@@ -41,22 +40,16 @@
 					>
 						<SearchIcon />
 						<span class="hidden md:block"
-							>Search Status Pages <Kbd.Root class="ml-10">{modifierKeyPrefix} + K</Kbd.Root></span
+							>Search Status Pages <Kbd.Root class="ml-10">{modifierKeyPrefix}</Kbd.Root></span
 						>
 					</Dialog.Trigger>
-					<Dialog.Content class="sm:max-w-4xl">
-						<div class="grid gap-4">
+					<Dialog.Content class="sm:max-w-xl">
+						<div class="mb-28 grid gap-4">
 							<div class="grid gap-3">
-								<Label for="search-statuspage">Search Status Page</Label>
+								<Label for="search-statuspage" class="text-xl">Search Status Page</Label>
 								<Input id="search-statuspage" name="search-statuspage" />
 							</div>
 						</div>
-						<Dialog.Footer>
-							<Dialog.Close type="button" class={buttonVariants({ variant: 'outline' })}>
-								Cancel
-							</Dialog.Close>
-							<Button type="submit">Save changes</Button>
-						</Dialog.Footer>
 					</Dialog.Content>
 				</form>
 			</Dialog.Root>
@@ -65,4 +58,3 @@
 </nav>
 
 {@render children()}
-
