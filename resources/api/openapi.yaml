@@ -1,0 +1,249 @@
+openapi: 3.1.0
+info:
+  title: Statusy
+  version: 0.0.0
+tags: []
+paths:
+  /statuspages:
+    get:
+      operationId: listStatuspages
+      description: List all available status pages with optional search filter
+      parameters:
+        - name: search
+          in: query
+          required: false
+          description: Search term to filter status pages by name or slug
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Statuspage'
+  /statuspages/{statuspageSlug}/feed.atom:
+    get:
+      operationId: getAtomFeed
+      description: Get Atom feed for a status page
+      parameters:
+        - name: statuspageSlug
+          in: path
+          required: true
+          description: Unique identifier of the status page
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/atom+xml; charset=utf-8:
+              schema:
+                type: string
+  /statuspages/{statuspageSlug}/feed.rss:
+    get:
+      operationId: getRssFeed
+      description: Get RSS feed for a status page
+      parameters:
+        - name: statuspageSlug
+          in: path
+          required: true
+          description: Unique identifier of the status page
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/rss+xml; charset=utf-8:
+              schema:
+                type: string
+  /statuspages/{statuspageSlug}/incidents:
+    get:
+      operationId: incidentByStatuspage
+      description: Get all incidents for a specific status page
+      parameters:
+        - name: statuspageSlug
+          in: path
+          required: true
+          description: Unique identifier of the status page
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Incident'
+  /statuspages/{statuspageSlug}/incidents/{incidentID}:
+    get:
+      operationId: incidentInfo
+      description: Get detailed information about a specific incident with paginated updates
+      parameters:
+        - name: statuspageSlug
+          in: path
+          required: true
+          description: Unique identifier of the status page
+          schema:
+            type: string
+        - name: incidentID
+          in: path
+          required: true
+          description: Unique identifier of the incident
+          schema:
+            type: string
+        - name: page_number
+          in: query
+          required: false
+          description: Page number for incident updates
+          schema:
+            type: integer
+          explode: false
+        - name: page_size
+          in: query
+          required: false
+          description: Number of updates per page
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Incident'
+  /statuspages/{statuspageSlug}/schedule-maintenances:
+    get:
+      operationId: scheduleMaintenanceByStatuspage
+      description: Get all scheduled maintenance windows for a status page
+      parameters:
+        - name: statuspageSlug
+          in: path
+          required: true
+          description: Unique identifier of the status page
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Statuspage'
+  /statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID}:
+    get:
+      operationId: scheduleMaintenanceInfo
+      description: Get detailed information about a specific scheduled maintenance
+      parameters:
+        - name: statuspageSlug
+          in: path
+          required: true
+          description: Unique identifier of the status page
+          schema:
+            type: string
+        - name: scheduleMaintenanceID
+          in: path
+          required: true
+          description: Unique identifier of the scheduled maintenance
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Statuspage'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code identifier
+        message:
+          type: string
+          description: Human-readable error message
+    Incident:
+      type: object
+      required:
+        - id
+        - title
+        - status
+        - url
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the incident
+        title:
+          type: string
+          description: Title or summary of the incident
+        status:
+          type: string
+          description: Current status of the incident (investigating, identified, monitoring, resolved)
+        url:
+          type: string
+          description: URL to the incident details
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the incident was created
+    NotFoundError:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code identifier
+        message:
+          type: string
+          description: Human-readable error message
+    PaginationQuery:
+      type: object
+      properties:
+        page_number:
+          type: integer
+          description: 'Page number for paginated results (default: 1)'
+        page_size:
+          type: integer
+          description: 'Number of items per page (default: 20)'
+    Statuspage:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the status page
+        name:
+          type: string
+          description: Display name of the status page
+        slug:
+          type: string
+          description: URL-friendly slug for the status page
+servers:
+  - url: https://statusy.app
+    description: A Status Page Aggregator
+    variables: {}

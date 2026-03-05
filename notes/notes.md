@@ -13,6 +13,10 @@
     - Have a search bar for services
     - Have a separate page to show incident updates
     - Show actual incident link in the statuspage
+    - Subscribe to Updates
+        - RSS
+        - Atom
+        - Slack Atom Subscribe
 
 - Tech Checklist
     - Unified incident schema across providers
