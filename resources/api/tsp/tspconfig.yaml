@@ -3,6 +3,6 @@ emit:
 
 options:
   "@typespec/openapi3":
-    emitter-output-dir: "{project-root}/../api"
+    emitter-output-dir: "{project-root}/../"
     openapi-versions:
-      - 3.1.0
+      - 3.0.0
