@@ -69,10 +69,7 @@ func (c *PostgresComponentGroupsRepository) SaveAll(ctx context.Context, params 
 			ServiceID:  item.ServiceID,
 			CreatedAt:  item.CreatedAt,
 			UpdatedAt:  item.CreatedAt,
-			DeletedAt: nullable.Nullable[time.Time]{
-				Value: item.DeletedAt.Time,
-				Valid: item.DeletedAt.Valid,
-			},
+			DeletedAt:  nullable.SetValue(item.DeletedAt.Time, item.DeletedAt.Valid),
 		}
 	})
 	return response, nil

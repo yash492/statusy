@@ -35,16 +35,19 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 	incidentResponse := []incidentDto{}
 
 	for _, param := range params {
+		provImpStr, provImpOk := param.ProviderImpact.Get()
+		impactStr, impactOk := param.Impact.Get()
+
 		queryArgs := pgx.NamedArgs{
 			"name": param.Name,
 			"link": param.Link,
 			"provider_impact": pgtype.Text{
-				String: param.ProviderImpact.Value,
-				Valid:  param.ProviderImpact.Valid,
+				String: provImpStr,
+				Valid:  provImpOk,
 			},
 			"impact": pgtype.Text{
-				String: param.Impact.Value,
-				Valid:  param.Impact.Valid,
+				String: impactStr,
+				Valid:  impactOk,
 			},
 			"service_id":          param.ServiceID,
 			"provider_id":         param.ProviderID,
@@ -77,26 +80,17 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 
 	response := lo.Map(incidentResponse, func(item incidentDto, _ int) incidents.IncidentResult {
 		return incidents.IncidentResult{
-			ID:   item.ID,
-			Name: item.Name,
-			Link: item.Link,
-			ProviderImpact: nullable.Nullable[string]{
-				Value: item.ProviderImpact.String,
-				Valid: item.ProviderImpact.Valid,
-			},
-			Impact: nullable.Nullable[string]{
-				Value: item.Impact.String,
-				Valid: item.Impact.Valid,
-			},
+			ID:                item.ID,
+			Name:              item.Name,
+			Link:              item.Link,
+			ProviderImpact:    nullable.SetValue(item.ProviderImpact.String, item.ProviderImpact.Valid),
+			Impact:            nullable.SetValue(item.Impact.String, item.Impact.Valid),
 			ServiceID:         item.ServiceID,
 			ProviderID:        item.ProviderID,
 			ProviderCreatedAt: item.ProviderCreatedAt,
 			CreatedAt:         item.CreatedAt,
 			UpdatedAt:         item.UpdatedAt,
-			DeletedAt: nullable.Nullable[time.Time]{
-				Value: item.DeletedAt.Time,
-				Valid: item.DeletedAt.Valid,
-			},
+			DeletedAt:         nullable.SetValue(item.DeletedAt.Time, item.DeletedAt.Valid),
 		}
 	})
 

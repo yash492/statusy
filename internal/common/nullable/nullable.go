@@ -1,17 +1,17 @@
 package nullable
 
 type Nullable[T any] struct {
-	Value T
-	Valid bool
+	value T
+	valid bool
 }
 
 func (n Nullable[T]) Get() (T, bool) {
-	return n.Value, n.Valid
+	return n.value, n.valid
 }
 
-func SetValue[T any](value T) Nullable[T] {
+func SetValue[T any](value T, isValid bool) Nullable[T] {
 	return Nullable[T]{
-		Value: value,
-		Valid: true,
+		value: value,
+		valid: isValid,
 	}
 }

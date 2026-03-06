@@ -25,7 +25,7 @@ type ScrapperCmd struct {
 	logger                 *slog.Logger
 }
 
-func (s *ScrapperCmd) Execute(ctx context.Context) error {
+func (s ScrapperCmd) Execute(ctx context.Context) error {
 	var serviceParams []services.ServiceParams
 	err := yaml.UnmarshalContext(ctx, s.ServicesYaml, &serviceParams)
 	if err != nil {
@@ -74,7 +74,7 @@ func (s *ScrapperCmd) Execute(ctx context.Context) error {
 	return nil
 }
 
-func (s *ScrapperCmd) saveIncidents(
+func (s ScrapperCmd) saveIncidents(
 	ctx context.Context,
 	scrappedIncidents []incidents.Incident,
 	componentsProviderMap map[string]uint) error {
@@ -141,7 +141,7 @@ func (s *ScrapperCmd) saveIncidents(
 	return err
 }
 
-func (s *ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []components.AggregateComponents) (map[string]uint, error) {
+func (s ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []components.AggregateComponents) (map[string]uint, error) {
 
 	componentGroupsToBeScraped := make([]components.GroupParams, 0)
 	for _, component := range scrappedComponents {
@@ -181,7 +181,7 @@ func (s *ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []c
 					Name:             component.Name,
 					ProviderID:       component.ProviderID,
 					ServiceID:        scrappedComponent.Service.ID,
-					ComponentGroupID: nullable.SetValue(providerComponentGroup.ID),
+					ComponentGroupID: nullable.SetValue(providerComponentGroup.ID, true),
 				})
 
 			}
@@ -191,7 +191,7 @@ func (s *ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []c
 			componentGroup, ok := serviceComponentGroupMap[scrappedComponent.Service.ID][component.ProviderID]
 			var componentGroupID nullable.Nullable[uint]
 			if ok {
-				componentGroupID = nullable.SetValue(componentGroup.ID)
+				componentGroupID = nullable.SetValue(componentGroup.ID, true)
 			}
 
 			componentParams = append(componentParams, components.ComponentParams{
@@ -218,7 +218,7 @@ func (s *ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []c
 
 }
 
-func (s *ScrapperCmd) buildProviders(servicesResult []services.ServiceResult) []statuspage.StatusPageProvider {
+func (s ScrapperCmd) buildProviders(servicesResult []services.ServiceResult) []statuspage.StatusPageProvider {
 	servicesToBeScraped := make([]statuspage.StatusPageProvider, 0, len(servicesResult))
 
 	for _, service := range servicesResult {

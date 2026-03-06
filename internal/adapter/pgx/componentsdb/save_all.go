@@ -32,13 +32,15 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []comp
 	componentsResponse := []componentDto{}
 
 	for _, component := range params {
+		cgVal, cgOk := component.ComponentGroupID.Get()
+
 		queryArgs := pgx.NamedArgs{
 			"name":        component.Name,
 			"provider_id": component.ProviderID,
 			"service_id":  component.ServiceID,
 			"component_group_id": pgtype.Uint64{
-				Uint64: uint64(component.ComponentGroupID.Value),
-				Valid:  component.ComponentGroupID.Valid,
+				Uint64: uint64(cgVal),
+				Valid:  cgOk,
 			},
 		}
 
@@ -68,20 +70,14 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []comp
 
 	response := lo.Map(componentsResponse, func(item componentDto, _ int) components.ComponentResult {
 		return components.ComponentResult{
-			ID:         item.ID,
-			Name:       item.Name,
-			ProviderID: item.ProviderID,
-			ServiceID:  item.ServiceID,
-			ComponentGroupID: nullable.Nullable[uint]{
-				Value: uint(item.ComponentGroupID.Uint64),
-				Valid: item.ComponentGroupID.Valid,
-			},
-			CreatedAt: item.CreatedAt,
-			UpdatedAt: item.UpdatedAt,
-			DeletedAt: nullable.Nullable[time.Time]{
-				Value: item.DeletedAt.Time,
-				Valid: item.DeletedAt.Valid,
-			},
+			ID:               item.ID,
+			Name:             item.Name,
+			ProviderID:       item.ProviderID,
+			ServiceID:        item.ServiceID,
+			ComponentGroupID: nullable.SetValue(uint(item.ComponentGroupID.Uint64), item.ComponentGroupID.Valid),
+			CreatedAt:        item.CreatedAt,
+			UpdatedAt:        item.UpdatedAt,
+			DeletedAt:        nullable.SetValue(item.DeletedAt.Time, item.DeletedAt.Valid),
 		}
 	})
 

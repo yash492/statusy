@@ -62,10 +62,7 @@ func (r *PostgresIncidentComponentsRepository) SaveAll(ctx context.Context, para
 			ComponentID: item.ComponentID,
 			CreatedAt:   item.CreatedAt,
 			UpdatedAt:   item.UpdatedAt,
-			DeletedAt: nullable.Nullable[time.Time]{
-				Value: item.DeletedAt.Time,
-				Valid: item.DeletedAt.Valid,
-			},
+			DeletedAt:   nullable.SetValue(item.DeletedAt.Time, item.DeletedAt.Valid),
 		}
 	})
 

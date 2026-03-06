@@ -66,8 +66,8 @@ func FetchIncidentsHelper(req IncidentReq) []incidents.Incident {
 		incident := incidents.Incident{
 			Name:              incidentReq.Name,
 			Link:              incidentReq.Shortlink,
-			ProviderImpact:    nullable.SetValue(incidentReq.Impact),
-			Impact:            nullable.SetValue(incidentReq.Impact),
+			ProviderImpact:    nullable.SetValue(incidentReq.Impact, incidentReq.Impact != ""),
+			Impact:            nullable.SetValue(incidentReq.Impact, incidentReq.Impact != ""),
 			ProviderID:        incidentReq.ID,
 			ProviderCreatedAt: incidentReq.CreatedAt,
 		}

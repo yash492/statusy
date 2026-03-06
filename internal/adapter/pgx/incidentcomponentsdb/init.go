@@ -1,9 +1,9 @@
 package incidentcomponentsdb
 
 import (
-"log/slog"
+	"log/slog"
 
-"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PostgresIncidentComponentsRepository struct {
@@ -13,9 +13,9 @@ type PostgresIncidentComponentsRepository struct {
 }
 
 func NewPostgresIncidentComponentsRepository(
-lg *slog.Logger,
-readDB *pgxpool.Pool,
-writeDB *pgxpool.Pool,
+	lg *slog.Logger,
+	readDB *pgxpool.Pool,
+	writeDB *pgxpool.Pool,
 ) *PostgresIncidentComponentsRepository {
 	return &PostgresIncidentComponentsRepository{
 		lg:      lg,

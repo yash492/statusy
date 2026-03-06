@@ -1,9 +1,9 @@
 package incidentupdatesdb
 
 import (
-"log/slog"
+	"log/slog"
 
-"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PostgresIncidentUpdatesRepository struct {
@@ -13,9 +13,9 @@ type PostgresIncidentUpdatesRepository struct {
 }
 
 func NewPostgresIncidentUpdatesRepository(
-lg *slog.Logger,
-readDB *pgxpool.Pool,
-writeDB *pgxpool.Pool,
+	lg *slog.Logger,
+	readDB *pgxpool.Pool,
+	writeDB *pgxpool.Pool,
 ) *PostgresIncidentUpdatesRepository {
 	return &PostgresIncidentUpdatesRepository{
 		lg:      lg,

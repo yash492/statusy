@@ -31,6 +31,22 @@ type IncidentResult struct {
 	DeletedAt         nullable.Nullable[time.Time]
 }
 
+type IncidentByServiceParams struct {
+	ServiceID uint
+	Limit     int
+	Offset    int
+}
+
+type IncidentByServiceResult struct {
+	ID        uint
+	ServiceID uint
+	Title     string
+	Status    string
+	Url       string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type IncidentUpdateParams struct {
 	IncidentID     uint
 	Description    string
@@ -69,6 +85,7 @@ type IncidentComponentResult struct {
 
 type Repository interface {
 	SaveAll(ctx context.Context, params []IncidentParams) ([]IncidentResult, error)
+	GetByService(ctx context.Context, params IncidentByServiceParams) ([]IncidentByServiceResult, error)
 }
 
 type UpdatesRepository interface {

@@ -31,5 +31,6 @@ type ServiceParams struct {
 
 type Repository interface {
 	SaveAll(ctx context.Context, services []ServiceParams) ([]ServiceResult, error)
-	GetAll(ctx context.Context) ([]ServiceResult, error)
+	SearchBySlug(ctx context.Context, slug string) ([]ServiceResult, error)
+	GetBySlug(ctx context.Context, slug string) (ServiceResult, error)
 }

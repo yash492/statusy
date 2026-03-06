@@ -79,10 +79,7 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 			ProviderType:            services.ProviderType(item.ProviderType),
 			CreatedAt:               item.CreatedAt,
 			UpdatedAt:               item.UpdatedAt,
-			DeletedAt: nullable.Nullable[time.Time]{
-				Value: item.DeletedAt.Time,
-				Valid: item.DeletedAt.Valid,
-			},
+			DeletedAt:               nullable.SetValue(item.DeletedAt.Time, item.DeletedAt.Valid),
 		}
 	})
 

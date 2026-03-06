@@ -1,4 +1,4 @@
-.PHONY: install-tsp compile-tsp check-tsp install-oapi-codegen generate-oapi
+.PHONY: install-tsp compile-tsp check-tsp install-oapi-codegen generate-oapi check-oapi tidy
 
 check-tsp:
 	@command -v tsp >/dev/null 2>&1 || { \
@@ -26,5 +26,5 @@ generate-oapi: check-oapi
 	go tool oapi-codegen -config ./resources/api/oapi_codegen/config.yaml ./resources/api/openapi.yaml
 	go mod tidy
 
-
-
+tidy:
+	@command go mod tidy
