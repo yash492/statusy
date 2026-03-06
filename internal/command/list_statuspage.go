@@ -28,9 +28,7 @@ func (s ListStatuspageCmd) Execute(ctx context.Context, params ListStatuspagePar
 	search := strings.TrimSpace(params.Search)
 	servicesList, err := s.ServicesRepo.SearchBySlug(ctx, search)
 	if err != nil {
-		if s.logger != nil {
-			s.logger.ErrorContext(ctx, "failed to list status pages", slog.Any("err", err))
-		}
+		s.logger.ErrorContext(ctx, "failed to list status pages", slog.Any("err", err))
 		return nil, err
 	}
 
