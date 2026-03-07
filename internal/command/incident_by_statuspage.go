@@ -17,7 +17,19 @@ var ErrStatuspageNotFound = errors.New("statuspage not found")
 type IncidentByStatuspageCmd struct {
 	logger        *slog.Logger
 	ServicesRepo  services.Repository
-	IncidentsRepo incidents.Repository
+	incidentsRepo incidents.Repository
+}
+
+func NewIncidentByStatuspageCmd(
+	logger *slog.Logger,
+	servicesRepo services.Repository,
+	incidentsRepo incidents.Repository,
+) IncidentByStatuspageCmd {
+	return IncidentByStatuspageCmd{
+		logger:        logger,
+		ServicesRepo:  servicesRepo,
+		incidentsRepo: incidentsRepo,
+	}
 }
 
 type IncidentByStatuspageParams struct {
@@ -63,7 +75,7 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 
 	offset := (pageNumber - 1) * pageSize
 
-	incidentRows, err := c.IncidentsRepo.GetByService(ctx, incidents.IncidentByServiceParams{
+	incidentRows, err := c.incidentsRepo.GetByService(ctx, incidents.IncidentByServiceParams{
 		ServiceID: matched.ID,
 		Limit:     pageSize,
 		Offset:    offset,

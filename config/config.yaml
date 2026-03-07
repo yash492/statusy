@@ -12,4 +12,5 @@ postgresdb:
     password: "password"
     database: "statusy"
 scrapping_interval: 300 # interval in seconds
+server_port: 8081
 

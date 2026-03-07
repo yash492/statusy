@@ -10,7 +10,17 @@ import (
 
 type ListStatuspageCmd struct {
 	logger       *slog.Logger
-	ServicesRepo services.Repository
+	servicesRepo services.Repository
+}
+
+func NewListStatuspageCmd(
+	logger *slog.Logger,
+	repo services.Repository,
+) ListStatuspageCmd {
+	return ListStatuspageCmd{
+		logger:       logger,
+		servicesRepo: repo,
+	}
 }
 
 type ListStatuspageParams struct {
@@ -26,7 +36,7 @@ type ListStatuspageResult struct {
 func (s ListStatuspageCmd) Execute(ctx context.Context, params ListStatuspageParams) ([]ListStatuspageResult, error) {
 
 	search := strings.TrimSpace(params.Search)
-	servicesList, err := s.ServicesRepo.SearchBySlug(ctx, search)
+	servicesList, err := s.servicesRepo.SearchBySlug(ctx, search)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to list status pages", slog.Any("err", err))
 		return nil, err

@@ -2,8 +2,15 @@ package applications
 
 import (
 	"log/slog"
+	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
+	"github.com/yash492/statusy/internal/command"
+	"github.com/yash492/statusy/internal/port/generated/api"
+	"github.com/yash492/statusy/internal/port/httphandler"
 )
 
 type ServerDeps struct {
@@ -24,6 +31,43 @@ func NewServerDeps(
 	}
 }
 
-func (s ScrapperDeps) Start() {
-	
+type ServerApplication struct {
+	HttpHandler httphandler.Handler
+}
+
+func NewServerApplication(deps ServerDeps) ServerApplication {
+
+	lg := deps.lg
+
+	servicesRepo := servicesdb.NewPostgresServiceRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
+
+	incidentsRepo := incidentsdb.NewPostgresIncidentRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
+
+	handler := httphandler.Handler{
+		ListStatuspageCmd:       command.NewListStatuspageCmd(lg, servicesRepo),
+		IncidentByStatuspageCmd: command.NewIncidentByStatuspageCmd(lg, servicesRepo, incidentsRepo),
+	}
+
+	return ServerApplication{
+		HttpHandler: handler,
+	}
+
+}
+
+func (s ServerApplication) Start() {
+	serverInterface := api.NewStrictHandler(s.HttpHandler, nil)
+	r := chi.NewRouter()
+	handler := api.HandlerFromMux(serverInterface, r)
+	err := http.ListenAndServe("", handler)
+	if err != nil {
+		panic(err)
+	}
 }

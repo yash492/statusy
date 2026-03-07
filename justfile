@@ -1,7 +1,7 @@
 check-tsp:
 	@command -v tsp >/dev/null 2>&1 || { \
-	  echo "Error: 'tsp' not found — run 'make install-tsp'"; \
-	  exit 1; \
+		echo "Error: 'tsp' not found — run 'make install-tsp'"; \
+		exit 1; \
 	}
 
 install-tsp:
@@ -13,8 +13,8 @@ compile-tsp: check-tsp
 
 check-oapi:
 	@command -v go tool oapi-codegen --help >/dev/null 2>&1 || { \
-	  echo "Error: 'oapi-codegen' not found — run 'make install-oapi'"; \
-	  exit 1; \
+		echo "Error: 'oapi-codegen' not found — run 'make install-oapi'"; \
+		exit 1; \
 	}
 
 install-oapi:
