@@ -134,6 +134,6 @@ type CustomLogEntry struct {
 func (l *CustomLogEntry) Write(status, bytes int, header http.Header, elapsed time.Duration, extra any) {
 	l.Logger.Info("request", "status", status, "elapsed", elapsed, slog.Any("extra", extra))
 }
-func (l *CustomLogEntry) Panic(v any, stack []byte) {}
-
-// Usage
+func (l *CustomLogEntry) Panic(v any, stack []byte) {
+	middleware.PrintPrettyStack(v)
+}
