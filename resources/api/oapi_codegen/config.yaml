@@ -3,4 +3,4 @@ generate:
   chi-server: true
   models: true
   strict-server: true
-output: internal/generated/api/oapi_codegen.go
+output: internal/port/generated/api/api.go

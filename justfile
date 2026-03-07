@@ -1,5 +1,3 @@
-.PHONY: install-tsp compile-tsp check-tsp install-oapi-codegen generate-oapi check-oapi tidy
-
 check-tsp:
 	@command -v tsp >/dev/null 2>&1 || { \
 	  echo "Error: 'tsp' not found — run 'make install-tsp'"; \
@@ -15,7 +13,7 @@ compile-tsp: check-tsp
 
 check-oapi:
 	@command -v go tool oapi-codegen --help >/dev/null 2>&1 || { \
-	  echo "Error: 'tsp' not found — run 'make install-oapi'"; \
+	  echo "Error: 'oapi-codegen' not found — run 'make install-oapi'"; \
 	  exit 1; \
 	}
 
