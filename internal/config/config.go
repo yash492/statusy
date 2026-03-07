@@ -12,6 +12,7 @@ type Config struct {
 	PostgresDB PostgresDBConfig `mapstructure:"postgresdb"`
 	// Interval in seconds
 	ScrappingInterval int `mapstructure:"scrapping_interval"`
+	ServerPort        int `mapstructure:"server_port"` //:8081
 }
 
 type PostgresDBConfig struct {

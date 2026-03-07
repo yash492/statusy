@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -10,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yash492/statusy/internal/applications"
 	"github.com/yash492/statusy/internal/config"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -49,8 +51,15 @@ func main() {
 	deps := applications.NewServerDeps(logger, readDB, writeDB)
 	app := applications.NewServerApplication(deps)
 
-	if err := app.Start(ctx, ":8081"); err != nil {
-		logger.Error("server failed", slog.Any("err", err))
+	errGroup := new(errgroup.Group)
+
+	errGroup.Go(func() error {
+		return app.Start(ctx, fmt.Sprintf(":%d", cfg.ServerPort))
+	})
+
+	if err := errGroup.Wait(); err != nil {
+		logger.Error("server or scrapper stopped with error", slog.Any("err", err))
 		os.Exit(1)
 	}
+
 }
