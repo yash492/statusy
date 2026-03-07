@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
@@ -63,7 +64,15 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 
 func (s ServerApplication) Start(ctx context.Context, addr string) error {
 	serverInterface := api.NewStrictHandler(s.HttpHandler, nil)
+
 	r := chi.NewRouter()
+	r.Use(
+		middleware.RequestID,
+		middleware.RequestLogger(&CustomLogFormatter{Logger: s.lg}),
+		middleware.CleanPath,
+		middleware.Recoverer,
+	)
+
 	handler := api.HandlerFromMux(serverInterface, r)
 	httpServer := &http.Server{
 		Addr:    addr,
@@ -99,3 +108,32 @@ func (s ServerApplication) Start(ctx context.Context, addr string) error {
 		return nil
 	}
 }
+
+type CustomLogFormatter struct {
+	Logger *slog.Logger
+}
+
+func (l *CustomLogFormatter) NewLogEntry(r *http.Request) middleware.LogEntry {
+	return &CustomLogEntry{
+		Logger: l.Logger.With(
+			"path",
+			r.RequestURI,
+			"verb",
+			r.Method,
+			"request_id",
+			r.Context().Value(middleware.RequestIDKey),
+		),
+	}
+
+}
+
+type CustomLogEntry struct {
+	Logger *slog.Logger
+}
+
+func (l *CustomLogEntry) Write(status, bytes int, header http.Header, elapsed time.Duration, extra any) {
+	l.Logger.Info("request", "status", status, "elapsed", elapsed, slog.Any("extra", extra))
+}
+func (l *CustomLogEntry) Panic(v any, stack []byte) {}
+
+// Usage
