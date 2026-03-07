@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/yash492/statusy/internal/command"
-	"github.com/yash492/statusy/internal/port/generated/api"
+	"github.com/yash492/statusy/internal/port/httphandler/generated/api"
 )
 
 var _ api.StrictServerInterface = Handler{}

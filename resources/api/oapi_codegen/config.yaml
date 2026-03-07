@@ -4,4 +4,4 @@ generate:
   models: true
   strict-server: true
   embedded-spec: true
-output: internal/port/generated/api/api.go
+output: internal/port/httphandler/generated/api/api.go

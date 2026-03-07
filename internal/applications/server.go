@@ -9,8 +9,8 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/command"
-	"github.com/yash492/statusy/internal/port/generated/api"
 	"github.com/yash492/statusy/internal/port/httphandler"
+	"github.com/yash492/statusy/internal/port/httphandler/generated/api"
 )
 
 type ServerDeps struct {
