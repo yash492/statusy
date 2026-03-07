@@ -40,31 +40,25 @@ type ServerApplication struct {
 }
 
 func NewServerApplication(deps ServerDeps) ServerApplication {
-
 	lg := deps.lg
-
 	servicesRepo := servicesdb.NewPostgresServiceRepository(
 		lg,
 		deps.readDB,
 		deps.writeDB,
 	)
-
 	incidentsRepo := incidentsdb.NewPostgresIncidentRepository(
 		lg,
 		deps.readDB,
 		deps.writeDB,
 	)
-
 	handler := httphandler.Handler{
 		ListStatuspageCmd:       command.NewListStatuspageCmd(lg, servicesRepo),
 		IncidentByStatuspageCmd: command.NewIncidentByStatuspageCmd(lg, servicesRepo, incidentsRepo),
 	}
-
 	return ServerApplication{
 		HttpHandler: handler,
 		lg:          lg,
 	}
-
 }
 
 func (s ServerApplication) Start(ctx context.Context, addr string) error {
