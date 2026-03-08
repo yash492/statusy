@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/services"
 )
 
@@ -28,15 +27,8 @@ func (s *PostgresServiceRepository) GetBySlug(ctx context.Context, slug string) 
 	}
 
 	return services.ServiceResult{
-		ID:                      item.ID,
-		Name:                    item.Name,
-		Slug:                    item.Slug,
-		IncidentsUrl:            item.IncidentsUrl,
-		ScheduleMaintenancesUrl: item.ScheduleMaintenancesUrl,
-		ComponentsUrl:           item.ComponentsUrl,
-		ProviderType:            services.ProviderType(item.ProviderType),
-		CreatedAt:               item.CreatedAt,
-		UpdatedAt:               item.UpdatedAt,
-		DeletedAt:               nullable.SetValue(item.DeletedAt.Time, item.DeletedAt.Valid),
+		ID:   item.ID,
+		Name: item.Name,
+		Slug: item.Slug,
 	}, nil
 }

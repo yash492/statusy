@@ -13,12 +13,15 @@ import (
 const slug = "plivo"
 const name = "Plivo"
 
+const (
+	incidentsUrl           = "https://status.plivo.com/api/v2/incidents.json"
+	componentsUrl          = "https://status.plivo.com/api/v2/components.json"
+	scheduleMaintenanceUrl = "https://status.plivo.com/api/v2/scheduled-maintenances.json"
+)
+
 type plivo struct {
-	ScheduleMaintenanceUrl string
-	IncidentsUrl           string
-	ComponentsUrl          string
-	RestyClient            *resty.Client
-	ServiceID              uint
+	RestyClient *resty.Client
+	ServiceID   uint
 }
 
 func (p plivo) ID() uint {
@@ -37,7 +40,7 @@ func (p plivo) ScrapComponents() (components.AggregateComponents, error) {
 		R().
 		SetResult(&plivoComponents).
 		EnableRetryDefaultConditions().
-		Get(p.ComponentsUrl)
+		Get(componentsUrl)
 	if err != nil {
 		return components.AggregateComponents{}, err
 	}
@@ -53,7 +56,7 @@ func (p plivo) ScrapIncidents() ([]incidents.Incident, error) {
 	_, err := p.RestyClient.
 		R().
 		SetResult(&req).
-		Get(p.IncidentsUrl)
+		Get(incidentsUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +68,7 @@ func (p plivo) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
 	_, err := p.RestyClient.
 		R().
 		SetResult(&req).
-		Get(p.ScheduleMaintenanceUrl)
+		Get(scheduleMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -73,13 +76,10 @@ func (p plivo) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
 }
 
 func Register() {
-	registry.Register(slug, func(serviceResult services.ServiceResult) statuspage.StatusPageProvider {
+	registry.Register(slug, func(serviceID uint) statuspage.StatusPageProvider {
 		return plivo{
-			ScheduleMaintenanceUrl: serviceResult.ScheduleMaintenancesUrl,
-			IncidentsUrl:           serviceResult.IncidentsUrl,
-			ComponentsUrl:          serviceResult.ComponentsUrl,
-			RestyClient:            resty.New(),
-			ServiceID:              serviceResult.ID,
+			RestyClient: resty.New(),
+			ServiceID:   serviceID,
 		}
 	})
 }

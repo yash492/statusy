@@ -3,11 +3,10 @@ package registry
 import (
 	"sync"
 
-	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 )
 
-type ProviderBuilderFunc func(serviceResult services.ServiceResult) statuspage.StatusPageProvider
+type ProviderBuilderFunc func(serviceID uint) statuspage.StatusPageProvider
 
 var (
 	providerBuilder map[string]ProviderBuilderFunc = map[string]ProviderBuilderFunc{}

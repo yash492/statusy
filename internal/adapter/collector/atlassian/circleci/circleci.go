@@ -13,12 +13,15 @@ import (
 const slug = "circleci"
 const name = "Circle CI"
 
+const (
+	incidentsUrl           = "https://status.circleci.com/api/v2/incidents.json"
+	componentsUrl          = "https://status.circleci.com/api/v2/components.json"
+	scheduleMaintenanceUrl = "https://status.circleci.com/api/v2/scheduled-maintenances.json"
+)
+
 type circleCi struct {
-	ScheduleMaintenanceUrl string
-	IncidentsUrl           string
-	ComponentsUrl          string
-	RestyClient            *resty.Client
-	ServiceID              uint
+	RestyClient *resty.Client
+	ServiceID   uint
 }
 
 func (c circleCi) ID() uint {
@@ -38,7 +41,7 @@ func (c circleCi) ScrapComponents() (components.AggregateComponents, error) {
 		R().
 		SetResult(&circleciComponents).
 		EnableRetryDefaultConditions().
-		Get(c.ComponentsUrl)
+		Get(componentsUrl)
 	if err != nil {
 		return components.AggregateComponents{}, err
 	}
@@ -58,7 +61,7 @@ func (c circleCi) ScrapIncidents() ([]incidents.Incident, error) {
 	_, err := c.RestyClient.
 		R().
 		SetResult(&req).
-		Get(c.IncidentsUrl)
+		Get(incidentsUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +77,7 @@ func (c circleCi) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
 	_, err := c.RestyClient.
 		R().
 		SetResult(&req).
-		Get(c.ScheduleMaintenanceUrl)
+		Get(scheduleMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -85,13 +88,10 @@ func (c circleCi) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
 }
 
 func Register() {
-	registry.Register(slug, func(serviceResult services.ServiceResult) statuspage.StatusPageProvider {
+	registry.Register(slug, func(serviceID uint) statuspage.StatusPageProvider {
 		return circleCi{
-			ScheduleMaintenanceUrl: serviceResult.ScheduleMaintenancesUrl,
-			IncidentsUrl:           serviceResult.IncidentsUrl,
-			ComponentsUrl:          serviceResult.ComponentsUrl,
-			RestyClient:            resty.New(),
-			ServiceID:              serviceResult.ID,
+			RestyClient: resty.New(),
+			ServiceID:   serviceID,
 		}
 	})
 }

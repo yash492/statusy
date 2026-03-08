@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"os"
 
 	"github.com/yash492/statusy/internal/adapter/collector"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentgroupsdb"
@@ -14,16 +13,10 @@ import (
 )
 
 func (t *TestSuite) TestOrchestrate() {
-	servicesYaml, err := os.ReadFile("../../resources/services/services.yaml")
-	if err != nil {
-		t.T().Fatalf("failed to read services.yaml: %s", err)
-	}
-
 	registeredStatusPage := collector.RegisterAll()
 
 	orchestrator := &ScrapperCmd{
 		RegisteredStatuspages:  registeredStatusPage,
-		ServicesYaml:           servicesYaml,
 		ServicesRepo:           servicesdb.NewPostgresServiceRepository(t.Logger, t.TestDb, t.TestDb),
 		IncidentsRepo:          incidentsdb.NewPostgresIncidentRepository(t.Logger, t.TestDb, t.TestDb),
 		IncidentUpdatesRepo:    incidentupdatesdb.NewPostgresIncidentUpdatesRepository(t.Logger, t.TestDb, t.TestDb),
@@ -33,7 +26,7 @@ func (t *TestSuite) TestOrchestrate() {
 		logger:                 t.Logger,
 	}
 
-	err = orchestrator.Execute(context.Background())
+	err := orchestrator.Execute(context.Background())
 	if err != nil {
 		t.T().Fatalf("orchestrate failed: %s", err)
 	}

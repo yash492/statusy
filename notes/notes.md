@@ -27,3 +27,7 @@
 
 
 **Important**: These things needs to be deployed on prod. Exact deployment strategy can be figured out. 
+
+**Refactor**:
+- Remove all mention of urls from services DB. Keep the services DB very lean. ID, name and slug should only be the 3 columns present.
+- Remove services.yaml file and hard code the urls within app logic

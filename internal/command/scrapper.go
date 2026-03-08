@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/goccy/go-yaml"
 	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
@@ -15,7 +14,6 @@ import (
 
 type ScrapperCmd struct {
 	RegisteredStatuspages  map[string]registry.ProviderBuilderFunc
-	ServicesYaml           []byte
 	ServicesRepo           services.Repository
 	IncidentsRepo          incidents.Repository
 	IncidentUpdatesRepo    incidents.UpdatesRepository
@@ -27,10 +25,17 @@ type ScrapperCmd struct {
 
 func (s ScrapperCmd) Execute(ctx context.Context) error {
 	var serviceParams []services.ServiceParams
-	err := yaml.UnmarshalContext(ctx, s.ServicesYaml, &serviceParams)
-	if err != nil {
-		s.logger.ErrorContext(ctx, "error unmarshalling services yaml file", slog.Any("err", err))
-		return err
+
+	// Create params directly from registered status pages.
+	// Since we no longer read services.yaml, we'll derive the name and slug from the registered collectors.
+	for slug, builder := range s.RegisteredStatuspages {
+		// Instantiate a temporary provider just to get its Name()
+		// We pass 0 since we don't know the ID yet.
+		tempProvider := builder(0)
+		serviceParams = append(serviceParams, services.ServiceParams{
+			Name: tempProvider.Name(),
+			Slug: slug,
+		})
 	}
 
 	servicesResult, err := s.ServicesRepo.SaveAll(ctx, serviceParams)
@@ -50,7 +55,7 @@ func (s ScrapperCmd) Execute(ctx context.Context) error {
 
 		scrappedIncidentForService, err := service.ScrapIncidents()
 		if err != nil {
-			s.logger.ErrorContext(ctx, "error while scrapping components for service %s", string(service.Slug()), slog.Any("error", err))
+			s.logger.ErrorContext(ctx, "error while scrapping incidents for service %s", string(service.Slug()), slog.Any("error", err))
 		}
 
 		scrappedComponentForService.Service.ID = service.ID()
@@ -228,7 +233,7 @@ func (s ScrapperCmd) buildProviders(servicesResult []services.ServiceResult) []s
 			continue
 		}
 
-		servicesToBeScraped = append(servicesToBeScraped, builder(service))
+		servicesToBeScraped = append(servicesToBeScraped, builder(service.ID))
 	}
 
 	return servicesToBeScraped

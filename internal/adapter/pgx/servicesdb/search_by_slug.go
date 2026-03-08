@@ -7,7 +7,6 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/services"
 )
 
@@ -36,16 +35,9 @@ func (s *PostgresServiceRepository) SearchBySlug(ctx context.Context, slug strin
 	results := make([]services.ServiceResult, 0, len(dtos))
 	for _, service := range dtos {
 		results = append(results, services.ServiceResult{
-			ID:                      service.ID,
-			Name:                    service.Name,
-			Slug:                    service.Slug,
-			IncidentsUrl:            service.IncidentsUrl,
-			ScheduleMaintenancesUrl: service.ScheduleMaintenancesUrl,
-			ComponentsUrl:           service.ComponentsUrl,
-			ProviderType:            services.ProviderType(service.ProviderType),
-			CreatedAt:               service.CreatedAt,
-			UpdatedAt:               service.UpdatedAt,
-			DeletedAt:               nullable.SetValue(service.DeletedAt.Time, service.DeletedAt.Valid),
+			ID:   service.ID,
+			Name: service.Name,
+			Slug: service.Slug,
 		})
 	}
 

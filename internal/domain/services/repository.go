@@ -2,31 +2,17 @@ package services
 
 import (
 	"context"
-	"time"
-
-	"github.com/yash492/statusy/internal/common/nullable"
 )
 
 type ServiceResult struct {
-	ID                      uint
-	Name                    string
-	Slug                    string
-	IncidentsUrl            string
-	ScheduleMaintenancesUrl string
-	ComponentsUrl           string
-	ProviderType            ProviderType
-	CreatedAt               time.Time
-	UpdatedAt               time.Time
-	DeletedAt               nullable.Nullable[time.Time]
+	ID   uint
+	Name string
+	Slug string
 }
 
 type ServiceParams struct {
-	Name                    string       `yaml:"name"`
-	Slug                    string       `yaml:"slug"`
-	IncidentsUrl            string       `yaml:"incidents_url"`
-	ScheduleMaintenancesUrl string       `yaml:"schedule_maintenances_url"`
-	ComponentsUrl           string       `yaml:"components_url"`
-	ProviderType            ProviderType `yaml:"provider_type"`
+	Name string
+	Slug string
 }
 
 type Repository interface {
