@@ -18,7 +18,28 @@ type Handler struct {
 
 // (GET /statuspages)
 func (h Handler) ListStatuspages(ctx context.Context, request api.ListStatuspagesRequestObject) (api.ListStatuspagesResponseObject, error) {
-	return nil, nil
+	search := ""
+	if request.Params.Search != nil {
+		search = *request.Params.Search
+	}
+
+	result, err := h.ListStatuspageCmd.Execute(ctx, command.ListStatuspageParams{
+		Search: search,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	statuspages := make(api.ListStatuspages200JSONResponse, 0, len(result))
+	for _, r := range result {
+		statuspages = append(statuspages, api.Statuspage{
+			Id:   int(r.ID),
+			Name: r.Name,
+			Slug: r.Slug,
+		})
+	}
+
+	return statuspages, nil
 }
 
 // (GET /statuspages/{statuspageSlug}/feed.atom)
@@ -33,7 +54,42 @@ func (h Handler) GetRssFeed(ctx context.Context, request api.GetRssFeedRequestOb
 
 // (GET /statuspages/{statuspageSlug}/incidents)
 func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentByStatuspageRequestObject) (api.IncidentByStatuspageResponseObject, error) {
-	return nil, nil
+
+	pageNumber := 0
+	pageSize := 0
+
+	if request.Params.PageNumber != nil {
+		pageNumber = *request.Params.PageNumber
+	}
+
+	if request.Params.PageSize != nil {
+		pageSize = *request.Params.PageSize
+	}
+
+
+	result, err := h.IncidentByStatuspageCmd.Execute(ctx, command.IncidentByStatuspageParams{
+		StatuspageSlug: request.StatuspageSlug,
+		PageNumber:     pageNumber,
+		PageSize:       pageSize,
+	})
+
+
+	if err != nil {
+		return nil, err
+	}
+
+	incidents := make(api.IncidentByStatuspage200JSONResponse, 0, len(result))
+	for _, r := range result {
+		incidents = append(incidents, api.Incident{
+			Id:        int(r.ID),
+			Title:     r.Title,
+			Status:    r.Status,
+			Url:       r.Url,
+			CreatedAt: r.CreatedAt,
+		})
+	}
+
+	return incidents, nil
 }
 
 // (GET /statuspages/{statuspageSlug}/incidents/{incidentID})

@@ -59,8 +59,8 @@ type ListStatuspagesParams struct {
 	Search *string `form:"search,omitempty" json:"search,omitempty"`
 }
 
-// IncidentInfoParams defines parameters for IncidentInfo.
-type IncidentInfoParams struct {
+// IncidentByStatuspageParams defines parameters for IncidentByStatuspage.
+type IncidentByStatuspageParams struct {
 	// PageNumber Page number for incident updates
 	PageNumber *int `form:"page_number,omitempty" json:"page_number,omitempty"`
 
@@ -81,10 +81,10 @@ type ServerInterface interface {
 	GetRssFeed(w http.ResponseWriter, r *http.Request, statuspageSlug string)
 
 	// (GET /statuspages/{statuspageSlug}/incidents)
-	IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string)
+	IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params IncidentByStatuspageParams)
 
 	// (GET /statuspages/{statuspageSlug}/incidents/{incidentID})
-	IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string, params IncidentInfoParams)
+	IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string)
 
 	// (GET /statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduleMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string)
@@ -113,12 +113,12 @@ func (_ Unimplemented) GetRssFeed(w http.ResponseWriter, r *http.Request, status
 }
 
 // (GET /statuspages/{statuspageSlug}/incidents)
-func (_ Unimplemented) IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
+func (_ Unimplemented) IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params IncidentByStatuspageParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // (GET /statuspages/{statuspageSlug}/incidents/{incidentID})
-func (_ Unimplemented) IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string, params IncidentInfoParams) {
+func (_ Unimplemented) IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -232,8 +232,27 @@ func (siw *ServerInterfaceWrapper) IncidentByStatuspage(w http.ResponseWriter, r
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params IncidentByStatuspageParams
+
+	// ------------- Optional query parameter "page_number" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_number", r.URL.Query(), &params.PageNumber, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_number", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_size", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.IncidentByStatuspage(w, r, statuspageSlug)
+		siw.Handler.IncidentByStatuspage(w, r, statuspageSlug, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -266,27 +285,8 @@ func (siw *ServerInterfaceWrapper) IncidentInfo(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params IncidentInfoParams
-
-	// ------------- Optional query parameter "page_number" -------------
-
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_number", r.URL.Query(), &params.PageNumber, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_number", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_size", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.IncidentInfo(w, r, statuspageSlug, incidentID, params)
+		siw.Handler.IncidentInfo(w, r, statuspageSlug, incidentID)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -573,6 +573,7 @@ func (response GetRssFeed200ApplicationrssXmlCharsetUtf8Response) VisitGetRssFee
 
 type IncidentByStatuspageRequestObject struct {
 	StatuspageSlug string `json:"statuspageSlug"`
+	Params         IncidentByStatuspageParams
 }
 
 type IncidentByStatuspageResponseObject interface {
@@ -596,7 +597,6 @@ func (response IncidentByStatuspage200JSONResponse) VisitIncidentByStatuspageRes
 type IncidentInfoRequestObject struct {
 	StatuspageSlug string `json:"statuspageSlug"`
 	IncidentID     string `json:"incidentID"`
-	Params         IncidentInfoParams
 }
 
 type IncidentInfoResponseObject interface {
@@ -795,10 +795,11 @@ func (sh *strictHandler) GetRssFeed(w http.ResponseWriter, r *http.Request, stat
 }
 
 // IncidentByStatuspage operation middleware
-func (sh *strictHandler) IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
+func (sh *strictHandler) IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params IncidentByStatuspageParams) {
 	var request IncidentByStatuspageRequestObject
 
 	request.StatuspageSlug = statuspageSlug
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.IncidentByStatuspage(ctx, request.(IncidentByStatuspageRequestObject))
@@ -821,12 +822,11 @@ func (sh *strictHandler) IncidentByStatuspage(w http.ResponseWriter, r *http.Req
 }
 
 // IncidentInfo operation middleware
-func (sh *strictHandler) IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string, params IncidentInfoParams) {
+func (sh *strictHandler) IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string) {
 	var request IncidentInfoRequestObject
 
 	request.StatuspageSlug = statuspageSlug
 	request.IncidentID = incidentID
-	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.IncidentInfo(ctx, request.(IncidentInfoRequestObject))
@@ -904,23 +904,23 @@ func (sh *strictHandler) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xY34/jNBD+VyzDA4hsU8ELCuJh4cRppQOhLTydVic3mSQ+ObZ3ZtJeqfq/IztJm7bZ",
-	"0oM7fqx4S2J7vs/fNx5Pu5W5a7yzYJlktpWU19Co+Hhnc12A5fDs0XlA1hBHcgTFULxRcawAylF71s7K",
-	"TP6iGyBWjRfrGqzgGoTuA4m1ItGvlYksHTYhgiwUww3rBmQieeNBZpIYta3kLpG6OMf41erHFkQMqksN",
-	"KEqHR1CHSNoyVIAhFLHils7Dfd8iBnrduHDlMevPtF0Bsa4Ua1slB9giEY2zmh3G7wjkzAqKz6e2wZoN",
-	"TKnFBoRDQW3TKNycgk+FatFMSHL/SrA7Jl4AK23oPMYukQiPrUYoZPY6SDwQ3IvUwSRjqx/2cdzyLeQc",
-	"uCzibK8qOM+S93OuFz+GmjLPqmZCvxeavFEbEUYH7SYjHeQj01aT+t2UqMEWZiPClMvELikZmfY455qF",
-	"JdqWLlDok6JXcSMTuQKkjtB8Np/NA1/nwSqvZSa/ip8S6RXXUeGU9vLH9womDuQrTSyUMUKtlDZqaY62",
-	"RGKtuRYuzlZGECjMa1Fqw4AyoqMKY3dFH2sxwgxcUDXAgCSz16fQiy4YAzYhObugx+jLwTuMqstEwjtv",
-	"XAEyK5UhCGLJTD62gJtB20x2LIPIsVxFLU+MeQjOkHeWOm2+nM9j6XKW+5qmvDc6j5tL31IgvB3F0wxN",
-	"XPgpQikz+Ul6KJRpXyXTUfrv9k4rRLXpjD457DWIkC1ALGpFgto8ByigmIXZu+TIz3R7eFmYttqlJUAx",
-	"U+yaJ61+CSxu2TUiTI0JrE7S99jOl8Bh+g8Q6/FFK88P7uRpi2aF/Bx5dbQNOT4wjC18OA+DNF+8a8w3",
-	"Iq8VEvC3LZc3Xx/begrxUUxCoose3S8W72HRPdEzcQiJ/nGDhtvxskOhXu5nDjZ5yHWp84t+DU3Td5tR",
-	"bfjvO/cn6+O+hfz41XHvVrodHu9e7C6a3PVHUIhwH4deVDsr1NK1PHb70L2Gi9KrStvQEYnWh76VnsyA",
-	"u3DJ/xudT65mMepCJygcZP5r8D+rCoRtm2XfDe4FPyh8TU8QtHjThZlqDPat5DmBnzpsVw6IwgMO2l8N",
-	"Tfo3uAz83I5cgCxaAzeNCpu0yubwx2V1WFWI0TKx1rZwa7riRlz06388rP6/2P7tzeik9+mWzs35MFV4",
-	"MmuuyY1nUIaf2vsUnyn9n3mqht/0gKtpa29FhyXiLXNbVQiVYof9HxyZrJk9ZWmf7ZuZ8l7uHna/BwAA",
-	"///TuwKnGBMAAA==",
+	"H4sIAAAAAAAC/9xYUY/jNBD+K5bhAUS2qeAFBfGwcOK00oHQFp5Oq5ObTBKfHNs7M2mvVP3vyE7Spm22",
+	"7Em7sOxbEtszn7/v83jarcxd450FyySzraS8hkbFxxub6wIsh2ePzgOyhjiSIyiG4oOKYwVQjtqzdlZm",
+	"8g/dALFqvFjXYAXXIHQfSKwViX6tTGTpsAkRZKEYrlg3IBPJGw8yk8SobSV3idTFeY4/rb5vQcSgutSA",
+	"onR4lOoQSVuGCjCEIlbc0nm4n1vEAK8bF648Rv2Vtisg1pVibavkkLZIROOsZofxOwI5s4Li66ltsGYD",
+	"U2yxAeFQUNs0CjenyadCtWgmKLl9J9gdAy+AlTZ0HmOXSIT7ViMUMnsfKB4A7knq0iRjqe/2cdzyI+Qc",
+	"sCzibK8qOHfJ5ynXkx9DTYlnVTPB3xtN3qiNCKMDd5ORDvSRaatJ/q5K1GALsxFhymVgl5iMSPs855yF",
+	"JdqWLkDoTdGzuJGJXAFSB2g+m8/mAa/zYJXXMpPfxU+J9IrryHBKe/rjewUTB/KdJhbKGKFWShu1NEdb",
+	"IrHWXAsXZysjCBTmtSi1YUAZs6MKYzdFH2sxyhmwoGqAAUlm709TL7pgDNgEc3ZBj7MvB+0wsi4TCZ+8",
+	"cQXIrFSGIJAlM3nfAm4GbjPZoQwkx3IVuTwR5i4oQ95Z6rj5dj6PpctZ7mua8t7oPG4u/UgB8HYUTzM0",
+	"ceGXCKXM5BfpoVCmfZVMR/bf7ZVWiGrTCX1y2GsQwS1ALGpFgto8ByigmIXZu+RIz3R7eFmYttqlJUAx",
+	"U+yaB6V+Cyyu2TUiTI0GVif2PZbzLXCY/gvEenxRyvODO3naoljBnyOtjrYhxweGsYWn0zBQ882nxvwg",
+	"8lohAf/Ycnn1/bGspymeRSQkuqjR7WLxGRLdEr0ShZDoPxdouB0vKxTq5X7mIJOHXJc6v6jX0DT9tBnV",
+	"hpeoXHKK4ndVgbBts+wv5X0b0frQoNEjS3MA86ELM1Wf9zf6OYDfutyuHDIKDzhs/tGpSf8FlxP/KzfD",
+	"vnl+/nth79N0OzzevNldtHfXGUIhQicSunDtrFBL1/LY54e+PbQIXlXahl5wZIhp79+E9uZ/4fkHUYz6",
+	"7wkIB5qfsVi+fOOFlEVr4KpR4XRZZXP457I6rCrEaJlYa1u4NT3iRlz06389rH7xxfb1NaOT2qdbOhfn",
+	"aWrRpGse441XUIwe2vsUnin+X7lVw296wNW0tNeiyyVie3NdVQiVYof9HxyZrJk9ZWnv9s1MeS93d7u/",
+	"AwAA//9PyfESGBMAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

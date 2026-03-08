@@ -92,6 +92,14 @@ op incidentByStatuspage(
   @doc("Unique identifier of the status page")
   @path
   statuspageSlug: string,
+
+  @doc("Page number for incident updates")
+  @query
+  page_number?: integer,
+
+  @doc("Number of updates per page")
+  @query
+  page_size?: integer
 ): Incident[];
 
 // TODO: Change response
@@ -106,14 +114,6 @@ op incidentInfo(
   @doc("Unique identifier of the incident")
   @path
   incidentID: string,
-
-  @doc("Page number for incident updates")
-  @query
-  page_number?: integer,
-
-  @doc("Number of updates per page")
-  @query
-  page_size?: integer,
 ): Incident[];
 
 @doc("Get all scheduled maintenance windows for a status page")

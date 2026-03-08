@@ -72,6 +72,20 @@ paths:
           description: Unique identifier of the status page
           schema:
             type: string
+        - name: page_number
+          in: query
+          required: false
+          description: Page number for incident updates
+          schema:
+            type: integer
+          explode: false
+        - name: page_size
+          in: query
+          required: false
+          description: Number of updates per page
+          schema:
+            type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -98,20 +112,6 @@ paths:
           description: Unique identifier of the incident
           schema:
             type: string
-        - name: page_number
-          in: query
-          required: false
-          description: Page number for incident updates
-          schema:
-            type: integer
-          explode: false
-        - name: page_size
-          in: query
-          required: false
-          description: Number of updates per page
-          schema:
-            type: integer
-          explode: false
       responses:
         '200':
           description: The request has succeeded.
