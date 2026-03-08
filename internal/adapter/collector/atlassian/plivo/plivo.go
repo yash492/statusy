@@ -75,11 +75,13 @@ func (p plivo) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
 	return atlassian.FetchIncidentsHelper(req), nil
 }
 
+func (p plivo) NewWithServiceID(id uint) statuspage.StatusPageProvider {
+	p.ServiceID = id
+	return p
+}
+
 func Register() {
-	registry.Register(slug, func(serviceID uint) statuspage.StatusPageProvider {
-		return plivo{
-			RestyClient: resty.New(),
-			ServiceID:   serviceID,
-		}
+	registry.Register(slug, plivo{
+		RestyClient: resty.New(),
 	})
 }

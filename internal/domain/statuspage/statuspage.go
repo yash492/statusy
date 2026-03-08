@@ -13,4 +13,5 @@ type StatusPageProvider interface {
 	Slug() services.ServiceSlug
 	ID() uint
 	Name() string
+	NewWithServiceID(id uint) StatusPageProvider
 }

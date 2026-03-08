@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
@@ -13,7 +12,7 @@ import (
 )
 
 type ScrapperCmd struct {
-	RegisteredStatuspages  map[string]registry.ProviderBuilderFunc
+	RegisteredStatuspages  map[string]statuspage.StatusPageProvider
 	ServicesRepo           services.Repository
 	IncidentsRepo          incidents.Repository
 	IncidentUpdatesRepo    incidents.UpdatesRepository
@@ -26,15 +25,10 @@ type ScrapperCmd struct {
 func (s ScrapperCmd) Execute(ctx context.Context) error {
 	var serviceParams []services.ServiceParams
 
-	// Create params directly from registered status pages.
-	// Since we no longer read services.yaml, we'll derive the name and slug from the registered collectors.
-	for slug, builder := range s.RegisteredStatuspages {
-		// Instantiate a temporary provider just to get its Name()
-		// We pass 0 since we don't know the ID yet.
-		tempProvider := builder(0)
+	for _, provider := range s.RegisteredStatuspages {
 		serviceParams = append(serviceParams, services.ServiceParams{
-			Name: tempProvider.Name(),
-			Slug: slug,
+			Name: provider.Name(),
+			Slug: provider.Slug().String(),
 		})
 	}
 
@@ -227,13 +221,13 @@ func (s ScrapperCmd) buildProviders(servicesResult []services.ServiceResult) []s
 	servicesToBeScraped := make([]statuspage.StatusPageProvider, 0, len(servicesResult))
 
 	for _, service := range servicesResult {
-		builder, ok := s.RegisteredStatuspages[service.Slug]
+		provider, ok := s.RegisteredStatuspages[service.Slug]
 		if !ok {
 			s.logger.Warn("unsupported service slug", slog.String("slug", service.Slug))
 			continue
 		}
 
-		servicesToBeScraped = append(servicesToBeScraped, builder(service.ID))
+		servicesToBeScraped = append(servicesToBeScraped, provider.NewWithServiceID(service.ID))
 	}
 
 	return servicesToBeScraped

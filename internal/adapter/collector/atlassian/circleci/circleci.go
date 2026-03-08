@@ -87,11 +87,13 @@ func (c circleCi) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
+func (c circleCi) NewWithServiceID(id uint) statuspage.StatusPageProvider {
+	c.ServiceID = id
+	return c
+}
+
 func Register() {
-	registry.Register(slug, func(serviceID uint) statuspage.StatusPageProvider {
-		return circleCi{
-			RestyClient: resty.New(),
-			ServiceID:   serviceID,
-		}
+	registry.Register(slug, circleCi{
+		RestyClient: resty.New(),
 	})
 }

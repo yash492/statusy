@@ -6,19 +6,17 @@ import (
 	"github.com/yash492/statusy/internal/domain/statuspage"
 )
 
-type ProviderBuilderFunc func(serviceID uint) statuspage.StatusPageProvider
-
 var (
-	providerBuilder map[string]ProviderBuilderFunc = map[string]ProviderBuilderFunc{}
-	mu              *sync.Mutex                    = &sync.Mutex{}
+	providerBuilder map[string]statuspage.StatusPageProvider = map[string]statuspage.StatusPageProvider{}
+	mu              *sync.Mutex                              = &sync.Mutex{}
 )
 
-func Register(serviceSlug string, serviceInitFunc ProviderBuilderFunc) {
+func Register(serviceSlug string, service statuspage.StatusPageProvider) {
 	mu.Lock()
 	defer mu.Unlock()
-	providerBuilder[serviceSlug] = serviceInitFunc
+	providerBuilder[serviceSlug] = service
 }
 
-func GetAll() map[string]ProviderBuilderFunc {
+func GetAll() map[string]statuspage.StatusPageProvider {
 	return providerBuilder
 }
