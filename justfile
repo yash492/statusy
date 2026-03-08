@@ -26,3 +26,6 @@ generate-oapi: check-oapi
 
 tidy:
 	@command go mod tidy
+
+run-ui-dev:
+	cd _ui && bun run dev

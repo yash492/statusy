@@ -1,11 +1,10 @@
 module github.com/yash492/statusy
 
-go 1.25
+go 1.26
 
 require (
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-chi/chi/v5 v5.2.5
-	github.com/goccy/go-yaml v1.19.2
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/oapi-codegen/runtime v1.2.0
 	github.com/samber/lo v1.52.0
