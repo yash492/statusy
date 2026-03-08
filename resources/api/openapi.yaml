@@ -187,8 +187,7 @@ components:
         - id
         - title
         - status
-        - url
-        - created_at
+        - provider_created_at
       properties:
         id:
           type: integer
@@ -199,13 +198,10 @@ components:
         status:
           type: string
           description: Current status of the incident (investigating, identified, monitoring, resolved)
-        url:
-          type: string
-          description: URL to the incident details
-        created_at:
+        provider_created_at:
           type: string
           format: date-time
-          description: Timestamp when the incident was created
+          description: Timestamp when the incident was created by the provider
     NotFoundError:
       type: object
       required:

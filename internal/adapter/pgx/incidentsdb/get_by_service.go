@@ -14,13 +14,13 @@ import (
 var getIncidentsByServiceQuery string
 
 type incidentByServiceDto struct {
-	ID        uint      `db:"id"`
-	ServiceID uint      `db:"service_id"`
-	Title     string    `db:"title"`
-	Status    string    `db:"status"`
-	URL       string    `db:"url"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID                uint      `db:"id"`
+	ServiceID         uint      `db:"service_id"`
+	Title             string    `db:"title"`
+	Status            string    `db:"status"`
+	ProviderCreatedAt time.Time `db:"provider_created_at"`
+	CreatedAt         time.Time `db:"created_at"`
+	UpdatedAt         time.Time `db:"updated_at"`
 }
 
 func (c *PostgresIncidentRepository) GetByService(ctx context.Context, params incidents.IncidentByServiceParams) ([]incidents.IncidentByServiceResult, error) {
@@ -47,13 +47,11 @@ func (c *PostgresIncidentRepository) GetByService(ctx context.Context, params in
 	results := make([]incidents.IncidentByServiceResult, 0, len(dtos))
 	for _, item := range dtos {
 		results = append(results, incidents.IncidentByServiceResult{
-			ID:        item.ID,
-			ServiceID: item.ServiceID,
-			Title:     item.Title,
-			Status:    item.Status,
-			Url:       item.URL,
-			CreatedAt: item.CreatedAt,
-			UpdatedAt: item.UpdatedAt,
+			ID:                item.ID,
+			ServiceID:         item.ServiceID,
+			Title:             item.Title,
+			Status:            item.Status,
+			ProviderCreatedAt: item.ProviderCreatedAt,
 		})
 	}
 

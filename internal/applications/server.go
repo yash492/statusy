@@ -3,6 +3,7 @@ package applications
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -132,7 +133,12 @@ type CustomLogEntry struct {
 }
 
 func (l *CustomLogEntry) Write(status, bytes int, header http.Header, elapsed time.Duration, extra any) {
-	l.Logger.Info("request", "status", status, "elapsed", elapsed, slog.Any("extra", extra))
+	l.Logger.Info(
+		"request",
+		"status", status,
+		"time_taken", fmt.Sprintf("%dms", elapsed.Milliseconds()),
+		slog.Any("extra", extra),
+	)
 }
 func (l *CustomLogEntry) Panic(v any, stack []byte) {
 	middleware.PrintPrettyStack(v)

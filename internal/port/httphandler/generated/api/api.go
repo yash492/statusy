@@ -25,20 +25,17 @@ import (
 
 // Incident defines model for Incident.
 type Incident struct {
-	// CreatedAt Timestamp when the incident was created
-	CreatedAt time.Time `json:"created_at"`
-
 	// Id Unique identifier for the incident
 	Id int `json:"id"`
+
+	// ProviderCreatedAt Timestamp when the incident was created by the provider
+	ProviderCreatedAt time.Time `json:"provider_created_at"`
 
 	// Status Current status of the incident (investigating, identified, monitoring, resolved)
 	Status string `json:"status"`
 
 	// Title Title or summary of the incident
 	Title string `json:"title"`
-
-	// Url URL to the incident details
-	Url string `json:"url"`
 }
 
 // Statuspage defines model for Statuspage.
@@ -904,23 +901,23 @@ func (sh *strictHandler) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9xYUY/jNBD+K5bhAUS2qeAFBfGwcOK00oHQFp5Oq5ObTBKfHNs7M2mvVP3vyE7Spm22",
-	"7Em7sOxbEtszn7/v83jarcxd450FyySzraS8hkbFxxub6wIsh2ePzgOyhjiSIyiG4oOKYwVQjtqzdlZm",
-	"8g/dALFqvFjXYAXXIHQfSKwViX6tTGTpsAkRZKEYrlg3IBPJGw8yk8SobSV3idTFeY4/rb5vQcSgutSA",
-	"onR4lOoQSVuGCjCEIlbc0nm4n1vEAK8bF648Rv2Vtisg1pVibavkkLZIROOsZofxOwI5s4Li66ltsGYD",
-	"U2yxAeFQUNs0CjenyadCtWgmKLl9J9gdAy+AlTZ0HmOXSIT7ViMUMnsfKB4A7knq0iRjqe/2cdzyI+Qc",
-	"sCzibK8qOHfJ5ynXkx9DTYlnVTPB3xtN3qiNCKMDd5ORDvSRaatJ/q5K1GALsxFhymVgl5iMSPs855yF",
-	"JdqWLkDoTdGzuJGJXAFSB2g+m8/mAa/zYJXXMpPfxU+J9IrryHBKe/rjewUTB/KdJhbKGKFWShu1NEdb",
-	"IrHWXAsXZysjCBTmtSi1YUAZs6MKYzdFH2sxyhmwoGqAAUlm709TL7pgDNgEc3ZBj7MvB+0wsi4TCZ+8",
-	"cQXIrFSGIJAlM3nfAm4GbjPZoQwkx3IVuTwR5i4oQ95Z6rj5dj6PpctZ7mua8t7oPG4u/UgB8HYUTzM0",
-	"ceGXCKXM5BfpoVCmfZVMR/bf7ZVWiGrTCX1y2GsQwS1ALGpFgto8ByigmIXZu+RIz3R7eFmYttqlJUAx",
-	"U+yaB6V+Cyyu2TUiTI0GVif2PZbzLXCY/gvEenxRyvODO3naoljBnyOtjrYhxweGsYWn0zBQ882nxvwg",
-	"8lohAf/Ycnn1/bGspymeRSQkuqjR7WLxGRLdEr0ShZDoPxdouB0vKxTq5X7mIJOHXJc6v6jX0DT9tBnV",
-	"hpeoXHKK4ndVgbBts+wv5X0b0frQoNEjS3MA86ELM1Wf9zf6OYDfutyuHDIKDzhs/tGpSf8FlxP/KzfD",
-	"vnl+/nth79N0OzzevNldtHfXGUIhQicSunDtrFBL1/LY54e+PbQIXlXahl5wZIhp79+E9uZ/4fkHUYz6",
-	"7wkIB5qfsVi+fOOFlEVr4KpR4XRZZXP457I6rCrEaJlYa1u4NT3iRlz06389rH7xxfb1NaOT2qdbOhfn",
-	"aWrRpGse441XUIwe2vsUnin+X7lVw296wNW0tNeiyyVie3NdVQiVYof9HxyZrJk9ZWnv9s1MeS93d7u/",
-	"AwAA//9PyfESGBMAAA==",
+	"H4sIAAAAAAAC/9xXQW/jNhP9KwS/79CiShy0l0JFD2kXXQTYFkXcnhZBMBZHEhcUyZAje1XD/70YWrJl",
+	"W/Gm6KZNc0kkkTPzZt7jcLyWhWu8s2gpynwtY1FjA+nxxhZaoSV+9sF5DKQxrWjFfxXGImhP2lmZy9+t",
+	"fmhRJAtdagyidEFQjUIPfjJJnUeZS20JKwxyk7HjpVYY7ouAQKjugU59/6YbjASNF6sa7YFTsYIoelux",
+	"6NLa4FNmsnShYY9SAeEF6Qb3KCIFbSsGEQmojadxf2xD4BjbdeHKw9BfaLvESLoC0rbK9rmrTDTOanIh",
+	"fQ8YnVmi+nIqNmkyOJUyGRQuiNg2DYTuOPipq00mAz60OqCS+XvmaHC+S3C63Hc7V27xAQtiVPNk4KHC",
+	"v8t+X7vkakoAFpqJ9N/o6A10gleH1Cc9jUg0bTUB7PbdRRk0WmU6wVvOAztXzIS0j3NaMzbRtnQMoee0",
+	"r2InM7nEELeAri6vLq8Yr/NowWuZy2/Sp0x6oDpVeBZ35U/vFU4cinc6kgBjBCxBG1iYg5SiWGmqhUu7",
+	"wYiIEIpalNpQOhhMKPDajep9zUcxGUuABglDlPn749DzrTPC0AhyvdPD6IuBu5CqLjOJH71xCmVegonI",
+	"xZK5fGgxdENtc7lFyUVObSjV8oiYO2YmemfjtjZfX13xv8JZ6nsVeG90kZKbfYgMeD3ypwmbZPj/gKXM",
+	"5f9m+wY467vfbCT/zY5pCAG6LdFHZ7VGwWrBSKKGKGJbFIgK1SXv3mQHfM7W+5e5aavNrERUl0CueZTq",
+	"t0jimlwjeGsSMBzJ95DOt0i8/SdE9SkqTw/u5GlLZLE+R1wdpCHHB4ZCi5+PQy7NVx8b850oaggR6fuW",
+	"yotvD2k9DvEsJIUYz3J0O5//BYpuY3wlDIUY/3WChovxPEPcL3c7B5o8FrrUxVm+hmHoh27UG14ic9kx",
+	"il+hQmHbZtFfyrvxpfU8FMUntmYGc791M9Wfdzf6KYBftrFdOUQUHsOQ/JNDR/0Hng/8j9wMu6H4+e+F",
+	"nU5n6+Hx5s3mrLwVEmiDSvAkwpOvdlbAwrU01vl+duYRwUOlbRqf94KY1v4Njzf/Cc0/imI0Pk9A2Jf5",
+	"GZvlyxceh1StwYsG+HRZsAV+uq0OVkqMzMRKW+VW8Qk34ry3/3lv/eKb7esbRie5n63jKTmfpxdNquYp",
+	"2ngFzeix3KfwTNX/lUuVf9NjWE5Tey22sUQab66rKmAF5Hg2aYORuayJfMxnvdq7S/Bebu42fwYAAP//",
+	"CIxFpvASAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -38,13 +38,11 @@ type IncidentByServiceParams struct {
 }
 
 type IncidentByServiceResult struct {
-	ID        uint
-	ServiceID uint
-	Title     string
-	Status    string
-	Url       string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID                uint
+	ServiceID         uint
+	Title             string
+	Status            string
+	ProviderCreatedAt time.Time
 }
 
 type IncidentUpdateParams struct {

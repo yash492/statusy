@@ -39,11 +39,10 @@ type IncidentByStatuspageParams struct {
 }
 
 type IncidentByStatuspageResult struct {
-	ID        uint
-	Title     string
-	Status    string
-	Url       string
-	CreatedAt time.Time
+	ID                uint
+	Title             string
+	Status            string
+	ProviderCreatedAt time.Time
 }
 
 func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByStatuspageParams) ([]IncidentByStatuspageResult, error) {
@@ -70,7 +69,7 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 
 	pageSize := params.PageSize
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 
 	offset := (pageNumber - 1) * pageSize
@@ -88,11 +87,10 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 	result := make([]IncidentByStatuspageResult, 0, len(incidentRows))
 	for _, incident := range incidentRows {
 		result = append(result, IncidentByStatuspageResult{
-			ID:        incident.ID,
-			Title:     incident.Title,
-			Status:    incident.Status,
-			Url:       incident.Url,
-			CreatedAt: incident.CreatedAt,
+			ID:                incident.ID,
+			Title:             incident.Title,
+			Status:            incident.Status,
+			ProviderCreatedAt: incident.ProviderCreatedAt,
 		})
 	}
 

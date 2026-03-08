@@ -27,11 +27,8 @@ model Incident {
   @doc("Current status of the incident (investigating, identified, monitoring, resolved)")
   status: string;
 
-  @doc("URL to the incident details")
-  url: string;
-
-  @doc("Timestamp when the incident was created")
-  created_at: utcDateTime;
+  @doc("Timestamp when the incident was created by the provider")
+  provider_created_at: utcDateTime;
 }
 
 model PaginationQuery {

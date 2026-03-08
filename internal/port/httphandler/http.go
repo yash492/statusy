@@ -66,13 +66,11 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 		pageSize = *request.Params.PageSize
 	}
 
-
 	result, err := h.IncidentByStatuspageCmd.Execute(ctx, command.IncidentByStatuspageParams{
 		StatuspageSlug: request.StatuspageSlug,
 		PageNumber:     pageNumber,
 		PageSize:       pageSize,
 	})
-
 
 	if err != nil {
 		return nil, err
@@ -81,11 +79,10 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 	incidents := make(api.IncidentByStatuspage200JSONResponse, 0, len(result))
 	for _, r := range result {
 		incidents = append(incidents, api.Incident{
-			Id:        int(r.ID),
-			Title:     r.Title,
-			Status:    r.Status,
-			Url:       r.Url,
-			CreatedAt: r.CreatedAt,
+			Id:                int(r.ID),
+			Title:             r.Title,
+			Status:            r.Status,
+			ProviderCreatedAt: r.ProviderCreatedAt,
 		})
 	}
 
