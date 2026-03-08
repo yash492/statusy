@@ -54,9 +54,9 @@
 		onPageChange
 	}: Props = $props();
 
-	let paginationState = $state<PaginationState>(initialPagination);
-	let sortingState = $state<SortingState>(initialSorting);
-	let columnFilters = $state<ColumnFiltersState>(initialFilters as ColumnFiltersState);
+	let paginationState = $state<PaginationState>((() => initialPagination)());
+	let sortingState = $state<SortingState>((() => initialSorting)());
+	let columnFilters = $state<ColumnFiltersState>((() => initialFilters)() as ColumnFiltersState);
 	let rowSelection = $state<RowSelectionState>({});
 	let columnVisibility = $state<VisibilityState>({});
 
@@ -64,7 +64,9 @@
 		get data() {
 			return data;
 		},
-		columns,
+		get columns() {
+			return columns;
+		},
 		state: {
 			get pagination() {
 				return paginationState;
@@ -83,9 +85,9 @@
 			}
 		},
 		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
-		getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
-		getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
+		getPaginationRowModel: (() => enablePagination)() ? getPaginationRowModel() : undefined,
+		getSortedRowModel: (() => enableSorting)() ? getSortedRowModel() : undefined,
+		getFilteredRowModel: (() => enableFiltering)() ? getFilteredRowModel() : undefined,
 		onPaginationChange: (updater) => {
 			const next = typeof updater === 'function' ? updater(paginationState) : updater;
 			paginationState = next;
