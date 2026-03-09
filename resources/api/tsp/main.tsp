@@ -82,6 +82,15 @@ op listStatuspages(
   search?: string,
 ): Statuspage[];
 
+@doc("Get statuspage by slug")
+@get
+@route("/statuspages/{statuspageSlug}")
+op statuspageBySlug(
+  @doc("Unique identifier of the status page")
+  @path
+  statuspageSlug: string,
+): Statuspage;
+
 @doc("Get all incidents for a specific status page")
 @get
 @route("/statuspages/{statuspageSlug}/incidents")
@@ -96,7 +105,7 @@ op incidentByStatuspage(
 
   @doc("Number of updates per page")
   @query
-  page_size?: integer
+  page_size?: integer,
 ): Incident[];
 
 // TODO: Change response

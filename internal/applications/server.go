@@ -55,6 +55,7 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 	)
 	handler := httphandler.Handler{
 		ListStatuspageCmd:       command.NewListStatuspageCmd(lg, servicesRepo),
+		StatuspageBySlugCmd:     command.NewStatuspageBySlugCmd(lg, servicesRepo),
 		IncidentByStatuspageCmd: command.NewIncidentByStatuspageCmd(lg, servicesRepo, incidentsRepo),
 	}
 	return ServerApplication{

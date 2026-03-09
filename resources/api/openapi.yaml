@@ -25,6 +25,24 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Statuspage'
+  /statuspages/{statuspageSlug}:
+    get:
+      operationId: statuspageBySlug
+      description: Get statuspage by slug
+      parameters:
+        - name: statuspageSlug
+          in: path
+          required: true
+          description: Unique identifier of the status page
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statuspage'
   /statuspages/{statuspageSlug}/feed.atom:
     get:
       operationId: getAtomFeed

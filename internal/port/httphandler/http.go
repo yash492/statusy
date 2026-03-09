@@ -13,6 +13,7 @@ var _ api.StrictServerInterface = Handler{}
 type Handler struct {
 	lg                      *slog.Logger
 	ListStatuspageCmd       command.ListStatuspageCmd
+	StatuspageBySlugCmd     command.StatuspageBySlugCmd
 	IncidentByStatuspageCmd command.IncidentByStatuspageCmd
 }
 
@@ -102,4 +103,20 @@ func (h Handler) ScheduleMaintenanceByStatuspage(ctx context.Context, request ap
 // (GET /statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
 func (h Handler) ScheduleMaintenanceInfo(ctx context.Context, request api.ScheduleMaintenanceInfoRequestObject) (api.ScheduleMaintenanceInfoResponseObject, error) {
 	return nil, nil
+}
+
+// (GET /statuspages/{statuspageSlug})
+func (h Handler) StatuspageBySlug(ctx context.Context, request api.StatuspageBySlugRequestObject) (api.StatuspageBySlugResponseObject, error) {
+	result, err := h.StatuspageBySlugCmd.Execute(ctx, command.StatuspageBySlugParams{
+		Slug: request.StatuspageSlug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.StatuspageBySlug200JSONResponse{
+		Id:   int(result.ID),
+		Name: result.Name,
+		Slug: result.Slug,
+	}, nil
 }

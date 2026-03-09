@@ -1,7 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
 
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import Navbar from '$lib/derivedcomponents/Navbar.svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import './layout.css';

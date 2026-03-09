@@ -71,6 +71,9 @@ type ServerInterface interface {
 	// (GET /statuspages)
 	ListStatuspages(w http.ResponseWriter, r *http.Request, params ListStatuspagesParams)
 
+	// (GET /statuspages/{statuspageSlug})
+	StatuspageBySlug(w http.ResponseWriter, r *http.Request, statuspageSlug string)
+
 	// (GET /statuspages/{statuspageSlug}/feed.atom)
 	GetAtomFeed(w http.ResponseWriter, r *http.Request, statuspageSlug string)
 
@@ -96,6 +99,11 @@ type Unimplemented struct{}
 
 // (GET /statuspages)
 func (_ Unimplemented) ListStatuspages(w http.ResponseWriter, r *http.Request, params ListStatuspagesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /statuspages/{statuspageSlug})
+func (_ Unimplemented) StatuspageBySlug(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -156,6 +164,31 @@ func (siw *ServerInterfaceWrapper) ListStatuspages(w http.ResponseWriter, r *htt
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ListStatuspages(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// StatuspageBySlug operation middleware
+func (siw *ServerInterfaceWrapper) StatuspageBySlug(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "statuspageSlug" -------------
+	var statuspageSlug string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "statuspageSlug", chi.URLParam(r, "statuspageSlug"), &statuspageSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "statuspageSlug", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.StatuspageBySlug(w, r, statuspageSlug)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -469,6 +502,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/statuspages", wrapper.ListStatuspages)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}", wrapper.StatuspageBySlug)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}/feed.atom", wrapper.GetAtomFeed)
 	})
 	r.Group(func(r chi.Router) {
@@ -501,6 +537,28 @@ type ListStatuspagesResponseObject interface {
 type ListStatuspages200JSONResponse []Statuspage
 
 func (response ListStatuspages200JSONResponse) VisitListStatuspagesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type StatuspageBySlugRequestObject struct {
+	StatuspageSlug string `json:"statuspageSlug"`
+}
+
+type StatuspageBySlugResponseObject interface {
+	VisitStatuspageBySlugResponse(w http.ResponseWriter) error
+}
+
+type StatuspageBySlug200JSONResponse Statuspage
+
+func (response StatuspageBySlug200JSONResponse) VisitStatuspageBySlugResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -665,6 +723,9 @@ type StrictServerInterface interface {
 	// (GET /statuspages)
 	ListStatuspages(ctx context.Context, request ListStatuspagesRequestObject) (ListStatuspagesResponseObject, error)
 
+	// (GET /statuspages/{statuspageSlug})
+	StatuspageBySlug(ctx context.Context, request StatuspageBySlugRequestObject) (StatuspageBySlugResponseObject, error)
+
 	// (GET /statuspages/{statuspageSlug}/feed.atom)
 	GetAtomFeed(ctx context.Context, request GetAtomFeedRequestObject) (GetAtomFeedResponseObject, error)
 
@@ -732,6 +793,32 @@ func (sh *strictHandler) ListStatuspages(w http.ResponseWriter, r *http.Request,
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(ListStatuspagesResponseObject); ok {
 		if err := validResponse.VisitListStatuspagesResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// StatuspageBySlug operation middleware
+func (sh *strictHandler) StatuspageBySlug(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
+	var request StatuspageBySlugRequestObject
+
+	request.StatuspageSlug = statuspageSlug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.StatuspageBySlug(ctx, request.(StatuspageBySlugRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "StatuspageBySlug")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(StatuspageBySlugResponseObject); ok {
+		if err := validResponse.VisitStatuspageBySlugResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -901,23 +988,23 @@ func (sh *strictHandler) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9xXQW/jNhP9KwS/79CiShy0l0JFD2kXXQTYFkXcnhZBMBZHEhcUyZAje1XD/70YWrJl",
-	"W/Gm6KZNc0kkkTPzZt7jcLyWhWu8s2gpynwtY1FjA+nxxhZaoSV+9sF5DKQxrWjFfxXGImhP2lmZy9+t",
-	"fmhRJAtdagyidEFQjUIPfjJJnUeZS20JKwxyk7HjpVYY7ouAQKjugU59/6YbjASNF6sa7YFTsYIoelux",
-	"6NLa4FNmsnShYY9SAeEF6Qb3KCIFbSsGEQmojadxf2xD4BjbdeHKw9BfaLvESLoC0rbK9rmrTDTOanIh",
-	"fQ8YnVmi+nIqNmkyOJUyGRQuiNg2DYTuOPipq00mAz60OqCS+XvmaHC+S3C63Hc7V27xAQtiVPNk4KHC",
-	"v8t+X7vkakoAFpqJ9N/o6A10gleH1Cc9jUg0bTUB7PbdRRk0WmU6wVvOAztXzIS0j3NaMzbRtnQMoee0",
-	"r2InM7nEELeAri6vLq8Yr/NowWuZy2/Sp0x6oDpVeBZ35U/vFU4cinc6kgBjBCxBG1iYg5SiWGmqhUu7",
-	"wYiIEIpalNpQOhhMKPDajep9zUcxGUuABglDlPn749DzrTPC0AhyvdPD6IuBu5CqLjOJH71xCmVegonI",
-	"xZK5fGgxdENtc7lFyUVObSjV8oiYO2YmemfjtjZfX13xv8JZ6nsVeG90kZKbfYgMeD3ypwmbZPj/gKXM",
-	"5f9m+wY467vfbCT/zY5pCAG6LdFHZ7VGwWrBSKKGKGJbFIgK1SXv3mQHfM7W+5e5aavNrERUl0CueZTq",
-	"t0jimlwjeGsSMBzJ95DOt0i8/SdE9SkqTw/u5GlLZLE+R1wdpCHHB4ZCi5+PQy7NVx8b850oaggR6fuW",
-	"yotvD2k9DvEsJIUYz3J0O5//BYpuY3wlDIUY/3WChovxPEPcL3c7B5o8FrrUxVm+hmHoh27UG14ic9kx",
-	"il+hQmHbZtFfyrvxpfU8FMUntmYGc791M9Wfdzf6KYBftrFdOUQUHsOQ/JNDR/0Hng/8j9wMu6H4+e+F",
-	"nU5n6+Hx5s3mrLwVEmiDSvAkwpOvdlbAwrU01vl+duYRwUOlbRqf94KY1v4Njzf/Cc0/imI0Pk9A2Jf5",
-	"GZvlyxceh1StwYsG+HRZsAV+uq0OVkqMzMRKW+VW8Qk34ry3/3lv/eKb7esbRie5n63jKTmfpxdNquYp",
-	"2ngFzeix3KfwTNX/lUuVf9NjWE5Tey22sUQab66rKmAF5Hg2aYORuayJfMxnvdq7S/Bebu42fwYAAP//",
-	"CIxFpvASAAA=",
+	"H4sIAAAAAAAC/9xXUY/jNBD+K5bhAUR2s4IXFMTDHSdOKx0IbeHptFq58STxybG99qS9UPW/o3GSJm2z",
+	"pYjbY+nLblt7Zr75vvF4vOG5rZ01YDDwbMNDXkEt4sdbkysJBumz89aBRwVxRUn6KyHkXjlU1vCM/2HU",
+	"YwMsWqhCgWeF9QwrYGrwk3BsHfCMK4NQgufbhByvlAT/kHsQCPJB4LHv31UNAUXt2LoCs+eUrUVgvS1b",
+	"tnFt8MkTXlhfk0cuBcIVqhpGFAG9MiWBCCiwCcdxf2q8pxjdOrPFfuivlFlBQFUKVKZMxtxlwmprFFof",
+	"f/cQrF6B/HouNirUMJcyamDWs9DUtfDtYfBjV9uEe3hslAfJs/ek0eB8l+A83fc7V3b5AXIkVIto4EQJ",
+	"/1b9nrvoaq4AjKhn0n+jgtOiZbQ6pD7raSKibsoZYHfvrgqvwEjdMtpyGtgpMiPSPs4xZ2SiTGEJQq9p",
+	"z2LLE74CHzpAN9c31zeE1zowwime8e/iTwl3AqvIcBp29MfvJcwcincqIBNaM7ESSoul3kspsLXCitm4",
+	"W2gWQPi8YoXSGA8GCSpo7Vb2vhaTmITFixoQfODZ+8PQi84Zgq8Z2t7pfvTloJ2PrPOEw0enrQSeFUIH",
+	"ILJ4xh8b8O3AbcY7lERybEORywNh7kmZ4KwJHTff3tzQv9wa7HuVcE6rPCaXfggEeDPxpxDqaPilh4Jn",
+	"/It0bIBp3/3SSflvd0oL70XbCX1wVitgVC0QkFUisNDkOYAEeU27t8menulm/LLQTbl9UuC3MHQe2kuM",
+	"9kzuazdifd0uug0nxTs+qrPnK8pDFTlRZw84nx4R9A08p2rnivWpxUkLAHkt0NYnZXqFtma0NXYXcUDl",
+	"vl5vAWn7zwDyAqQiar75WOsfWF4JHwB/bLC4+n5fvcMQzyKSD+GkRneLxT+Q6C6EC1HIh/CfCzRMLacV",
+	"ostst3OQyUGuCpWf1GuYVF+3k17wEpVLDlH8Rp3dNPWyn5h2s2XjaGINZ96bBOahczN3ee7GrWMAv3ax",
+	"bTFEZA78kPzZoYP6E04H/izX9u7F8uyX9ljR6Wb4ePvm9F0uAYXSIBmNifQsUdYwsbQNTut8fNjQ/OZE",
+	"qUx824wFMV/7tzR7/i9q/kkUk7fNDISR5s86eby0wqOQstFwVQs6XUaYHP6+rQ5Wkk3M2FoZadfhjBtx",
+	"0dv/Mlq/+GZ7cS+Fee3TTTgW59P0otmqOac2LqAZPZX7HJ45/i+8VLcJD+BX89K+Yl0sFsebV2XpoRRo",
+	"aTZpvOYZrxBdyNK+2ttr4Rzf3m//CgAA//86oOfcjRQAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
