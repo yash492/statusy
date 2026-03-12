@@ -1,3 +1,5 @@
-export function load({ params }) {
+import KyClient from '$lib/ky/ky.js';
 
+export function load({ params }) {
+    KyClient.get("/")
 }

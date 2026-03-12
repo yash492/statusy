@@ -29,3 +29,9 @@ tidy:
 
 run-ui-dev:
 	cd _ui && bun run dev
+
+air:
+	go tool air
+
+compile-tsp-openapi:
+	just compile-tsp && just generate-oapi
