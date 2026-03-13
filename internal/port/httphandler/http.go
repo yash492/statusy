@@ -77,7 +77,14 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 		return nil, err
 	}
 
-	incidents := make(api.IncidentByStatuspage200JSONResponse, 0, len(result))
+	sp, err := h.StatuspageBySlugCmd.Execute(ctx, command.StatuspageBySlugParams{
+		Slug: request.StatuspageSlug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	incidents := make([]api.Incident, 0, len(result))
 	for _, r := range result {
 		incidents = append(incidents, api.Incident{
 			Id:                int(r.ID),
@@ -87,7 +94,16 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 		})
 	}
 
-	return incidents, nil
+	return api.IncidentByStatuspage200JSONResponse{
+		{
+			Statuspage: api.Statuspage{
+				Id:   int(sp.ID),
+				Name: sp.Name,
+				Slug: sp.Slug,
+			},
+			Incidents: incidents,
+		},
+	}, nil
 }
 
 // (GET /statuspages/{statuspageSlug}/incidents/{incidentID})

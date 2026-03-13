@@ -4,7 +4,7 @@ info:
   version: 0.0.0
 tags: []
 paths:
-  /statuspages:
+  /api/statuspages:
     get:
       operationId: listStatuspages
       description: List all available status pages with optional search filter
@@ -25,7 +25,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Statuspage'
-  /statuspages/{statuspageSlug}:
+  /api/statuspages/{statuspageSlug}:
     get:
       operationId: statuspageBySlug
       description: Get statuspage by slug
@@ -43,7 +43,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Statuspage'
-  /statuspages/{statuspageSlug}/feed.atom:
+  /api/statuspages/{statuspageSlug}/feed.atom:
     get:
       operationId: getAtomFeed
       description: Get Atom feed for a status page
@@ -61,7 +61,7 @@ paths:
             application/atom+xml; charset=utf-8:
               schema:
                 type: string
-  /statuspages/{statuspageSlug}/feed.rss:
+  /api/statuspages/{statuspageSlug}/feed.rss:
     get:
       operationId: getRssFeed
       description: Get RSS feed for a status page
@@ -79,7 +79,7 @@ paths:
             application/rss+xml; charset=utf-8:
               schema:
                 type: string
-  /statuspages/{statuspageSlug}/incidents:
+  /api/statuspages/{statuspageSlug}/incidents:
     get:
       operationId: incidentByStatuspage
       description: Get all incidents for a specific status page
@@ -112,8 +112,8 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Incident'
-  /statuspages/{statuspageSlug}/incidents/{incidentID}:
+                  $ref: '#/components/schemas/StatuspageIncidents'
+  /api/statuspages/{statuspageSlug}/incidents/{incidentID}:
     get:
       operationId: incidentInfo
       description: Get detailed information about a specific incident with paginated updates
@@ -139,7 +139,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Incident'
-  /statuspages/{statuspageSlug}/schedule-maintenances:
+  /api/statuspages/{statuspageSlug}/schedule-maintenances:
     get:
       operationId: scheduleMaintenanceByStatuspage
       description: Get all scheduled maintenance windows for a status page
@@ -159,7 +159,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Statuspage'
-  /statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID}:
+  /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID}:
     get:
       operationId: scheduleMaintenanceInfo
       description: Get detailed information about a specific scheduled maintenance
@@ -257,6 +257,18 @@ components:
         slug:
           type: string
           description: URL-friendly slug for the status page
+    StatuspageIncidents:
+      type: object
+      required:
+        - incidents
+        - statuspage
+      properties:
+        incidents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Incident'
+        statuspage:
+          $ref: '#/components/schemas/Statuspage'
 servers:
   - url: https://statusy.app
     description: A Status Page Aggregator

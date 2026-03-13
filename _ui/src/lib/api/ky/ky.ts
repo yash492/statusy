@@ -1,6 +1,8 @@
+import { API_SERVER_ROUTE } from "$env/static/private";
 import ky from "ky";
+
 const KyClient = ky.create({
-    prefixUrl: "http://localhost:8081",
+    prefixUrl: API_SERVER_ROUTE,
     json: true,
 })
 

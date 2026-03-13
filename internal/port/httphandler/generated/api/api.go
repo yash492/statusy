@@ -50,6 +50,12 @@ type Statuspage struct {
 	Slug string `json:"slug"`
 }
 
+// StatuspageIncidents defines model for StatuspageIncidents.
+type StatuspageIncidents struct {
+	Incidents  []Incident `json:"incidents"`
+	Statuspage Statuspage `json:"statuspage"`
+}
+
 // ListStatuspagesParams defines parameters for ListStatuspages.
 type ListStatuspagesParams struct {
 	// Search Search term to filter status pages by name or slug
@@ -68,28 +74,28 @@ type IncidentByStatuspageParams struct {
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /statuspages)
+	// (GET /api/statuspages)
 	ListStatuspages(w http.ResponseWriter, r *http.Request, params ListStatuspagesParams)
 
-	// (GET /statuspages/{statuspageSlug})
+	// (GET /api/statuspages/{statuspageSlug})
 	StatuspageBySlug(w http.ResponseWriter, r *http.Request, statuspageSlug string)
 
-	// (GET /statuspages/{statuspageSlug}/feed.atom)
+	// (GET /api/statuspages/{statuspageSlug}/feed.atom)
 	GetAtomFeed(w http.ResponseWriter, r *http.Request, statuspageSlug string)
 
-	// (GET /statuspages/{statuspageSlug}/feed.rss)
+	// (GET /api/statuspages/{statuspageSlug}/feed.rss)
 	GetRssFeed(w http.ResponseWriter, r *http.Request, statuspageSlug string)
 
-	// (GET /statuspages/{statuspageSlug}/incidents)
+	// (GET /api/statuspages/{statuspageSlug}/incidents)
 	IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params IncidentByStatuspageParams)
 
-	// (GET /statuspages/{statuspageSlug}/incidents/{incidentID})
+	// (GET /api/statuspages/{statuspageSlug}/incidents/{incidentID})
 	IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string)
 
-	// (GET /statuspages/{statuspageSlug}/schedule-maintenances)
+	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduleMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string)
 
-	// (GET /statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
+	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
 	ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, scheduleMaintenanceID string)
 }
 
@@ -97,42 +103,42 @@ type ServerInterface interface {
 
 type Unimplemented struct{}
 
-// (GET /statuspages)
+// (GET /api/statuspages)
 func (_ Unimplemented) ListStatuspages(w http.ResponseWriter, r *http.Request, params ListStatuspagesParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /statuspages/{statuspageSlug})
+// (GET /api/statuspages/{statuspageSlug})
 func (_ Unimplemented) StatuspageBySlug(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /statuspages/{statuspageSlug}/feed.atom)
+// (GET /api/statuspages/{statuspageSlug}/feed.atom)
 func (_ Unimplemented) GetAtomFeed(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /statuspages/{statuspageSlug}/feed.rss)
+// (GET /api/statuspages/{statuspageSlug}/feed.rss)
 func (_ Unimplemented) GetRssFeed(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /statuspages/{statuspageSlug}/incidents)
+// (GET /api/statuspages/{statuspageSlug}/incidents)
 func (_ Unimplemented) IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params IncidentByStatuspageParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /statuspages/{statuspageSlug}/incidents/{incidentID})
+// (GET /api/statuspages/{statuspageSlug}/incidents/{incidentID})
 func (_ Unimplemented) IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /statuspages/{statuspageSlug}/schedule-maintenances)
+// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 func (_ Unimplemented) ScheduleMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
+// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
 func (_ Unimplemented) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, scheduleMaintenanceID string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
@@ -499,28 +505,28 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/statuspages", wrapper.ListStatuspages)
+		r.Get(options.BaseURL+"/api/statuspages", wrapper.ListStatuspages)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}", wrapper.StatuspageBySlug)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}", wrapper.StatuspageBySlug)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}/feed.atom", wrapper.GetAtomFeed)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/feed.atom", wrapper.GetAtomFeed)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}/feed.rss", wrapper.GetRssFeed)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/feed.rss", wrapper.GetRssFeed)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}/incidents", wrapper.IncidentByStatuspage)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/incidents", wrapper.IncidentByStatuspage)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}/incidents/{incidentID}", wrapper.IncidentInfo)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/incidents/{incidentID}", wrapper.IncidentInfo)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}/schedule-maintenances", wrapper.ScheduleMaintenanceByStatuspage)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances", wrapper.ScheduleMaintenanceByStatuspage)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID}", wrapper.ScheduleMaintenanceInfo)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID}", wrapper.ScheduleMaintenanceInfo)
 	})
 
 	return r
@@ -635,7 +641,7 @@ type IncidentByStatuspageResponseObject interface {
 	VisitIncidentByStatuspageResponse(w http.ResponseWriter) error
 }
 
-type IncidentByStatuspage200JSONResponse []Incident
+type IncidentByStatuspage200JSONResponse []StatuspageIncidents
 
 func (response IncidentByStatuspage200JSONResponse) VisitIncidentByStatuspageResponse(w http.ResponseWriter) error {
 
@@ -720,28 +726,28 @@ func (response ScheduleMaintenanceInfo200JSONResponse) VisitScheduleMaintenanceI
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
-	// (GET /statuspages)
+	// (GET /api/statuspages)
 	ListStatuspages(ctx context.Context, request ListStatuspagesRequestObject) (ListStatuspagesResponseObject, error)
 
-	// (GET /statuspages/{statuspageSlug})
+	// (GET /api/statuspages/{statuspageSlug})
 	StatuspageBySlug(ctx context.Context, request StatuspageBySlugRequestObject) (StatuspageBySlugResponseObject, error)
 
-	// (GET /statuspages/{statuspageSlug}/feed.atom)
+	// (GET /api/statuspages/{statuspageSlug}/feed.atom)
 	GetAtomFeed(ctx context.Context, request GetAtomFeedRequestObject) (GetAtomFeedResponseObject, error)
 
-	// (GET /statuspages/{statuspageSlug}/feed.rss)
+	// (GET /api/statuspages/{statuspageSlug}/feed.rss)
 	GetRssFeed(ctx context.Context, request GetRssFeedRequestObject) (GetRssFeedResponseObject, error)
 
-	// (GET /statuspages/{statuspageSlug}/incidents)
+	// (GET /api/statuspages/{statuspageSlug}/incidents)
 	IncidentByStatuspage(ctx context.Context, request IncidentByStatuspageRequestObject) (IncidentByStatuspageResponseObject, error)
 
-	// (GET /statuspages/{statuspageSlug}/incidents/{incidentID})
+	// (GET /api/statuspages/{statuspageSlug}/incidents/{incidentID})
 	IncidentInfo(ctx context.Context, request IncidentInfoRequestObject) (IncidentInfoResponseObject, error)
 
-	// (GET /statuspages/{statuspageSlug}/schedule-maintenances)
+	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduleMaintenanceByStatuspage(ctx context.Context, request ScheduleMaintenanceByStatuspageRequestObject) (ScheduleMaintenanceByStatuspageResponseObject, error)
 
-	// (GET /statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
+	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
 	ScheduleMaintenanceInfo(ctx context.Context, request ScheduleMaintenanceInfoRequestObject) (ScheduleMaintenanceInfoResponseObject, error)
 }
 
@@ -988,23 +994,24 @@ func (sh *strictHandler) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"AAD//+UYlaibFQAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -1,9 +1,11 @@
 import "@typespec/http";
+import "@typespec/versioning";
 
 using Http;
 
 @service(#{ title: "Statusy" })
 @server("https://statusy.app", "A Status Page Aggregator")
+@route("/api/")
 namespace Statuspage;
 
 model Statuspage {
@@ -39,6 +41,11 @@ model PaginationQuery {
   @doc("Number of items per page (default: 20)")
   @query
   page_size?: integer;
+}
+
+model StatuspageIncidents {
+  incidents: Incident[];
+  statuspage: Statuspage;
 }
 
 model ErrorResponse {
@@ -106,7 +113,7 @@ op incidentByStatuspage(
   @doc("Number of updates per page")
   @query
   page_size?: integer,
-): Incident[];
+): StatuspageIncidents[];
 
 // TODO: Change response
 @doc("Get detailed information about a specific incident with paginated updates")
