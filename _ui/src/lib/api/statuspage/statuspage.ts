@@ -18,8 +18,8 @@ export interface StatuspageIncidents {
     incidents: Incident[];
 }
 
-class StatuspageApi {
-    private readonly basePath = "api/v1/statuspages";
+export class StatuspageApi {
+    private readonly basePath = "statuspages";
 
     list(search?: string) {
         return KyClient.get(this.basePath, {
@@ -32,6 +32,7 @@ class StatuspageApi {
     }
 
     incidents(slug: string, pageNumber = 1, pageSize = 10) {
+        console.log(KyClient)
         return KyClient
             .get(`${this.basePath}/${encodeURIComponent(slug)}/incidents`, {
                 searchParams: {
@@ -39,11 +40,7 @@ class StatuspageApi {
                     page_size: pageSize,
                 },
             })
-            .json<StatuspageIncidents[]>();
+            .json<StatuspageIncidents>();
     }
 }
 
-const statuspageApi = new StatuspageApi();
-
-export default statuspageApi;
-export { StatuspageApi };

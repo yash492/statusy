@@ -113,7 +113,7 @@ op incidentByStatuspage(
   @doc("Number of updates per page")
   @query
   page_size?: integer,
-): StatuspageIncidents[];
+): StatuspageIncidents;
 
 // TODO: Change response
 @doc("Get detailed information about a specific incident with paginated updates")

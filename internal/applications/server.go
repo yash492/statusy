@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
@@ -72,6 +73,13 @@ func (s ServerApplication) Start(ctx context.Context, addr string) error {
 		middleware.RequestID,
 		middleware.RequestLogger(&CustomLogFormatter{Logger: s.lg}),
 		middleware.CleanPath,
+		cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"http://*"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			AllowCredentials: false,
+			MaxAge:           300,
+		}),
 		middleware.Recoverer,
 	)
 

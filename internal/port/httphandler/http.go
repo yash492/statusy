@@ -95,14 +95,12 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 	}
 
 	return api.IncidentByStatuspage200JSONResponse{
-		{
-			Statuspage: api.Statuspage{
-				Id:   int(sp.ID),
-				Name: sp.Name,
-				Slug: sp.Slug,
-			},
-			Incidents: incidents,
+		Statuspage: api.Statuspage{
+			Id:   int(sp.ID),
+			Name: sp.Name,
+			Slug: sp.Slug,
 		},
+		Incidents: incidents,
 	}, nil
 }
 

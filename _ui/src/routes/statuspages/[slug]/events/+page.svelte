@@ -2,6 +2,10 @@
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import IncidentsTable from '$lib/derivedcomponents/IncidentsTable.svelte';
+
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
 </script>
 
 <div class="mx-auto w-4/5">
@@ -11,7 +15,7 @@
 				<div class="rounded-4xl border-2 bg-white">
 					<img src="/provider_logo/plivo.png" width="30px" height="30px" alt="plivo-logo" />
 				</div>
-				<p class="text-xl font-bold">Plivo</p>
+				<p class="text-xl font-bold">{data.resp.statuspage.name}</p>
 			</div>
 			<div>
 				<Button class="cursor-pointer">Subscribe to Updates</Button>
