@@ -59,8 +59,9 @@
 		},
 		manualPagination,
 		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel:
-			(() => enablePagination && !manualPagination)() ? getPaginationRowModel() : undefined,
+		getPaginationRowModel: (() => enablePagination && !manualPagination)()
+			? getPaginationRowModel()
+			: undefined,
 		onPaginationChange: (updater) => {
 			const next = typeof updater === 'function' ? updater(paginationState) : updater;
 			paginationState = next;
