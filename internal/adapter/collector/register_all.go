@@ -5,6 +5,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/digitalocean"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/plivo"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/solarwindsobservability"
+	"github.com/yash492/statusy/internal/adapter/collector/atlassian/zoom"
 	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 )
@@ -14,5 +15,6 @@ func RegisterAll() map[string]statuspage.StatusPageProvider {
 	plivo.Register()
 	solarwindsobservability.Register()
 	digitalocean.Register()
+	zoom.Register()
 	return registry.GetAll()
 }
