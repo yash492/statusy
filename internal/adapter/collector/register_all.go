@@ -27,11 +27,6 @@ func RegisterAll() map[string]statuspage.StatusPageProvider {
 	cloudflare.Register()
 	discord.Register()
 	newrelic.Register()
-	datadog.RegisterEU()
-	datadog.RegisterUS3()
-	datadog.RegisterUS5()
-	datadog.RegisterAP1()
-	datadog.RegisterGov()
-	datadog.RegisterAP2()
+	datadog.Register()
 	return registry.GetAll()
 }

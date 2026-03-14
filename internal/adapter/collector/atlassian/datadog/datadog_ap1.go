@@ -92,7 +92,7 @@ func (d datadogAP1) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return d
 }
 
-func RegisterAP1() {
+func registerAP1() {
 	registry.Register(slugAP1, datadogAP1{
 		RestyClient: resty.New(),
 	})
