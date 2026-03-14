@@ -56,7 +56,7 @@
 					}
 					return {
 						render: () => `
-						<div class="capitalize border rounded-md text-center py-1 flex w-24 justify-center items-center gap-2">
+						<div class="capitalize  rounded-md text-center py-1 flex w-fit justify-center items-center gap-2 ">
 							<div class="rounded-full w-2 h-2 ${color}">
 							</div>
 							${status}
