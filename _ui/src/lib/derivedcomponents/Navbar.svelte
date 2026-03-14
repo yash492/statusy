@@ -208,7 +208,7 @@
 										bind:value={query}
 										bind:ref={searchInput}
 										onkeydown={handleSearchInputKeydown}
-										placeholder="Type a status page name..."
+										placeholder=""
 										autocomplete="off"
 										aria-autocomplete="list"
 										aria-controls="statuspage-search-results"
