@@ -8,6 +8,7 @@
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	type TabType = 'incidents' | 'scheduled-maintenance';
 
 	const PAGE_SIZE = 10;
 	const statuspageApi = new StatuspageApi();
@@ -45,6 +46,19 @@
 			noScroll: true
 		});
 	}
+
+	async function onTabChange(type: TabType) {
+		const params = new URLSearchParams(window.location.search);
+		params.set('type', type);
+		params.set('page', '1');
+		params.set('page_size', String(data.pageSize));
+
+		await goto(`?${params.toString()}`, {
+			replaceState: true,
+			keepFocus: true,
+			noScroll: true
+		});
+	}
 </script>
 
 <div class="mx-auto w-4/5">
@@ -63,10 +77,17 @@
 
 		<div>
 			<div>
-				<Tabs.Root value="incidents" class="w-full">
+				<Tabs.Root value={data.type} class="w-full">
 					<Tabs.List>
-						<Tabs.Trigger value="incidents">Incidents</Tabs.Trigger>
-						<Tabs.Trigger value="scheduled-maintenance">Scheduled Maintenances</Tabs.Trigger>
+						<Tabs.Trigger value="incidents" onclick={() => onTabChange('incidents')}
+							>Incidents</Tabs.Trigger
+						>
+						<Tabs.Trigger
+							value="scheduled-maintenance"
+							onclick={() => onTabChange('scheduled-maintenance')}
+						>
+							Scheduled Maintenances
+						</Tabs.Trigger>
 					</Tabs.List>
 					<Tabs.Content value="incidents">
 						<IncidentsTable
