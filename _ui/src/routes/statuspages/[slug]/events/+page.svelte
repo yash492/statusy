@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { StatuspageApi } from '$lib/api/statuspage/statuspage';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
@@ -11,7 +10,6 @@
 	type TabType = 'incidents' | 'scheduled-maintenance';
 
 	const PAGE_SIZE = 10;
-	const statuspageApi = new StatuspageApi();
 	const initialPagination: PaginationState = {
 		pageIndex: Math.max(0, data.page - 1),
 		pageSize: data.pageSize
