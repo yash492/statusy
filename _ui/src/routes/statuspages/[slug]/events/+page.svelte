@@ -5,6 +5,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
+	import CheckIcon from '@lucide/svelte/icons/check';
 	import ClipboardIcon from '@lucide/svelte/icons/clipboard';
 	import RssIcon from '@lucide/svelte/icons/rss';
 	import SlackIcon from '@lucide/svelte/icons/slack';
@@ -160,7 +161,11 @@
 												title={copiedKey === 'rss' ? 'Copied' : 'Copy RSS URL'}
 												aria-label={copiedKey === 'rss' ? 'Copied RSS URL' : 'Copy RSS URL'}
 											>
-												<ClipboardIcon class="size-4" />
+												{#if copiedKey === 'rss'}
+													<CheckIcon class="size-4" />
+												{:else}
+													<ClipboardIcon class="size-4" />
+												{/if}
 												<span class="sr-only"
 													>{copiedKey === 'rss' ? 'Copied RSS URL' : 'Copy RSS URL'}</span
 												>
@@ -182,7 +187,11 @@
 												title={copiedKey === 'atom' ? 'Copied' : 'Copy Atom URL'}
 												aria-label={copiedKey === 'atom' ? 'Copied Atom URL' : 'Copy Atom URL'}
 											>
-												<ClipboardIcon class="size-4" />
+												{#if copiedKey === 'atom'}
+													<CheckIcon class="size-4" />
+												{:else}
+													<ClipboardIcon class="size-4" />
+												{/if}
 												<span class="sr-only"
 													>{copiedKey === 'atom' ? 'Copied Atom URL' : 'Copy Atom URL'}</span
 												>
@@ -212,7 +221,11 @@
 													? 'Copied Slack snippet'
 													: 'Copy Slack snippet'}
 											>
-												<ClipboardIcon class="size-4" />
+												{#if copiedKey === 'slack'}
+													<CheckIcon class="size-4" />
+												{:else}
+													<ClipboardIcon class="size-4" />
+												{/if}
 												<span class="sr-only"
 													>{copiedKey === 'slack'
 														? 'Copied Slack snippet'
