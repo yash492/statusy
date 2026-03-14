@@ -5,7 +5,7 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_TYPE = 'incidents';
 
-type TabType = 'incidents' | 'scheduled-maintenance';
+type TabType = 'incidents' | 'scheduled-maintenances';
 
 function parsePositiveInt(raw: string | null, fallback: number): number {
     if (!raw) {
@@ -21,7 +21,7 @@ function parsePositiveInt(raw: string | null, fallback: number): number {
 }
 
 function parseType(raw: string | null): TabType {
-    if (raw === 'incidents' || raw === 'scheduled-maintenance') {
+    if (raw === 'incidents' || raw === 'scheduled-maintenances') {
         return raw;
     }
 
