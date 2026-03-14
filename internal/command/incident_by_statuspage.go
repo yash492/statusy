@@ -75,7 +75,9 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 	}
 
 	pageSize := params.PageSize
-	if pageSize <= 0 {
+
+	//Keeping it hardcoded for now
+	if pageSize != 10 {
 		pageSize = 10
 	}
 

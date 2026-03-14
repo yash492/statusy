@@ -21,6 +21,8 @@
 
 		loading?: boolean;
 
+		onRowClick?: (row: TData) => void;
+
 		onPageChange?: (pagination: PaginationState) => void;
 	}
 
@@ -33,6 +35,7 @@
 		rowCount,
 
 		loading = false,
+		onRowClick,
 		onPageChange
 	}: Props = $props();
 
@@ -106,9 +109,22 @@
 				{/each}
 			{:else}
 				{#each table.getRowModel().rows as row (row.id)}
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-					<Table.Row data-state={row.getIsSelected() && 'selected'}>
+					<Table.Row
+						data-state={row.getIsSelected() && 'selected'}
+						class={onRowClick ? 'cursor-pointer hover:bg-muted/40' : undefined}
+						tabindex={onRowClick ? 0 : undefined}
+						onclick={() => onRowClick?.(row.original)}
+						onkeydown={(event) => {
+							if (!onRowClick) {
+								return;
+							}
+
+							if (event.key === 'Enter' || event.key === ' ') {
+								event.preventDefault();
+								onRowClick(row.original);
+							}
+						}}
+					>
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<Table.Cell class="[&:has([role=checkbox])]:ps-3">
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
