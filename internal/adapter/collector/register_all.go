@@ -3,6 +3,7 @@ package collector
 import (
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/circleci"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/plivo"
+	"github.com/yash492/statusy/internal/adapter/collector/atlassian/solarwindsobservability"
 	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 )
@@ -10,5 +11,6 @@ import (
 func RegisterAll() map[string]statuspage.StatusPageProvider {
 	circleci.Register()
 	plivo.Register()
+	solarwindsobservability.Register()
 	return registry.GetAll()
 }
