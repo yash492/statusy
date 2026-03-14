@@ -4,38 +4,23 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import {
 		type ColumnDef,
-		type ColumnFiltersState,
 		type PaginationState,
-		type RowSelectionState,
-		type SortingState,
-		type VisibilityState,
 		getCoreRowModel,
-		getFilteredRowModel,
-		getPaginationRowModel,
-		getSortedRowModel
+		getPaginationRowModel
 	} from '@tanstack/table-core';
-
-	import type { FilterState, SortState } from './types.ts';
 
 	interface Props {
 		data: TData[];
 		columns: ColumnDef<TData>[];
-		/** Show pagination controls. Default: false */
 		pagination?: boolean;
 		paginationState?: PaginationState;
-		/** Enable sorting. Default: false */
-		sorting?: boolean;
-		sortingState?: SortState[];
-		/** Enable column filtering. Default: false */
-		filtering?: boolean;
-		filterState?: FilterState[];
-		/** Show a skeleton loader instead of rows. Default: false */
+		/** Enable server-side pagination. Parent is responsible for fetching new data on page change. */
+		manualPagination?: boolean;
+		/** Total row count from server — required for correct Next/Prev button state with manualPagination. */
+		rowCount?: number;
+
 		loading?: boolean;
-		/** Called when user clicks a data row */
-		onRowClick?: (row: TData) => void;
-		/** Called when sort state changes */
-		onSort?: (sorting: SortState[]) => void;
-		/** Called when page state changes */
+
 		onPageChange?: (pagination: PaginationState) => void;
 	}
 
@@ -44,21 +29,14 @@
 		columns,
 		pagination: enablePagination = false,
 		paginationState: initialPagination = { pageIndex: 0, pageSize: 10 },
-		sorting: enableSorting = false,
-		sortingState: initialSorting = [],
-		filtering: enableFiltering = false,
-		filterState: initialFilters = [],
+		manualPagination = false,
+		rowCount,
+
 		loading = false,
-		onRowClick,
-		onSort,
 		onPageChange
 	}: Props = $props();
 
 	let paginationState = $state<PaginationState>((() => initialPagination)());
-	let sortingState = $state<SortingState>((() => initialSorting)());
-	let columnFilters = $state<ColumnFiltersState>((() => initialFilters)() as ColumnFiltersState);
-	let rowSelection = $state<RowSelectionState>({});
-	let columnVisibility = $state<VisibilityState>({});
 
 	const table = createSvelteTable<TData>({
 		get data() {
@@ -67,45 +45,21 @@
 		get columns() {
 			return columns;
 		},
+		get rowCount() {
+			return rowCount;
+		},
 		state: {
 			get pagination() {
 				return paginationState;
-			},
-			get sorting() {
-				return sortingState;
-			},
-			get columnVisibility() {
-				return columnVisibility;
-			},
-			get rowSelection() {
-				return rowSelection;
-			},
-			get columnFilters() {
-				return columnFilters;
 			}
 		},
+		manualPagination,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: (() => enablePagination)() ? getPaginationRowModel() : undefined,
-		getSortedRowModel: (() => enableSorting)() ? getSortedRowModel() : undefined,
-		getFilteredRowModel: (() => enableFiltering)() ? getFilteredRowModel() : undefined,
 		onPaginationChange: (updater) => {
 			const next = typeof updater === 'function' ? updater(paginationState) : updater;
 			paginationState = next;
 			onPageChange?.(next);
-		},
-		onSortingChange: (updater) => {
-			const next = typeof updater === 'function' ? updater(sortingState) : updater;
-			sortingState = next;
-			onSort?.(next as SortState[]);
-		},
-		onColumnFiltersChange: (updater) => {
-			columnFilters = typeof updater === 'function' ? updater(columnFilters) : updater;
-		},
-		onColumnVisibilityChange: (updater) => {
-			columnVisibility = typeof updater === 'function' ? updater(columnVisibility) : updater;
-		},
-		onRowSelectionChange: (updater) => {
-			rowSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
 		}
 	});
 
@@ -148,11 +102,7 @@
 				{#each table.getRowModel().rows as row (row.id)}
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-					<Table.Row
-						data-state={row.getIsSelected() && 'selected'}
-						class={onRowClick ? 'cursor-pointer' : ''}
-						onclick={() => onRowClick?.(row.original)}
-					>
+					<Table.Row data-state={row.getIsSelected() && 'selected'}>
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<Table.Cell class="[&:has([role=checkbox])]:ps-3">
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />

@@ -12,7 +12,13 @@
 		created_at: string;
 	};
 
-	let { data } = $props<{ data: Incident[] }>();
+	import type { PaginationState } from '@tanstack/table-core';
+
+	let { data, rowCount, onPageChange } = $props<{
+		data: Incident[];
+		rowCount?: number;
+		onPageChange?: (p: PaginationState) => void;
+	}>();
 
 	const columns: ColumnDef<Incident>[] = [
 		{
@@ -62,4 +68,12 @@
 	];
 </script>
 
-<GenericTable {data} {columns} pagination loading={false} />
+<GenericTable
+	{data}
+	{columns}
+	pagination
+	manualPagination={true}
+	{rowCount}
+	{onPageChange}
+	loading={false}
+/>
