@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { StatuspageApi } from '$lib/api/statuspage/statuspage';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
@@ -10,6 +11,10 @@
 
 	const PAGE_SIZE = 10;
 	const statuspageApi = new StatuspageApi();
+	const initialPagination: PaginationState = {
+		pageIndex: Math.max(0, data.page - 1),
+		pageSize: data.pageSize
+	};
 
 	function toIncidents(raw: typeof data.resp.incidents): Incident[] {
 		return raw.map((incident) => ({
@@ -20,26 +25,25 @@
 		}));
 	}
 
-	let incidentData = $state<Incident[]>(toIncidents(data.resp.incidents));
+	const incidentData = $derived(toIncidents(data.resp.incidents));
 
 	// If first page is full, we don't know the total — use MAX to keep Next enabled.
 	// Once a page returns fewer rows than pageSize, we know the exact total.
-	let rowCount = $state<number>(
-		data.resp.incidents.length < PAGE_SIZE ? data.resp.incidents.length : Number.MAX_SAFE_INTEGER
+	const rowCount = $derived(
+		data.resp.incidents.length < PAGE_SIZE
+			? (data.page - 1) * data.pageSize + data.resp.incidents.length
+			: Number.MAX_SAFE_INTEGER
 	);
 
 	async function onPageChange(pagination: PaginationState) {
-		const resp = await statuspageApi.incidents(
-			data.resp.statuspage.slug,
-			pagination.pageIndex + 1,
-			pagination.pageSize
-		);
-		incidentData = toIncidents(resp.incidents);
-		const offset = pagination.pageIndex * pagination.pageSize;
-		rowCount =
-			resp.incidents.length < pagination.pageSize
-				? offset + resp.incidents.length
-				: Number.MAX_SAFE_INTEGER;
+		const params = new URLSearchParams(window.location.search);
+		params.set('page', String(pagination.pageIndex + 1));
+		params.set('page_size', String(pagination.pageSize));
+		await goto(`?${params.toString()}`, {
+			replaceState: true,
+			keepFocus: true,
+			noScroll: true
+		});
 	}
 </script>
 
@@ -65,7 +69,12 @@
 						<Tabs.Trigger value="scheduled-maintenance">Scheduled Maintenances</Tabs.Trigger>
 					</Tabs.List>
 					<Tabs.Content value="incidents">
-						<IncidentsTable data={incidentData} {rowCount} {onPageChange} />
+						<IncidentsTable
+							data={incidentData}
+							{rowCount}
+							paginationState={initialPagination}
+							{onPageChange}
+						/>
 					</Tabs.Content>
 					<Tabs.Content value="scheduled-maintenance">
 						<!-- <IncidentsTable /> -->

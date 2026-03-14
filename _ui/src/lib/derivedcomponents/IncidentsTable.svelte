@@ -14,9 +14,10 @@
 
 	import type { PaginationState } from '@tanstack/table-core';
 
-	let { data, rowCount, onPageChange } = $props<{
+	let { data, rowCount, paginationState, onPageChange } = $props<{
 		data: Incident[];
 		rowCount?: number;
+		paginationState?: PaginationState;
 		onPageChange?: (p: PaginationState) => void;
 	}>();
 
@@ -72,6 +73,7 @@
 	{data}
 	{columns}
 	pagination
+	{paginationState}
 	manualPagination={true}
 	{rowCount}
 	{onPageChange}

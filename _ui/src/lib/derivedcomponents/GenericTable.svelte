@@ -38,6 +38,10 @@
 
 	let paginationState = $state<PaginationState>((() => initialPagination)());
 
+	$effect(() => {
+		paginationState = initialPagination;
+	});
+
 	const table = createSvelteTable<TData>({
 		get data() {
 			return data;
@@ -55,7 +59,8 @@
 		},
 		manualPagination,
 		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: (() => enablePagination)() ? getPaginationRowModel() : undefined,
+		getPaginationRowModel:
+			(() => enablePagination && !manualPagination)() ? getPaginationRowModel() : undefined,
 		onPaginationChange: (updater) => {
 			const next = typeof updater === 'function' ? updater(paginationState) : updater;
 			paginationState = next;
