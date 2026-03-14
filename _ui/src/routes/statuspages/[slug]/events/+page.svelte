@@ -115,9 +115,6 @@
 	<div class="w-full">
 		<div class="mb-6 flex justify-between md:mb-4">
 			<div class="mb-4 flex w-fit items-center gap-2">
-				<div class="rounded-4xl border-2 bg-white">
-					<img src="/provider_logo/plivo.png" width="30px" height="30px" alt="plivo-logo" />
-				</div>
 				<p class="text-xl font-bold">{data.resp.statuspage.name}</p>
 			</div>
 			<div>
