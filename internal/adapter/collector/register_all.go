@@ -2,9 +2,12 @@ package collector
 
 import (
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/circleci"
+	"github.com/yash492/statusy/internal/adapter/collector/atlassian/cloudflare"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/digitalocean"
+	"github.com/yash492/statusy/internal/adapter/collector/atlassian/github"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/plivo"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/solarwindsobservability"
+	"github.com/yash492/statusy/internal/adapter/collector/atlassian/twilio"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/zoom"
 	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/domain/statuspage"
@@ -16,5 +19,8 @@ func RegisterAll() map[string]statuspage.StatusPageProvider {
 	solarwindsobservability.Register()
 	digitalocean.Register()
 	zoom.Register()
+	twilio.Register()
+	github.Register()
+	cloudflare.Register()
 	return registry.GetAll()
 }
