@@ -75,17 +75,14 @@
 
 		<div>
 			<div>
-				<Tabs.Root value={data.type} class="w-full">
+				<Tabs.Root
+					value={data.type}
+					onValueChange={(value) => onTabChange(value as TabType)}
+					class="w-full"
+				>
 					<Tabs.List>
-						<Tabs.Trigger value="incidents" onclick={() => onTabChange('incidents')}
-							>Incidents</Tabs.Trigger
-						>
-						<Tabs.Trigger
-							value="scheduled-maintenance"
-							onclick={() => onTabChange('scheduled-maintenance')}
-						>
-							Scheduled Maintenances
-						</Tabs.Trigger>
+						<Tabs.Trigger value="incidents">Incidents</Tabs.Trigger>
+						<Tabs.Trigger value="scheduled-maintenance">Scheduled Maintenances</Tabs.Trigger>
 					</Tabs.List>
 					<Tabs.Content value="incidents">
 						<IncidentsTable
