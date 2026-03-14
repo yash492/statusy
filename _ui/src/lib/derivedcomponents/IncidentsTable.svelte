@@ -10,6 +10,7 @@
 		title: string;
 		status: string;
 		created_at: string;
+		incident_url: string;
 	};
 
 	import type { PaginationState } from '@tanstack/table-core';
@@ -33,7 +34,22 @@
 		},
 		{
 			accessorKey: 'title',
-			header: 'Title'
+			header: 'Title',
+			cell: ({ row }) => {
+				const titleSnippet = createRawSnippet<[{ title: string }]>((getTitle) => {
+					const { title } = getTitle();
+
+					return {
+						render: () => `
+						<a href="${row.original.incident_url}" target="_blank">
+							${title}
+						</a>`
+					};
+				});
+				return renderSnippet(titleSnippet, {
+					title: row.original.title
+				});
+			}
 		},
 		{
 			accessorKey: 'status',

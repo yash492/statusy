@@ -11,6 +11,7 @@ export interface Incident {
     title: string;
     status: string;
     provider_created_at: string;
+    incident_url: string;
 }
 
 export interface StatuspageIncidents {

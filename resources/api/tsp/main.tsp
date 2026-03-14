@@ -29,6 +29,9 @@ model Incident {
   @doc("Current status of the incident (investigating, identified, monitoring, resolved)")
   status: string;
 
+  @doc("The URL of the actual status page incident")
+  incident_url: string;
+
   @doc("Timestamp when the incident was created by the provider")
   provider_created_at: utcDateTime;
 }

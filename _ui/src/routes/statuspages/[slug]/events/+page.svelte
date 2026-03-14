@@ -34,7 +34,8 @@
 			created_at: incident.provider_created_at,
 			id: incident.id,
 			status: incident.status,
-			title: incident.title
+			title: incident.title,
+			incident_url: incident.incident_url
 		}));
 	}
 

@@ -6,6 +6,7 @@ WITH
             incidents.name AS title,
             incident_updates.status AS status,
             provider_created_at,
+            link,
             RANK() OVER (
                 PARTITION BY
                     incident_updates.incident_id
@@ -21,6 +22,7 @@ SELECT
     service_id,
     title,
     status,
+    link,
     provider_created_at
 FROM incident_status_cte
 WHERE

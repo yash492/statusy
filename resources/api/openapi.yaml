@@ -203,6 +203,7 @@ components:
         - id
         - title
         - status
+        - incident_url
         - provider_created_at
       properties:
         id:
@@ -214,6 +215,9 @@ components:
         status:
           type: string
           description: Current status of the incident (investigating, identified, monitoring, resolved)
+        incident_url:
+          type: string
+          description: The URL of the actual status page incident
         provider_created_at:
           type: string
           format: date-time

@@ -42,6 +42,7 @@ type IncidentByServiceResult struct {
 	ServiceID         uint
 	Title             string
 	Status            string
+	Link              string
 	ProviderCreatedAt time.Time
 }
 

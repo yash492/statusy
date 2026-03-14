@@ -38,28 +38,35 @@ type IncidentByStatuspageParams struct {
 	PageSize       int
 }
 
-type IncidentByStatuspageResult struct {
+type IncidentByStatuspageIncident struct {
 	ID                uint
 	Title             string
 	Status            string
 	ProviderCreatedAt time.Time
+	Link              string
 }
 
-func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByStatuspageParams) ([]IncidentByStatuspageResult, error) {
+type IncidentByStatuspageResult struct {
+	Incidents   []IncidentByStatuspageIncident
+	ServiceName string
+	ServiceSlug string
+}
+
+func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByStatuspageParams) (IncidentByStatuspageResult, error) {
 	slug := strings.TrimSpace(params.StatuspageSlug)
 	if slug == "" {
-		return nil, ErrStatuspageNotFound
+		return IncidentByStatuspageResult{}, ErrStatuspageNotFound
 	}
 
-	matched, err := c.ServicesRepo.GetBySlug(ctx, slug)
+	service, err := c.ServicesRepo.GetBySlug(ctx, slug)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			c.logger.WarnContext(ctx, "statuspage not found", slog.String("slug", slug))
-			return nil, ErrStatuspageNotFound
+			return IncidentByStatuspageResult{}, ErrStatuspageNotFound
 		}
 
 		c.logger.ErrorContext(ctx, "failed to fetch statuspage service", slog.String("slug", slug), slog.Any("err", err))
-		return nil, err
+		return IncidentByStatuspageResult{}, err
 	}
 
 	pageNumber := params.PageNumber
@@ -75,23 +82,30 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 	offset := (pageNumber - 1) * pageSize
 
 	incidentRows, err := c.incidentsRepo.GetByService(ctx, incidents.IncidentByServiceParams{
-		ServiceID: matched.ID,
+		ServiceID: service.ID,
 		Limit:     pageSize,
 		Offset:    offset,
 	})
 	if err != nil {
-		c.logger.ErrorContext(ctx, "failed to fetch incidents by statuspage", slog.String("slug", slug), slog.Any("service_id", matched.ID), slog.Any("err", err))
-		return nil, err
+		c.logger.ErrorContext(ctx, "failed to fetch incidents by statuspage", slog.String("slug", slug), slog.Any("service_id", service.ID), slog.Any("err", err))
+		return IncidentByStatuspageResult{}, err
 	}
 
-	result := make([]IncidentByStatuspageResult, 0, len(incidentRows))
+	incidents := make([]IncidentByStatuspageIncident, 0, len(incidentRows))
 	for _, incident := range incidentRows {
-		result = append(result, IncidentByStatuspageResult{
+		incidents = append(incidents, IncidentByStatuspageIncident{
 			ID:                incident.ID,
 			Title:             incident.Title,
 			Status:            incident.Status,
 			ProviderCreatedAt: incident.ProviderCreatedAt,
+			Link:              incident.Link,
 		})
+	}
+
+	result := IncidentByStatuspageResult{
+		Incidents:   incidents,
+		ServiceName: service.Name,
+		ServiceSlug: service.Slug,
 	}
 
 	return result, nil

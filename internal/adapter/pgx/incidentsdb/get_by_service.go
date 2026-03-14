@@ -18,6 +18,7 @@ type incidentByServiceDto struct {
 	ServiceID         uint      `db:"service_id"`
 	Title             string    `db:"title"`
 	Status            string    `db:"status"`
+	Link              string    `db:"link"`
 	ProviderCreatedAt time.Time `db:"provider_created_at"`
 	CreatedAt         time.Time `db:"created_at"`
 	UpdatedAt         time.Time `db:"updated_at"`
@@ -52,6 +53,7 @@ func (c *PostgresIncidentRepository) GetByService(ctx context.Context, params in
 			Title:             item.Title,
 			Status:            item.Status,
 			ProviderCreatedAt: item.ProviderCreatedAt,
+			Link:              item.Link,
 		})
 	}
 
