@@ -11,4 +11,6 @@
 <ModeWatcher />
 
 <Navbar />
-{@render children()}
+<main class="mb-10">
+	{@render children()}
+</main>

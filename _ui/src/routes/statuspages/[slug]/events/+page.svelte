@@ -1,11 +1,20 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
-	import IncidentsTable from '$lib/derivedcomponents/IncidentsTable.svelte';
+	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
 
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	const incidentData = data.resp.incidents.map<Incident>((incident) => {
+		return {
+			created_at: incident.provider_created_at,
+			id: incident.id,
+			status: incident.status,
+			title: incident.title
+		};
+	});
 </script>
 
 <div class="mx-auto w-4/5">
@@ -30,10 +39,10 @@
 						<Tabs.Trigger value="scheduled-maintenance">Scheduled Maintenances</Tabs.Trigger>
 					</Tabs.List>
 					<Tabs.Content value="incidents">
-						<IncidentsTable />
+						<IncidentsTable data={incidentData} />
 					</Tabs.Content>
 					<Tabs.Content value="scheduled-maintenance">
-						<IncidentsTable />
+						<!-- <IncidentsTable /> -->
 					</Tabs.Content>
 				</Tabs.Root>
 			</div>

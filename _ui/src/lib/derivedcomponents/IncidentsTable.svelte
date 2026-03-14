@@ -1,31 +1,63 @@
 <script lang="ts">
+	import { renderSnippet } from '$lib/components/ui/data-table';
+	import { Temporal } from '@js-temporal/polyfill';
 	import type { ColumnDef } from '@tanstack/table-core';
+	import { createRawSnippet } from 'svelte';
 	import GenericTable from './GenericTable.svelte';
 
-	type Incident = {
-		id: string;
+	export type Incident = {
+		id: number;
 		title: string;
 		status: string;
-		created_at: Date;
+		created_at: string;
 	};
 
-	const data: Incident[] = [];
+	let { data } = $props<{ data: Incident[] }>();
 
 	const columns: ColumnDef<Incident>[] = [
 		{
+			accessorKey: 'created_at',
+			header: 'Created At',
+			cell: ({ row }) => {
+				const createdAt = row.getValue<string>('created_at');
+				const instant = Temporal.Instant.from(createdAt);
+				return instant.toLocaleString();
+			}
+		},
+		{
 			accessorKey: 'title',
-			header: 'Title',
-			cell: ({ row }) => {}
+			header: 'Title'
 		},
 		{
 			accessorKey: 'status',
 			header: 'Status',
-			cell: ({ row }) => {}
-		},
-		{
-			accessorKey: 'created_at',
-			header: 'Created At',
-			cell: ({ row }) => {}
+			cell: ({ row }) => {
+				const statusSnippet = createRawSnippet<[{ status: string }]>((getStatus) => {
+					const { status } = getStatus();
+					let color = 'bg-red-500';
+					switch (status) {
+						case 'investigating':
+							color = 'bg-yellow-500';
+							break;
+						case 'resolved':
+							color = 'bg-green-500';
+							break;
+						case 'postmortem':
+							color = 'bg-green-500';
+					}
+					return {
+						render: () => `
+						<div class="capitalize border rounded-md text-center py-1 flex w-24 justify-center items-center gap-2">
+							<div class="rounded-full w-2 h-2 ${color}">
+							</div>
+							${status}
+						</div>`
+					};
+				});
+				return renderSnippet(statusSnippet, {
+					status: row.original.status
+				});
+			}
 		}
 	];
 </script>

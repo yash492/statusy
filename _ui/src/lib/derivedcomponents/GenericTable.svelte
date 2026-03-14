@@ -174,10 +174,6 @@
 
 {#if enablePagination}
 	<div class="flex items-center justify-end space-x-2 pt-4">
-		<div class="flex-1 text-sm text-muted-foreground">
-			{table.getFilteredSelectedRowModel().rows.length} of
-			{table.getFilteredRowModel().rows.length} row(s) selected.
-		</div>
 		<div class="space-x-2">
 			<Button
 				variant="outline"

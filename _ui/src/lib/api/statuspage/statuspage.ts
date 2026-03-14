@@ -32,7 +32,6 @@ export class StatuspageApi {
     }
 
     incidents(slug: string, pageNumber = 1, pageSize = 10) {
-        console.log(KyClient)
         return KyClient
             .get(`${this.basePath}/${encodeURIComponent(slug)}/incidents`, {
                 searchParams: {

@@ -46,6 +46,7 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
+		"@js-temporal/polyfill": "^0.5.1",
 		"ky": "^1.14.3",
 		"mode-watcher": "^1.1.0"
 	}
