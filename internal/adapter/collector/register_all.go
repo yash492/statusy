@@ -3,6 +3,7 @@ package collector
 import (
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/circleci"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/cloudflare"
+	"github.com/yash492/statusy/internal/adapter/collector/atlassian/cursor"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/datadog"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/digitalocean"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/discord"
@@ -28,5 +29,6 @@ func RegisterAll() map[string]statuspage.StatusPageProvider {
 	discord.Register()
 	newrelic.Register()
 	datadog.Register()
+	cursor.Register()
 	return registry.GetAll()
 }

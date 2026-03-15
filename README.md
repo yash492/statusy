@@ -9,6 +9,7 @@ It stores normalized data in PostgreSQL and serves it for API and UI consumption
 
 - [CircleCI](https://status.circleci.com)
 - [Cloudflare](https://www.cloudflarestatus.com)
+- [Cursor](https://status.cursor.com)
 - [Datadog](https://status.datadoghq.com)
 - [DigitalOcean](https://status.digitalocean.com)
 - [Discord](https://discordstatus.com)
