@@ -1,5 +1,7 @@
 # statusy
 
+> WIP: This project is actively under development.
+
 Statusy aggregates incidents and component status from external provider status pages into a single backend.
 It stores normalized data in PostgreSQL and serves it for API and UI consumption.
 
