@@ -7,6 +7,7 @@ It stores normalized data in PostgreSQL and serves it for API and UI consumption
 
 ## Supported Status Pages
 
+- [Anthropic Claude](https://status.claude.com)
 - [CircleCI](https://status.circleci.com)
 - [Cloudflare](https://www.cloudflarestatus.com)
 - [Cursor](https://status.cursor.com)
