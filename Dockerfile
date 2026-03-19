@@ -1,12 +1,14 @@
-FROM golang:1.26
+FROM golang:1.26-alpine AS builder
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
+COPY ./config ./
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -v -o /usr/local/bin/app ./...
+RUN CGO_ENABLED=0 go build -o statusy ./cmd/*.go
 
-CMD ["app"]
+FROM scratch
+COPY --from=builder /app/statusy /statusy
+CMD ["/statusy"]
