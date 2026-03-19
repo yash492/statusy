@@ -5,14 +5,14 @@ import (
 )
 
 type ServiceResult struct {
-	ID   uint
-	Name string
-	Slug string
+	ID    uint
+	Title string
+	Slug  string
 }
 
 type ServiceParams struct {
-	Name string
-	Slug string
+	Title string
+	Slug  string
 }
 
 type Repository interface {

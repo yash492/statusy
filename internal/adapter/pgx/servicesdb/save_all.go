@@ -14,9 +14,9 @@ import (
 var insertServiceQuery string
 
 type serviceDto struct {
-	ID   uint
-	Name string
-	Slug string
+	ID    uint
+	Title string
+	Slug  string
 }
 
 func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []services.ServiceParams) ([]services.ServiceResult, error) {
@@ -26,8 +26,8 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 
 	for _, service := range servicesYaml {
 		queryArgs := pgx.NamedArgs{
-			"name": service.Name,
-			"slug": service.Slug,
+			"title": service.Title,
+			"slug":  service.Slug,
 		}
 
 		preparedQuery := batchInserts.Queue(
@@ -56,9 +56,9 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 
 	result := lo.Map(servicesResponse, func(item serviceDto, _ int) services.ServiceResult {
 		return services.ServiceResult{
-			ID:   item.ID,
-			Name: item.Name,
-			Slug: item.Slug,
+			ID:    item.ID,
+			Title: item.Title,
+			Slug:  item.Slug,
 		}
 	})
 

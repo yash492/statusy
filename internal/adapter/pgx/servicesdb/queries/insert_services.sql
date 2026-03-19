@@ -1,15 +1,15 @@
 INSERT INTO
   services (
-    name,
+    title,
     slug
   )
 VALUES
   (
-    @name,
+    @title,
     @slug
   )
 ON CONFLICT (slug) DO UPDATE
 SET
-  name = EXCLUDED.name
+  title = EXCLUDED.title
 RETURNING
-  id, name, slug;
+  id, title, slug;

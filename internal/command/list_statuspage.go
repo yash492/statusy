@@ -47,7 +47,7 @@ func (s ListStatuspageCmd) Execute(ctx context.Context, params ListStatuspagePar
 	for _, svc := range servicesList {
 		results = append(results, ListStatuspageResult{
 			ID:   svc.ID,
-			Name: svc.Name,
+			Name: svc.Title,
 			Slug: svc.Slug,
 		})
 	}

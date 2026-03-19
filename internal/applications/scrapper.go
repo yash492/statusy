@@ -86,7 +86,7 @@ func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
 	return ScrapperApplication{
 		lg:                   deps.lg,
 		registeredStatusPage: registeredStatusPage,
-
+		servicesRepo:         servicesRepo,
 		cmd: scrapperCommand{
 			scrapperCmd: command.ScrapperCmd{
 				RegisteredStatuspages:  registeredStatusPage,
@@ -110,8 +110,8 @@ func (s ScrapperApplication) Start(ctx context.Context, scrapInterval int) error
 
 	for _, provider := range s.registeredStatusPage {
 		serviceParams = append(serviceParams, services.ServiceParams{
-			Name: provider.Name(),
-			Slug: provider.Slug().String(),
+			Title: provider.Name(),
+			Slug:  provider.Slug().String(),
 		})
 	}
 

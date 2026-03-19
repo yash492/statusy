@@ -54,7 +54,7 @@ func (c StatuspageBySlugCmd) Execute(ctx context.Context, params StatuspageBySlu
 
 	return StatuspageBySlugResult{
 		ID:   service.ID,
-		Name: service.Name,
+		Name: service.Title,
 		Slug: service.Slug,
 	}, nil
 }
