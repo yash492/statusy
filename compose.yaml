@@ -1,12 +1,34 @@
 volumes:
   psql:
+
 services:
   psql:
     image: postgres:latest
     environment:
+      POSTGRES_DB: statusy
       POSTGRES_USER: statusy
       POSTGRES_PASSWORD: password # only do this in development
     volumes:
       - psql:/var/lib/postgresql # save data between restarts
     ports:
-      - 5432:5432 # binds port 5432 on your computer to the postgres port!
+      - 5432:5432 
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - psql
+    ports:
+      - 8081:8081
+
+  frontend:
+    build:
+      context: ./_ui
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_API_SERVER_ROUTE: http://localhost:8081
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000

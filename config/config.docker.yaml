@@ -1,0 +1,16 @@
+postgresdb:
+  read:
+    host: "psql"
+    port: 5432
+    user: "statusy"
+    password: "password"
+    database: "statusy"
+  write:
+    host: "psql"
+    port: 5432
+    user: "statusy"
+    password: "password"
+    database: "statusy"
+scrapping_interval: 300 # interval in seconds
+server_port: 8081
+
