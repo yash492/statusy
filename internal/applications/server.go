@@ -128,7 +128,7 @@ func (l *CustomLogFormatter) NewLogEntry(r *http.Request) middleware.LogEntry {
 		Logger: l.Logger.With(
 			"path",
 			r.RequestURI,
-			"verb",
+			"method",
 			r.Method,
 			"request_id",
 			r.Context().Value(middleware.RequestIDKey),
