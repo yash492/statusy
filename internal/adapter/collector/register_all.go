@@ -8,6 +8,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/datadog"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/digitalocean"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/discord"
+	"github.com/yash492/statusy/internal/adapter/collector/atlassian/dropbox"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/github"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/newrelic"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/plivo"
@@ -29,6 +30,7 @@ func RegisterAll() map[string]statuspage.StatusPageProvider {
 	github.Register()
 	cloudflare.Register()
 	discord.Register()
+	dropbox.Register()
 	newrelic.Register()
 	datadog.Register()
 	cursor.Register()

@@ -14,6 +14,7 @@ It stores normalized data in PostgreSQL and serves it for API and UI consumption
 - [Datadog](https://status.datadoghq.com)
 - [DigitalOcean](https://status.digitalocean.com)
 - [Discord](https://discordstatus.com)
+- [Dropbox](https://status.dropbox.com)
 - [GitHub](https://www.githubstatus.com)
 - [New Relic](https://status.newrelic.com)
 - [Plivo](https://status.plivo.com)
