@@ -54,8 +54,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	deps := applications.NewServerDeps(logger, readDB, writeDB)
-	serverApp := applications.NewServerApplication(deps)
+	serverDeps := applications.NewServerDeps(logger, readDB, writeDB)
+	serverApp := applications.NewServerApplication(serverDeps)
 	scrapperDeps := applications.NewScrapperDeps(logger, readDB, writeDB)
 	scrapperApp := applications.NewScrapperApplication(scrapperDeps)
 
