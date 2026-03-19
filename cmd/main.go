@@ -55,12 +55,19 @@ func main() {
 	}
 
 	deps := applications.NewServerDeps(logger, readDB, writeDB)
-	app := applications.NewServerApplication(deps)
+	serverApp := applications.NewServerApplication(deps)
+	scrapperDeps := applications.NewScrapperDeps(logger, readDB, writeDB)
+	scrapperApp := applications.NewScrapperApplication(scrapperDeps)
 
 	errGroup := new(errgroup.Group)
 
 	errGroup.Go(func() error {
-		return app.Start(ctx, fmt.Sprintf(":%d", cfg.ServerPort))
+		return serverApp.Start(ctx, fmt.Sprintf(":%d", cfg.ServerPort))
+	})
+
+	// Start scraper app
+	errGroup.Go(func() error {
+		return scrapperApp.Start(ctx, cfg.ScrappingInterval)
 	})
 
 	if err := errGroup.Wait(); err != nil {

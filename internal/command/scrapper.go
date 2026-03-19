@@ -22,22 +22,13 @@ type ScrapperCmd struct {
 	logger                 *slog.Logger
 }
 
-func (s ScrapperCmd) Execute(ctx context.Context) error {
-	var serviceParams []services.ServiceParams
+type ScrapperParams struct {
+	Services []services.ServiceResult
+}
 
-	for _, provider := range s.RegisteredStatuspages {
-		serviceParams = append(serviceParams, services.ServiceParams{
-			Name: provider.Name(),
-			Slug: provider.Slug().String(),
-		})
-	}
+func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 
-	servicesResult, err := s.ServicesRepo.SaveAll(ctx, serviceParams)
-	if err != nil {
-		return err
-	}
-
-	registeredServices := s.buildProviders(servicesResult)
+	registeredServices := s.buildProviders(params.Services)
 	scrappedComponents := []components.AggregateComponents{}
 	scrappedIncidents := []incidents.Incident{}
 
