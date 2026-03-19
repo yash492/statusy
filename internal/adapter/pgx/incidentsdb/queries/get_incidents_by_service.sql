@@ -3,7 +3,7 @@ WITH
         SELECT
             incidents.id AS id,
             service_id AS service_id,
-            incidents.name AS title,
+            incidents.title AS title,
             incident_updates.status AS status,
             provider_created_at,
             link,

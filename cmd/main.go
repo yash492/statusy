@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yash492/statusy/internal/applications"
 	"github.com/yash492/statusy/internal/config"
+	"github.com/yash492/statusy/schema"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -47,6 +48,13 @@ func main() {
 		logger.Info("closing write database connection")
 		writeDB.Close()
 	}()
+
+	// Replace with Goose migrations
+	_, err = writeDB.Exec(context.Background(), schema.DBSchema)
+	if err != nil {
+		logger.Error("server or scrapper stopped with error", slog.Any("err", err))
+		os.Exit(1)
+	}
 
 	deps := applications.NewServerDeps(logger, readDB, writeDB)
 	app := applications.NewServerApplication(deps)
