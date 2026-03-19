@@ -16,18 +16,6 @@ import (
 	"github.com/yash492/statusy/schema"
 	"golang.org/x/sync/errgroup"
 )
-func migrateFs(dbPool *pgxpool.Pool) error {
-	goose.SetBaseFS(schema.EmbedFS)
-	if err := goose.SetDialect("postgres"); err != nil {
-		return err
-	}
-
-	db := stdlib.OpenDBFromPool(dbPool)
-	if err := goose.Up(db, "."); err != nil {
-		return err
-	}
-	return nil
-}
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -83,4 +71,17 @@ func main() {
 		os.Exit(1)
 	}
 
+}
+
+func migrateFs(dbPool *pgxpool.Pool) error {
+	goose.SetBaseFS(schema.EmbedFS)
+	if err := goose.SetDialect("postgres"); err != nil {
+		return err
+	}
+
+	db := stdlib.OpenDBFromPool(dbPool)
+	if err := goose.Up(db, "."); err != nil {
+		return err
+	}
+	return nil
 }
