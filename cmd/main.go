@@ -65,7 +65,6 @@ func main() {
 		return serverApp.Start(ctx, fmt.Sprintf(":%d", cfg.ServerPort))
 	})
 
-	// Start scraper app
 	errGroup.Go(func() error {
 		return scrapperApp.Start(ctx, cfg.ScrappingInterval)
 	})
