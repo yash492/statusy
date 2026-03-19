@@ -92,8 +92,8 @@ func (c dropbox) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return c
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, dropbox{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

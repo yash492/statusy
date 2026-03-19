@@ -80,8 +80,8 @@ func (p plivo) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return p
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, plivo{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentupdatesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/domain/services"
+	"resty.dev/v3"
 )
 
 func (t *TestSuite) TestOrchestrate() {
@@ -19,7 +20,7 @@ func (t *TestSuite) TestOrchestrate() {
 
 	var serviceParams []services.ServiceParams
 
-	registeredStatusPage := collector.RegisterAll()
+	registeredStatusPage := collector.RegisterAll(resty.New())
 
 	for _, provider := range registeredStatusPage {
 		serviceParams = append(serviceParams, services.ServiceParams{

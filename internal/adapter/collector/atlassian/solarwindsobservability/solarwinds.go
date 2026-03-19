@@ -92,8 +92,8 @@ func (s solarWinds) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return s
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, solarWinds{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

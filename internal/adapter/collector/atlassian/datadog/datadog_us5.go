@@ -92,8 +92,8 @@ func (d datadogUS5) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return d
 }
 
-func registerUS5() {
+func registerUS5(client *resty.Client) {
 	registry.Register(slugUS5, datadogUS5{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

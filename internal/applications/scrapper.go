@@ -17,6 +17,7 @@ import (
 	"github.com/yash492/statusy/internal/command"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
+	"resty.dev/v3"
 )
 
 type ScrapperDeps struct {
@@ -81,7 +82,7 @@ func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
 		deps.writeDB,
 	)
 
-	registeredStatusPage := collector.RegisterAll()
+	registeredStatusPage := collector.RegisterAll(resty.New())
 
 	return ScrapperApplication{
 		lg:                   deps.lg,

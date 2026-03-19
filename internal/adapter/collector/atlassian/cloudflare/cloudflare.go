@@ -92,8 +92,8 @@ func (c cloudflare) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return c
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, cloudflare{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

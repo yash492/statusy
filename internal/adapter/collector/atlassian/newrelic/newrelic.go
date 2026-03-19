@@ -92,8 +92,8 @@ func (n newrelic) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return n
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, newrelic{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

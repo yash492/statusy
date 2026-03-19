@@ -92,8 +92,8 @@ func (t twilio) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return t
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, twilio{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

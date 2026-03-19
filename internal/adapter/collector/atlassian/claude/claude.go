@@ -92,8 +92,8 @@ func (c claude) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return c
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, claude{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

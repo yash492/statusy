@@ -92,8 +92,8 @@ func (c circleCi) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return c
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, circleCi{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

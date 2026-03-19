@@ -92,8 +92,8 @@ func (d datadogGov) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return d
 }
 
-func registerGov() {
+func registerGov(client *resty.Client) {
 	registry.Register(slugGov, datadogGov{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

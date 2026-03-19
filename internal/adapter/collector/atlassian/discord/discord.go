@@ -92,8 +92,8 @@ func (d discord) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return d
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, discord{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

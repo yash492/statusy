@@ -92,8 +92,8 @@ func (z zoomProvider) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return z
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, zoomProvider{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

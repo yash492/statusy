@@ -92,8 +92,8 @@ func (d digitalOcean) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return d
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, digitalOcean{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }

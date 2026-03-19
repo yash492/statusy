@@ -92,8 +92,8 @@ func (g github) NewWithServiceID(id uint) statuspage.StatusPageProvider {
 	return g
 }
 
-func Register() {
+func Register(client *resty.Client) {
 	registry.Register(slug, github{
-		RestyClient: resty.New(),
+		RestyClient: client,
 	})
 }
