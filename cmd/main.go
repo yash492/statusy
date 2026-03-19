@@ -9,8 +9,6 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
 	"github.com/yash492/statusy/internal/applications"
 	"github.com/yash492/statusy/internal/config"
 	"github.com/yash492/statusy/schema"
@@ -51,8 +49,7 @@ func main() {
 		writeDB.Close()
 	}()
 
-	// Replace with Goose migrations
-	if err := migrateFs(writeDB); err != nil {
+	if err := schema.MigrateFs(writeDB, logger); err != nil {
 		logger.Error("failed to run migrations", slog.Any("err", err))
 		os.Exit(1)
 	}
@@ -71,17 +68,4 @@ func main() {
 		os.Exit(1)
 	}
 
-}
-
-func migrateFs(dbPool *pgxpool.Pool) error {
-	goose.SetBaseFS(schema.EmbedFS)
-	if err := goose.SetDialect("postgres"); err != nil {
-		return err
-	}
-
-	db := stdlib.OpenDBFromPool(dbPool)
-	if err := goose.Up(db, "."); err != nil {
-		return err
-	}
-	return nil
 }
