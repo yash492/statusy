@@ -30,6 +30,8 @@ func MigrateFs(dbPool *pgxpool.Pool, logger *slog.Logger) error {
 	return nil
 }
 
+var _ goose.Logger = &gooseLogger{}
+
 type gooseLogger struct {
 	logger *slog.Logger
 }
