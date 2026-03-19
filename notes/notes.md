@@ -25,11 +25,15 @@
     - Structured logs + error alerts
     - Basic health check endpoint
     - Implement Schedule Maintenances
-    - Have good erroring system, right now not HTTP Handlers are returning proper errors.
+    - Have good erroring system, right now HTTP Handlers are not returning proper errors. 
+    - Error tracing is also bad right now.
 
 
 **Important**: These things needs to be deployed on prod. Exact deployment strategy can be figured out. 
 
 **Refactor**:
-- Remove all mention of urls from services DB. Keep the services DB very lean. ID, name and slug should only be the 3 columns present.
-- Remove services.yaml file and hard code the urls within app logic
+- Remove all mention of urls from services DB. Keep the services DB very lean. ID, name and slug should only be the 3 columns present. ✅
+- Remove services.yaml file and hard code the urls within app logic - ✅
+
+**Bugs**:
+- [UI] The keydown/keyup does not move the scroll bar in the search.
