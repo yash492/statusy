@@ -72,7 +72,7 @@ func (s ScrapperCmd) saveIncidents(
 	incidentParams := make([]incidents.IncidentParams, 0, len(scrappedIncidents))
 	for _, incident := range scrappedIncidents {
 		incidentParams = append(incidentParams, incidents.IncidentParams{
-			Name:              incident.Name,
+			Title:             incident.Name,
 			Link:              incident.Link,
 			ProviderImpact:    incident.ProviderImpact,
 			Impact:            incident.Impact,

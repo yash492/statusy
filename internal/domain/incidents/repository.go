@@ -8,7 +8,7 @@ import (
 )
 
 type IncidentParams struct {
-	Name              string
+	Title             string
 	Link              string
 	ProviderImpact    nullable.Nullable[string]
 	Impact            nullable.Nullable[string]
@@ -19,7 +19,7 @@ type IncidentParams struct {
 
 type IncidentResult struct {
 	ID                uint
-	Name              string
+	Title             string
 	Link              string
 	ProviderImpact    nullable.Nullable[string]
 	Impact            nullable.Nullable[string]

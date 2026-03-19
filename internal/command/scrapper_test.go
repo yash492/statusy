@@ -23,8 +23,8 @@ func (t *TestSuite) TestOrchestrate() {
 
 	for _, provider := range registeredStatusPage {
 		serviceParams = append(serviceParams, services.ServiceParams{
-			Title: provider.Name(),
-			Slug:  provider.Slug().String(),
+			Name: provider.Name(),
+			Slug: provider.Slug().String(),
 		})
 	}
 

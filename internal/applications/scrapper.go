@@ -110,8 +110,8 @@ func (s ScrapperApplication) Start(ctx context.Context, scrapInterval int) error
 
 	for _, provider := range s.registeredStatusPage {
 		serviceParams = append(serviceParams, services.ServiceParams{
-			Title: provider.Name(),
-			Slug:  provider.Slug().String(),
+			Name: provider.Name(),
+			Slug: provider.Slug().String(),
 		})
 	}
 

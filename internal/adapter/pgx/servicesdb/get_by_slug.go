@@ -27,8 +27,8 @@ func (s *PostgresServiceRepository) GetBySlug(ctx context.Context, slug string) 
 	}
 
 	return services.ServiceResult{
-		ID:    item.ID,
-		Title: item.Title,
-		Slug:  item.Slug,
+		ID:   item.ID,
+		Name: item.Name,
+		Slug: item.Slug,
 	}, nil
 }

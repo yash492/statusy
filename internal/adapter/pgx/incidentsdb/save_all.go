@@ -18,7 +18,7 @@ var insertIncidentsQuery string
 
 type incidentDto struct {
 	ID                uint             `db:"id"`
-	Name              string           `db:"name"`
+	Title             string           `db:"title"`
 	Link              string           `db:"link"`
 	ProviderImpact    pgtype.Text      `db:"provider_impact"`
 	Impact            pgtype.Text      `db:"impact"`
@@ -39,8 +39,8 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 		impactStr, impactOk := param.Impact.Get()
 
 		queryArgs := pgx.NamedArgs{
-			"name": param.Name,
-			"link": param.Link,
+			"title": param.Title,
+			"link":  param.Link,
 			"provider_impact": pgtype.Text{
 				String: provImpStr,
 				Valid:  provImpOk,
@@ -81,7 +81,7 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 	response := lo.Map(incidentResponse, func(item incidentDto, _ int) incidents.IncidentResult {
 		return incidents.IncidentResult{
 			ID:                item.ID,
-			Name:              item.Name,
+			Title:             item.Title,
 			Link:              item.Link,
 			ProviderImpact:    nullable.SetValue(item.ProviderImpact.String, item.ProviderImpact.Valid),
 			Impact:            nullable.SetValue(item.Impact.String, item.Impact.Valid),

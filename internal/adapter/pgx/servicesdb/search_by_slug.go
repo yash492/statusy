@@ -35,9 +35,9 @@ func (s *PostgresServiceRepository) SearchBySlug(ctx context.Context, slug strin
 	results := make([]services.ServiceResult, 0, len(dtos))
 	for _, service := range dtos {
 		results = append(results, services.ServiceResult{
-			ID:    service.ID,
-			Title: service.Title,
-			Slug:  service.Slug,
+			ID:   service.ID,
+			Name: service.Name,
+			Slug: service.Slug,
 		})
 	}
 

@@ -106,7 +106,7 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 
 	result := IncidentByStatuspageResult{
 		Incidents:   incidents,
-		ServiceName: service.Title,
+		ServiceName: service.Name,
 		ServiceSlug: service.Slug,
 	}
 

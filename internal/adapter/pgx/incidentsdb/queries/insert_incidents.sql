@@ -1,5 +1,5 @@
 INSERT INTO incidents (
-  name,
+  title,
   link,
   provider_impact,
   impact,
@@ -7,7 +7,7 @@ INSERT INTO incidents (
   provider_id,
   provider_created_at  
 ) VALUES (
-  @name,
+  @title,
   @link,
   @provider_impact,
   @impact,
@@ -17,7 +17,7 @@ INSERT INTO incidents (
 )
 ON CONFLICT (provider_id) DO UPDATE
 SET
-  name = EXCLUDED.name,
+  title = EXCLUDED.title,
   link = EXCLUDED.link,
   provider_impact = EXCLUDED.provider_impact,
   impact = EXCLUDED.impact,
