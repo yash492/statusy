@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS schedule_maintenance_updates (
   id SERIAL PRIMARY KEY,
-  incident_id INT NOT NULL REFERENCES incidents (id),
+  schedule_maintenance_id INT NOT NULL REFERENCES schedule_maintenances (id),
   description TEXT NOT NULL,
   provider_status TEXT NOT NULL,
   status TEXT NOT NULL,
