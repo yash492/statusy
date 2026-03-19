@@ -2,7 +2,7 @@
 
 ### Phase 1:
 - Scrape API based statuspages:
-    - Atlassian Statuspage - Basic Scrapping Logic is done
+    - Atlassian Statuspage - Basic Scrapping Logic is done ✅   
     - incident.io Statuspage
     - GCP Statuspage
     - Azure Statuspage
@@ -27,7 +27,7 @@
     - Implement Schedule Maintenances
     - Have good erroring system, right now HTTP Handlers are not returning proper errors. 
     - Error tracing is also bad right now.
-    - Implement docker compose
+    - Implement docker compose ✅
 
 
 **Important**: These things needs to be deployed on prod. Exact deployment strategy can be figured out. 
