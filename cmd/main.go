@@ -9,11 +9,25 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
 	"github.com/yash492/statusy/internal/applications"
 	"github.com/yash492/statusy/internal/config"
 	"github.com/yash492/statusy/schema"
 	"golang.org/x/sync/errgroup"
 )
+func migrateFs(dbPool *pgxpool.Pool) error {
+	goose.SetBaseFS(schema.EmbedFS)
+	if err := goose.SetDialect("postgres"); err != nil {
+		return err
+	}
+
+	db := stdlib.OpenDBFromPool(dbPool)
+	if err := goose.Up(db, "."); err != nil {
+		return err
+	}
+	return nil
+}
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -50,9 +64,8 @@ func main() {
 	}()
 
 	// Replace with Goose migrations
-	_, err = writeDB.Exec(context.Background(), schema.DBSchema)
-	if err != nil {
-		logger.Error("server or scrapper stopped with error", slog.Any("err", err))
+	if err := migrateFs(writeDB); err != nil {
+		logger.Error("failed to run migrations", slog.Any("err", err))
 		os.Exit(1)
 	}
 
