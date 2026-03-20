@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
@@ -27,20 +28,40 @@ type ScrapperParams struct {
 }
 
 func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
+	start := time.Now()
+	s.logger.InfoContext(ctx, "scrape cycle started", slog.Int("services_count", len(params.Services)))
 
 	registeredServices := s.buildProviders(params.Services)
+	s.logger.InfoContext(ctx, "providers prepared", slog.Int("providers_count", len(registeredServices)))
 	scrappedComponents := []components.AggregateComponents{}
 	scrappedIncidents := []incidents.Incident{}
 
 	for _, service := range registeredServices {
+		collectorStart := time.Now()
+		s.logger.InfoContext(ctx, "scraping service", slog.String("slug", service.Slug().String()), slog.Uint64("service_id", uint64(service.ID())))
+
+		componentsStart := time.Now()
 		scrappedComponentForService, err := service.ScrapComponents()
+		s.logger.InfoContext(
+			ctx,
+			"service components scraped",
+			slog.String("slug", service.Slug().String()),
+			slog.Duration("duration", time.Since(componentsStart)),
+		)
 		if err != nil {
-			s.logger.ErrorContext(ctx, "error while scrapping components for service %s", string(service.Slug()), slog.Any("error", err))
+			s.logger.ErrorContext(ctx, "error while scrapping components", slog.String("slug", service.Slug().String()), slog.Any("error", err))
 		}
 
+		incidentsStart := time.Now()
 		scrappedIncidentForService, err := service.ScrapIncidents()
+		s.logger.InfoContext(
+			ctx,
+			"service incidents scraped",
+			slog.String("slug", service.Slug().String()),
+			slog.Duration("duration", time.Since(incidentsStart)),
+		)
 		if err != nil {
-			s.logger.ErrorContext(ctx, "error while scrapping incidents for service %s", string(service.Slug()), slog.Any("error", err))
+			s.logger.ErrorContext(ctx, "error while scrapping incidents", slog.String("slug", service.Slug().String()), slog.Any("error", err))
 		}
 
 		scrappedComponentForService.Service.ID = service.ID()
@@ -49,7 +70,21 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 			incident.ServiceID = service.ID()
 			scrappedIncidents = append(scrappedIncidents, incident)
 		}
+
+		s.logger.InfoContext(
+			ctx,
+			"service scrape completed",
+			slog.String("slug", service.Slug().String()),
+			slog.Duration("duration", time.Since(collectorStart)),
+		)
 	}
+
+	s.logger.InfoContext(
+		ctx,
+		"scrape collection completed",
+		slog.Int("components_aggregate_count", len(scrappedComponents)),
+		slog.Int("incidents_count", len(scrappedIncidents)),
+	)
 
 	componentsProviderMap, err := s.saveComponents(ctx, scrappedComponents)
 	if err != nil {
@@ -61,6 +96,13 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 		return err
 	}
 
+	s.logger.InfoContext(
+		ctx,
+		"scrape cycle completed",
+		slog.Int("component_provider_map_count", len(componentsProviderMap)),
+		slog.Duration("duration", time.Since(start)),
+	)
+
 	return nil
 }
 
@@ -68,6 +110,12 @@ func (s ScrapperCmd) saveIncidents(
 	ctx context.Context,
 	scrappedIncidents []incidents.Incident,
 	componentsProviderMap map[string]uint) error {
+	s.logger.InfoContext(
+		ctx,
+		"saving incidents",
+		slog.Int("incidents_count", len(scrappedIncidents)),
+		slog.Int("components_provider_map_count", len(componentsProviderMap)),
+	)
 
 	incidentParams := make([]incidents.IncidentParams, 0, len(scrappedIncidents))
 	for _, incident := range scrappedIncidents {
@@ -86,6 +134,7 @@ func (s ScrapperCmd) saveIncidents(
 	if err != nil {
 		return err
 	}
+	s.logger.InfoContext(ctx, "incidents saved", slog.Int("saved_incidents_count", len(savedIncidents)))
 
 	// Build a map from provider_id -> saved incident for quick lookup
 	savedIncidentsByProviderID := make(map[string]incidents.IncidentResult, len(savedIncidents))
@@ -126,12 +175,17 @@ func (s ScrapperCmd) saveIncidents(
 	if err != nil {
 		return err
 	}
+	s.logger.InfoContext(ctx, "incident updates saved", slog.Int("updates_count", len(updateParams)))
 
 	_, err = s.IncidentComponentsRepo.SaveAll(ctx, componentParams)
+	if err == nil {
+		s.logger.InfoContext(ctx, "incident components saved", slog.Int("incident_components_count", len(componentParams)))
+	}
 	return err
 }
 
 func (s ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []components.AggregateComponents) (map[string]uint, error) {
+	s.logger.InfoContext(ctx, "saving components", slog.Int("aggregate_components_count", len(scrappedComponents)))
 
 	componentGroupsToBeScraped := make([]components.GroupParams, 0)
 	for _, component := range scrappedComponents {
@@ -148,6 +202,7 @@ func (s ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []co
 	if err != nil {
 		return nil, err
 	}
+	s.logger.InfoContext(ctx, "component groups saved", slog.Int("component_groups_count", len(componentGroupsResult)))
 	// Service ID -> ComponentGroup Provider ID -> ComponentGroup Result
 	serviceComponentGroupMap := map[uint]map[string]components.ComponentGroupResult{}
 
@@ -197,6 +252,7 @@ func (s ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []co
 	if err != nil {
 		return nil, err
 	}
+	s.logger.InfoContext(ctx, "components saved", slog.Int("components_count", len(savedComponents)))
 
 	// Component Provider ID -> Inserted Component ID
 	componentProviderMap := map[string]uint{}
@@ -220,6 +276,8 @@ func (s ScrapperCmd) buildProviders(servicesResult []services.ServiceResult) []s
 
 		servicesToBeScraped = append(servicesToBeScraped, provider.NewWithServiceID(service.ID))
 	}
+
+	s.logger.Info("providers selected for scrape", slog.Int("selected_count", len(servicesToBeScraped)))
 
 	return servicesToBeScraped
 }
