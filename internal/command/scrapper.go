@@ -13,14 +13,33 @@ import (
 )
 
 type ScrapperCmd struct {
-	RegisteredStatuspages  map[string]statuspage.StatusPageProvider
-	ServicesRepo           services.Repository
-	IncidentsRepo          incidents.Repository
-	IncidentUpdatesRepo    incidents.UpdatesRepository
-	IncidentComponentsRepo incidents.ComponentsRepository
-	ComponentsRepo         components.Repository
-	ComponentGroupsRepo    components.GroupRepository
+	registeredStatuspages  map[string]statuspage.StatusPageProvider
+	incidentsRepo          incidents.Repository
+	incidentUpdatesRepo    incidents.UpdatesRepository
+	incidentComponentsRepo incidents.ComponentsRepository
+	componentsRepo         components.Repository
+	componentGroupsRepo    components.GroupRepository
 	logger                 *slog.Logger
+}
+
+func NewScrapperCmd(
+	registeredStatuspages map[string]statuspage.StatusPageProvider,
+	incidentsRepo incidents.Repository,
+	incidentUpdatesRepo incidents.UpdatesRepository,
+	incidentComponentsRepo incidents.ComponentsRepository,
+	componentsRepo components.Repository,
+	componentGroupsRepo components.GroupRepository,
+	logger *slog.Logger,
+) ScrapperCmd {
+	return ScrapperCmd{
+		registeredStatuspages:  registeredStatuspages,
+		incidentsRepo:          incidentsRepo,
+		incidentUpdatesRepo:    incidentUpdatesRepo,
+		incidentComponentsRepo: incidentComponentsRepo,
+		componentsRepo:         componentsRepo,
+		componentGroupsRepo:    componentGroupsRepo,
+		logger:                 logger,
+	}
 }
 
 type ScrapperParams struct {
@@ -46,7 +65,7 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 			ctx,
 			"service components scraped",
 			slog.String("slug", service.Slug().String()),
-			slog.Duration("duration", time.Since(componentsStart)),
+			slog.Int64("duration_ms", time.Since(componentsStart).Milliseconds()),
 		)
 		if err != nil {
 			s.logger.ErrorContext(ctx, "error while scrapping components", slog.String("slug", service.Slug().String()), slog.Any("error", err))
@@ -58,7 +77,7 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 			ctx,
 			"service incidents scraped",
 			slog.String("slug", service.Slug().String()),
-			slog.Duration("duration", time.Since(incidentsStart)),
+			slog.Int64("duration_ms", time.Since(incidentsStart).Milliseconds()),
 		)
 		if err != nil {
 			s.logger.ErrorContext(ctx, "error while scrapping incidents", slog.String("slug", service.Slug().String()), slog.Any("error", err))
@@ -75,7 +94,7 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 			ctx,
 			"service scrape completed",
 			slog.String("slug", service.Slug().String()),
-			slog.Duration("duration", time.Since(collectorStart)),
+			slog.Int64("duration_ms", time.Since(collectorStart).Milliseconds()),
 		)
 	}
 
@@ -100,7 +119,7 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 		ctx,
 		"scrape cycle completed",
 		slog.Int("component_provider_map_count", len(componentsProviderMap)),
-		slog.Duration("duration", time.Since(start)),
+		slog.Int64("duration_ms", time.Since(start).Milliseconds()),
 	)
 
 	return nil
@@ -130,7 +149,7 @@ func (s ScrapperCmd) saveIncidents(
 		})
 	}
 
-	savedIncidents, err := s.IncidentsRepo.SaveAll(ctx, incidentParams)
+	savedIncidents, err := s.incidentsRepo.SaveAll(ctx, incidentParams)
 	if err != nil {
 		return err
 	}
@@ -171,13 +190,13 @@ func (s ScrapperCmd) saveIncidents(
 		}
 	}
 
-	_, err = s.IncidentUpdatesRepo.SaveAll(ctx, updateParams)
+	_, err = s.incidentUpdatesRepo.SaveAll(ctx, updateParams)
 	if err != nil {
 		return err
 	}
 	s.logger.InfoContext(ctx, "incident updates saved", slog.Int("updates_count", len(updateParams)))
 
-	_, err = s.IncidentComponentsRepo.SaveAll(ctx, componentParams)
+	_, err = s.incidentComponentsRepo.SaveAll(ctx, componentParams)
 	if err == nil {
 		s.logger.InfoContext(ctx, "incident components saved", slog.Int("incident_components_count", len(componentParams)))
 	}
@@ -198,7 +217,7 @@ func (s ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []co
 		}
 	}
 
-	componentGroupsResult, err := s.ComponentGroupsRepo.SaveAll(ctx, componentGroupsToBeScraped)
+	componentGroupsResult, err := s.componentGroupsRepo.SaveAll(ctx, componentGroupsToBeScraped)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +267,7 @@ func (s ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []co
 		}
 	}
 
-	savedComponents, err := s.ComponentsRepo.SaveAll(ctx, componentParams)
+	savedComponents, err := s.componentsRepo.SaveAll(ctx, componentParams)
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +287,7 @@ func (s ScrapperCmd) buildProviders(servicesResult []services.ServiceResult) []s
 	servicesToBeScraped := make([]statuspage.StatusPageProvider, 0, len(servicesResult))
 
 	for _, service := range servicesResult {
-		provider, ok := s.RegisteredStatuspages[service.Slug]
+		provider, ok := s.registeredStatuspages[service.Slug]
 		if !ok {
 			s.logger.Warn("unsupported service slug", slog.String("slug", service.Slug))
 			continue

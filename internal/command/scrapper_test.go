@@ -36,17 +36,22 @@ func (t *TestSuite) TestOrchestrate() {
 		t.T().Fatalf("failed to save services: %s", err)
 	}
 
-	orchestrator := &ScrapperCmd{
-		RegisteredStatuspages:  registeredStatusPage,
-		ServicesRepo:           servicesRepo,
-		IncidentsRepo:          incidentsdb.NewPostgresIncidentRepository(t.Logger, t.TestDb, t.TestDb),
-		IncidentUpdatesRepo:    incidentupdatesdb.NewPostgresIncidentUpdatesRepository(t.Logger, t.TestDb, t.TestDb),
-		IncidentComponentsRepo: incidentcomponentsdb.NewPostgresIncidentComponentsRepository(t.Logger, t.TestDb, t.TestDb),
-		ComponentsRepo:         componentsdb.NewPostgresComponentRepository(t.Logger, t.TestDb, t.TestDb),
-		ComponentGroupsRepo:    componentgroupsdb.NewPostgresComponentGroupsRepository(t.Logger, t.TestDb, t.TestDb),
-		logger:                 t.Logger,
-	}
+	incidentsRepo := incidentsdb.NewPostgresIncidentRepository(t.Logger, t.TestDb, t.TestDb)
+	incidentUpdatesRepo := incidentupdatesdb.NewPostgresIncidentUpdatesRepository(t.Logger, t.TestDb, t.TestDb)
+	incidentComponentsRepo := incidentcomponentsdb.NewPostgresIncidentComponentsRepository(t.Logger, t.TestDb, t.TestDb)
+	componentsRepo := componentsdb.NewPostgresComponentRepository(t.Logger, t.TestDb, t.TestDb)
+	componentGroupsRepo := componentgroupsdb.NewPostgresComponentGroupsRepository(t.Logger, t.TestDb, t.TestDb)
+	logger := t.Logger
 
+	orchestrator := NewScrapperCmd(
+		registeredStatusPage,
+		incidentsRepo,
+		incidentUpdatesRepo,
+		incidentComponentsRepo,
+		componentsRepo,
+		componentGroupsRepo,
+		logger,
+	)
 	err = orchestrator.Execute(ctx, ScrapperParams{
 		Services: servicesResult,
 	})
