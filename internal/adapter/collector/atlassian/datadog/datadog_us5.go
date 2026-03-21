@@ -72,8 +72,8 @@ func (d datadogUS5) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapscheduledMaintenance implements statuspage.Statuspage.
-func (d datadogUS5) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+// ScrapScheduledMaintenance implements statuspage.Statuspage.
+func (d datadogUS5) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
 	var req atlassian.ScheduledMaintenanceReq
 	_, err := d.RestyClient.
 		R().

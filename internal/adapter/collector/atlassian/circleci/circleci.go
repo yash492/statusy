@@ -72,8 +72,8 @@ func (c circleCi) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapscheduledMaintenance implements statuspage.Statuspage.
-func (c circleCi) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+// ScrapScheduledMaintenance implements statuspage.Statuspage.
+func (c circleCi) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
 	var req atlassian.ScheduledMaintenanceReq
 	_, err := c.RestyClient.
 		R().

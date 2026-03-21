@@ -72,8 +72,8 @@ func (g github) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapscheduledMaintenance implements statuspage.Statuspage.
-func (g github) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+// ScrapScheduledMaintenance implements statuspage.Statuspage.
+func (g github) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
 	var req atlassian.ScheduledMaintenanceReq
 	_, err := g.RestyClient.
 		R().

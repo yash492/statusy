@@ -72,8 +72,8 @@ func (t twilio) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapscheduledMaintenance implements statuspage.Statuspage.
-func (t twilio) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+// ScrapScheduledMaintenance implements statuspage.Statuspage.
+func (t twilio) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
 	var req atlassian.ScheduledMaintenanceReq
 	_, err := t.RestyClient.
 		R().

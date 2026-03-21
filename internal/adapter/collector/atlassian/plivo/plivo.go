@@ -64,7 +64,7 @@ func (p plivo) ScrapIncidents() ([]incidents.Incident, error) {
 	return atlassian.FetchIncidentsHelper(req), nil
 }
 
-func (p plivo) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+func (p plivo) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
 	var req atlassian.ScheduledMaintenanceReq
 	_, err := p.RestyClient.
 		R().

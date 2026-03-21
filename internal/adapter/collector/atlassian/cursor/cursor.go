@@ -69,7 +69,7 @@ func (c cursor) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-func (c cursor) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+func (c cursor) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
 	var req atlassian.ScheduledMaintenanceReq
 	_, err := c.RestyClient.
 		R().
