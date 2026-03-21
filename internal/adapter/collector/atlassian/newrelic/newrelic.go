@@ -62,7 +62,7 @@ func (n newrelic) ScrapIncidents() ([]incidents.Incident, error) {
 	_, err := n.RestyClient.
 		R().
 		SetResult(&req).
-		Get(incidentsUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (n newrelic) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledM
 		return nil, err
 	}
 
-	scheduledMaintenances := atlassian.FetchscheduledMaintenanceHelper(req)
+	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
 }

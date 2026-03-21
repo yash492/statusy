@@ -5,6 +5,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
+	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 	"resty.dev/v3"
@@ -63,8 +64,8 @@ func (p plivo) ScrapIncidents() ([]incidents.Incident, error) {
 	return atlassian.FetchIncidentsHelper(req), nil
 }
 
-func (p plivo) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
-	var req atlassian.IncidentReq
+func (p plivo) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+	var req atlassian.ScheduledMaintenanceReq
 	_, err := p.RestyClient.
 		R().
 		SetResult(&req).
@@ -72,7 +73,10 @@ func (p plivo) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	if err != nil {
 		return nil, err
 	}
-	return atlassian.FetchIncidentsHelper(req), nil
+
+	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
+
+	return scheduledMaintenances, nil
 }
 
 func (p plivo) NewWithServiceID(id uint) statuspage.StatusPageProvider {

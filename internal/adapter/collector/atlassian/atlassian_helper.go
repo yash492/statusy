@@ -96,7 +96,7 @@ func FetchIncidentsHelper(req IncidentReq) []incidents.Incident {
 	return incidentList
 }
 
-func FetchscheduledMaintenanceHelper(req ScheduledMaintenanceReq) []scheduledmaintenance.ScheduledMaintenance {
+func FetchScheduledMaintenanceHelper(req ScheduledMaintenanceReq) []scheduledmaintenance.ScheduledMaintenance {
 	scheduledMaintenanceList := []scheduledmaintenance.ScheduledMaintenance{}
 	for _, scheduledMaintenanceReq := range req.ScheduledMaintenances {
 		scheduledMaintenance := scheduledmaintenance.ScheduledMaintenance{
