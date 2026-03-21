@@ -5,7 +5,7 @@ import (
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
-	scheduledmaintenance "github.com/yash492/statusy/internal/domain/scheduledMaintenance"
+	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 )
 
 func FetchComponentsHelper(req ComponentsReq) components.AggregateComponents {
@@ -102,13 +102,31 @@ func FetchscheduledMaintenanceHelper(req ScheduledMaintenanceReq) []scheduledmai
 		scheduledMaintenance := scheduledmaintenance.ScheduledMaintenance{
 			Name:              scheduledMaintenanceReq.Name,
 			Link:              scheduledMaintenanceReq.Shortlink,
-			StartsAt:          scheduledMaintenanceReq.StartedAt,
-			EndsAt:            scheduledMaintenanceReq.ResolvedAt,
+			StartsAt:          scheduledMaintenanceReq.ScheduledFor,
+			EndsAt:            scheduledMaintenanceReq.ScheduledUntil,
 			ProviderImpact:    nullable.SetValue(scheduledMaintenanceReq.Impact, scheduledMaintenanceReq.Impact != ""),
 			Impact:            nullable.SetValue(scheduledMaintenanceReq.Impact, scheduledMaintenanceReq.Impact != ""),
 			ProviderID:        scheduledMaintenanceReq.ID,
 			ProviderCreatedAt: scheduledMaintenanceReq.CreatedAt,
 		}
+
+		scheduledMaintenance.Updates = lo.Map(scheduledMaintenanceReq.IncidentUpdates, func(update IncidentUpdate, _ int) scheduledmaintenance.ScheduledMaintenanceUpdate {
+			return scheduledmaintenance.ScheduledMaintenanceUpdate{
+				Description:                    update.Body,
+				ScheduledMaintenanceProviderID: scheduledMaintenance.ProviderID,
+				ProviderID:                     update.ID,
+				Status:                         update.Status,
+				ProviderStatus:                 update.Status,
+				StatusTime:                     update.CreatedAt,
+			}
+		})
+
+		scheduledMaintenance.Components = lo.Map(scheduledMaintenanceReq.IncidentComponents, func(component IncidentComponent, _ int) components.Component {
+			return components.Component{
+				Name:       component.Name,
+				ProviderID: component.ID,
+			}
+		})
 
 		scheduledMaintenanceList = append(scheduledMaintenanceList, scheduledMaintenance)
 

@@ -62,26 +62,19 @@ type Component struct {
 }
 
 type ScheduledMaintenance struct {
-	ID                          string    `json:"id"`
-	Name                        string    `json:"name"`
-	Status                      string    `json:"status"`
-	CreatedAt                   time.Time `json:"created_at"`
-	UpdatedAt                   time.Time `json:"updated_at"`
-	MonitoringAt                time.Time `json:"monitoring_at"`
-	ResolvedAt                  time.Time `json:"resolved_at"`
-	Impact                      string    `json:"impact"`
-	Shortlink                   string    `json:"shortlink"`
-	StartedAt                   time.Time `json:"started_at"`
-	PageID                      string    `json:"page_id"`
-	ScheduledMaintenanceUpdates []ScheduledMaintenanceUpdate
-}
-
-type ScheduledMaintenanceUpdate struct {
-	ID         string    `json:"id"`
-	Status     string    `json:"status"`
-	Body       string    `json:"body"`
-	IncidentID string    `json:"incident_id"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	DisplayAt  time.Time `json:"display_at"`
+	ID                 string              `json:"id"`
+	Name               string              `json:"name"`
+	Status             string              `json:"status"`
+	CreatedAt          time.Time           `json:"created_at"`
+	UpdatedAt          time.Time           `json:"updated_at"`
+	MonitoringAt       time.Time           `json:"monitoring_at"`
+	ResolvedAt         time.Time           `json:"resolved_at"`
+	Impact             string              `json:"impact"`
+	Shortlink          string              `json:"shortlink"`
+	StartedAt          time.Time           `json:"started_at"`
+	ScheduledFor       time.Time           `json:"scheduled_for"`
+	ScheduledUntil     time.Time           `json:"scheduled_until"`
+	PageID             string              `json:"page_id"`
+	IncidentUpdates    []IncidentUpdate    `json:"incident_updates"`
+	IncidentComponents []IncidentComponent `json:"components"`
 }

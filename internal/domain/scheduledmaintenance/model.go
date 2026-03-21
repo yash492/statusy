@@ -4,12 +4,13 @@ import (
 	"time"
 
 	"github.com/yash492/statusy/internal/common/nullable"
+	"github.com/yash492/statusy/internal/domain/components"
 )
 
 type ScheduledMaintenanceUpdate struct {
-	scheduledMaintenanceID         uint
+	ScheduledMaintenanceID         uint
 	Description                    string
-	scheduledMaintenanceProviderID string
+	ScheduledMaintenanceProviderID string
 	ProviderID                     string
 	Status                         string
 	ProviderStatus                 string
@@ -27,4 +28,5 @@ type ScheduledMaintenance struct {
 	ProviderID        string
 	ProviderCreatedAt time.Time
 	Updates           []ScheduledMaintenanceUpdate
+	Components        []components.Component
 }
