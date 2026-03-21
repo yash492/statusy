@@ -14,6 +14,8 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentupdatesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenancesdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenanceupdatesdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/schedulemaintenancecomponentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/command"
 	"github.com/yash492/statusy/internal/domain/services"
@@ -77,6 +79,16 @@ func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
 		deps.readDB,
 		deps.writeDB,
 	)
+	scheduledMaintenanceUpdatesRepo := scheduledmaintenanceupdatesdb.NewPostgresScheduledMaintenanceUpdatesRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
+	scheduledMaintenanceComponentsRepo := schedulemaintenancecomponentsdb.NewPostgresScheduleMaintenanceComponentsRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
 	componentsRepo := componentsdb.NewPostgresComponentRepository(
 		lg,
 		deps.readDB,
@@ -101,8 +113,8 @@ func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
 				incidentUpdatesRepo,
 				incidentComponentsRepo,
 				scheduledMaintenanceRepo,
-				nil, // scheduledMaintenanceUpdatesRepo
-				nil, // scheduledMaintenanceComponentsRepo
+				scheduledMaintenanceUpdatesRepo,
+				scheduledMaintenanceComponentsRepo,
 				componentsRepo,
 				componentGroupsRepo,
 				lg,

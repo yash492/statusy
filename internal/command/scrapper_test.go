@@ -10,6 +10,8 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentupdatesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenancesdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenanceupdatesdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/schedulemaintenancecomponentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/domain/services"
 	"resty.dev/v3"
@@ -41,8 +43,11 @@ func (t *TestSuite) TestOrchestrate() {
 	incidentUpdatesRepo := incidentupdatesdb.NewPostgresIncidentUpdatesRepository(t.Logger, t.TestDb, t.TestDb)
 	incidentComponentsRepo := incidentcomponentsdb.NewPostgresIncidentComponentsRepository(t.Logger, t.TestDb, t.TestDb)
 	scheduledMaintenanceRepo := scheduledmaintenancesdb.NewPostgresScheduledMaintenanceRepository(t.Logger, t.TestDb, t.TestDb)
+	scheduledMaintenanceUpdatesRepo := scheduledmaintenanceupdatesdb.NewPostgresScheduledMaintenanceUpdatesRepository(t.Logger, t.TestDb, t.TestDb)
+	scheduledMaintenanceComponentsRepo := schedulemaintenancecomponentsdb.NewPostgresScheduleMaintenanceComponentsRepository(t.Logger, t.TestDb, t.TestDb)
 	componentsRepo := componentsdb.NewPostgresComponentRepository(t.Logger, t.TestDb, t.TestDb)
 	componentGroupsRepo := componentgroupsdb.NewPostgresComponentGroupsRepository(t.Logger, t.TestDb, t.TestDb)
+
 	logger := t.Logger
 
 	orchestrator := NewScrapperCmd(
@@ -51,8 +56,8 @@ func (t *TestSuite) TestOrchestrate() {
 		incidentUpdatesRepo,
 		incidentComponentsRepo,
 		scheduledMaintenanceRepo,
-		nil, // scheduledMaintenanceUpdatesRepo
-		nil, // scheduledMaintenanceComponentsRepo
+		scheduledMaintenanceUpdatesRepo,
+		scheduledMaintenanceComponentsRepo,
 		componentsRepo,
 		componentGroupsRepo,
 		logger,
