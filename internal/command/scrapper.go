@@ -8,18 +8,22 @@ import (
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
+	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 )
 
 type ScrapperCmd struct {
-	registeredStatuspages  map[string]statuspage.StatusPageProvider
-	incidentsRepo          incidents.Repository
-	incidentUpdatesRepo    incidents.UpdatesRepository
-	incidentComponentsRepo incidents.ComponentsRepository
-	componentsRepo         components.Repository
-	componentGroupsRepo    components.GroupRepository
-	logger                 *slog.Logger
+	registeredStatuspages              map[string]statuspage.StatusPageProvider
+	incidentsRepo                      incidents.Repository
+	incidentUpdatesRepo                incidents.UpdatesRepository
+	incidentComponentsRepo             incidents.ComponentsRepository
+	scheduledMaintenanceRepo           scheduledmaintenance.Repository
+	scheduledMaintenanceUpdatesRepo    scheduledmaintenance.UpdatesRepository
+	scheduledMaintenanceComponentsRepo scheduledmaintenance.ComponentsRepository
+	componentsRepo                     components.Repository
+	componentGroupsRepo                components.GroupRepository
+	logger                             *slog.Logger
 }
 
 func NewScrapperCmd(
@@ -27,18 +31,24 @@ func NewScrapperCmd(
 	incidentsRepo incidents.Repository,
 	incidentUpdatesRepo incidents.UpdatesRepository,
 	incidentComponentsRepo incidents.ComponentsRepository,
+	scheduledMaintenanceRepo scheduledmaintenance.Repository,
+	scheduledMaintenanceUpdatesRepo scheduledmaintenance.UpdatesRepository,
+	scheduledMaintenanceComponentsRepo scheduledmaintenance.ComponentsRepository,
 	componentsRepo components.Repository,
 	componentGroupsRepo components.GroupRepository,
 	logger *slog.Logger,
 ) ScrapperCmd {
 	return ScrapperCmd{
-		registeredStatuspages:  registeredStatuspages,
-		incidentsRepo:          incidentsRepo,
-		incidentUpdatesRepo:    incidentUpdatesRepo,
-		incidentComponentsRepo: incidentComponentsRepo,
-		componentsRepo:         componentsRepo,
-		componentGroupsRepo:    componentGroupsRepo,
-		logger:                 logger,
+		registeredStatuspages:              registeredStatuspages,
+		incidentsRepo:                      incidentsRepo,
+		incidentUpdatesRepo:                incidentUpdatesRepo,
+		incidentComponentsRepo:             incidentComponentsRepo,
+		scheduledMaintenanceRepo:           scheduledMaintenanceRepo,
+		scheduledMaintenanceUpdatesRepo:    scheduledMaintenanceUpdatesRepo,
+		scheduledMaintenanceComponentsRepo: scheduledMaintenanceComponentsRepo,
+		componentsRepo:                     componentsRepo,
+		componentGroupsRepo:                componentGroupsRepo,
+		logger:                             logger,
 	}
 }
 
@@ -54,6 +64,7 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 	s.logger.InfoContext(ctx, "providers prepared", slog.Int("providers_count", len(registeredServices)))
 	scrappedComponents := []components.AggregateComponents{}
 	scrappedIncidents := []incidents.Incident{}
+	scrappedScheduledMaintenances := []scheduledmaintenance.ScheduledMaintenance{}
 
 	for _, service := range registeredServices {
 		collectorStart := time.Now()
@@ -83,11 +94,27 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 			s.logger.ErrorContext(ctx, "error while scrapping incidents", slog.String("slug", service.Slug().String()), slog.Any("error", err))
 		}
 
+		scheduledMaintenanceStart := time.Now()
+		scrappedScheduledMaintenanceForService, err := service.ScrapScheduledMaintenance()
+		s.logger.InfoContext(
+			ctx,
+			"service scheduled maintenances scraped",
+			slog.String("slug", service.Slug().String()),
+			slog.Int64("duration_ms", time.Since(scheduledMaintenanceStart).Milliseconds()),
+		)
+		if err != nil {
+			s.logger.ErrorContext(ctx, "error while scrapping scheduled maintenances", slog.String("slug", service.Slug().String()), slog.Any("error", err))
+		}
+
 		scrappedComponentForService.Service.ID = service.ID()
 		scrappedComponents = append(scrappedComponents, scrappedComponentForService)
 		for _, incident := range scrappedIncidentForService {
 			incident.ServiceID = service.ID()
 			scrappedIncidents = append(scrappedIncidents, incident)
+		}
+		for _, sm := range scrappedScheduledMaintenanceForService {
+			sm.ServiceID = service.ID()
+			scrappedScheduledMaintenances = append(scrappedScheduledMaintenances, sm)
 		}
 
 		s.logger.InfoContext(
@@ -111,6 +138,11 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 	}
 
 	err = s.saveIncidents(ctx, scrappedIncidents, componentsProviderMap)
+	if err != nil {
+		return err
+	}
+
+	err = s.saveScheduledMaintenance(ctx, scrappedScheduledMaintenances, componentsProviderMap)
 	if err != nil {
 		return err
 	}
@@ -199,6 +231,86 @@ func (s ScrapperCmd) saveIncidents(
 	_, err = s.incidentComponentsRepo.SaveAll(ctx, componentParams)
 	if err == nil {
 		s.logger.InfoContext(ctx, "incident components saved", slog.Int("incident_components_count", len(componentParams)))
+	}
+	return err
+}
+
+func (s ScrapperCmd) saveScheduledMaintenance(
+	ctx context.Context,
+	scrappedScheduledMaintenances []scheduledmaintenance.ScheduledMaintenance,
+	componentsProviderMap map[string]uint) error {
+	s.logger.InfoContext(
+		ctx,
+		"saving scheduled maintenances",
+		slog.Int("scheduled_maintenances_count", len(scrappedScheduledMaintenances)),
+		slog.Int("components_provider_map_count", len(componentsProviderMap)),
+	)
+
+	smParams := make([]scheduledmaintenance.ScheduledMaintenanceParams, 0, len(scrappedScheduledMaintenances))
+	for _, sm := range scrappedScheduledMaintenances {
+		smParams = append(smParams, scheduledmaintenance.ScheduledMaintenanceParams{
+			Title:             sm.Name,
+			Link:              sm.Link,
+			ProviderImpact:    sm.ProviderImpact,
+			Impact:            sm.Impact,
+			StartsAt:          sm.StartsAt,
+			EndsAt:            sm.EndsAt,
+			ServiceID:         sm.ServiceID,
+			ProviderID:        sm.ProviderID,
+			ProviderCreatedAt: sm.ProviderCreatedAt,
+		})
+	}
+
+	savedSMs, err := s.scheduledMaintenanceRepo.SaveAll(ctx, smParams)
+	if err != nil {
+		return err
+	}
+	s.logger.InfoContext(ctx, "scheduled maintenances saved", slog.Int("saved_count", len(savedSMs)))
+
+	// Build a map from provider_id -> saved SM for quick lookup
+	savedSMsByProviderID := make(map[string]scheduledmaintenance.ScheduledMaintenanceResult, len(savedSMs))
+	for _, saved := range savedSMs {
+		savedSMsByProviderID[saved.ProviderID] = saved
+	}
+
+	updateParams := make([]scheduledmaintenance.ScheduledMaintenanceUpdateParams, 0)
+	componentParams := make([]scheduledmaintenance.ScheduledMaintenanceComponentParams, 0)
+
+	for _, sm := range scrappedScheduledMaintenances {
+		saved := savedSMsByProviderID[sm.ProviderID]
+
+		for _, update := range sm.Updates {
+			updateParams = append(updateParams, scheduledmaintenance.ScheduledMaintenanceUpdateParams{
+				ScheduledMaintenanceID: saved.ID,
+				Description:            update.Description,
+				ProviderID:             update.ProviderID,
+				ProviderStatus:         update.ProviderStatus,
+				Status:                 update.Status,
+				StatusTime:             update.StatusTime,
+			})
+		}
+
+		for _, component := range sm.Components {
+			componentID, ok := componentsProviderMap[component.ProviderID]
+			if !ok {
+				continue
+			}
+			componentParams = append(componentParams, scheduledmaintenance.ScheduledMaintenanceComponentParams{
+				ScheduledMaintenanceID: saved.ID,
+				ComponentID:            componentID,
+			})
+		}
+	}
+
+	_, err = s.scheduledMaintenanceUpdatesRepo.SaveAll(ctx, updateParams)
+	if err != nil {
+		return err
+	}
+	s.logger.InfoContext(ctx, "scheduled maintenance updates saved", slog.Int("updates_count", len(updateParams)))
+
+	_, err = s.scheduledMaintenanceComponentsRepo.SaveAll(ctx, componentParams)
+	if err == nil {
+		s.logger.InfoContext(ctx, "scheduled maintenance components saved", slog.Int("components_count", len(componentParams)))
 	}
 	return err
 }
