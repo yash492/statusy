@@ -5,6 +5,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
+	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 	"resty.dev/v3"
@@ -72,8 +73,8 @@ func (n newrelic) ScrapIncidents() ([]incidents.Incident, error) {
 }
 
 // ScrapscheduledMaintenance implements statuspage.Statuspage.
-func (n newrelic) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
-	var req atlassian.IncidentReq
+func (n newrelic) ScrapscheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+	var req atlassian.ScheduledMaintenanceReq
 	_, err := n.RestyClient.
 		R().
 		SetResult(&req).
@@ -82,9 +83,9 @@ func (n newrelic) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 		return nil, err
 	}
 
-	incidents := atlassian.FetchIncidentsHelper(req)
+	scheduledMaintenances := atlassian.FetchscheduledMaintenanceHelper(req)
 
-	return incidents, nil
+	return scheduledMaintenances, nil
 }
 
 func (n newrelic) NewWithServiceID(id uint) statuspage.StatusPageProvider {
