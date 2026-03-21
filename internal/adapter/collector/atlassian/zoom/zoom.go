@@ -14,9 +14,9 @@ const slug = "zoom"
 const name = "Zoom"
 
 const (
-	incidentsUrl           = "https://www.zoomstatus.com/api/v2/incidents.json"
-	componentsUrl          = "https://www.zoomstatus.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://www.zoomstatus.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://www.zoomstatus.com/api/v2/incidents.json"
+	componentsUrl           = "https://www.zoomstatus.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://www.zoomstatus.com/api/v2/scheduled-maintenances.json"
 )
 
 type zoomProvider struct {
@@ -71,13 +71,13 @@ func (z zoomProvider) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (z zoomProvider) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (z zoomProvider) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := z.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

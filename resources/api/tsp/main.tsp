@@ -135,7 +135,7 @@ op incidentInfo(
 @doc("Get all scheduled maintenance windows for a status page")
 @get
 @route("/statuspages/{statuspageSlug}/schedule-maintenances")
-op scheduleMaintenanceByStatuspage(
+op scheduledMaintenanceByStatuspage(
   @doc("Unique identifier of the status page")
   @path
   statuspageSlug: string,
@@ -144,15 +144,15 @@ op scheduleMaintenanceByStatuspage(
 //TODO: Change response
 @doc("Get detailed information about a specific scheduled maintenance")
 @get
-@route("/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID}")
-op scheduleMaintenanceInfo(
+@route("/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID}")
+op scheduledMaintenanceInfo(
   @doc("Unique identifier of the status page")
   @path
   statuspageSlug: string,
 
   @doc("Unique identifier of the scheduled maintenance")
   @path
-  scheduleMaintenanceID: string,
+  scheduledMaintenanceID: string,
 ): Statuspage[];
 
 @doc("Get RSS feed for a status page")

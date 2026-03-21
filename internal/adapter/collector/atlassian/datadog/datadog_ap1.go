@@ -14,9 +14,9 @@ const slugAP1 = "datadog-ap1"
 const nameAP1 = "Datadog AP1"
 
 const (
-	incidentsUrlAP1           = "https://status.ap1.datadoghq.com/api/v2/incidents.json"
-	componentsUrlAP1          = "https://status.ap1.datadoghq.com/api/v2/components.json"
-	scheduleMaintenanceUrlAP1 = "https://status.ap1.datadoghq.com/api/v2/scheduled-maintenances.json"
+	incidentsUrlAP1            = "https://status.ap1.datadoghq.com/api/v2/incidents.json"
+	componentsUrlAP1           = "https://status.ap1.datadoghq.com/api/v2/components.json"
+	scheduledMaintenanceUrlAP1 = "https://status.ap1.datadoghq.com/api/v2/scheduled-maintenances.json"
 )
 
 type datadogAP1 struct {
@@ -71,13 +71,13 @@ func (d datadogAP1) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (d datadogAP1) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (d datadogAP1) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := d.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrlAP1)
+		Get(scheduledMaintenanceUrlAP1)
 	if err != nil {
 		return nil, err
 	}

@@ -14,9 +14,9 @@ const slug = "solarwinds-observability"
 const name = "SolarWinds Observability"
 
 const (
-	incidentsUrl           = "https://status.cloud.solarwinds.com/api/v2/incidents.json"
-	componentsUrl          = "https://status.cloud.solarwinds.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://status.cloud.solarwinds.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://status.cloud.solarwinds.com/api/v2/incidents.json"
+	componentsUrl           = "https://status.cloud.solarwinds.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://status.cloud.solarwinds.com/api/v2/scheduled-maintenances.json"
 )
 
 type solarWinds struct {
@@ -71,13 +71,13 @@ func (s solarWinds) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (s solarWinds) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (s solarWinds) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := s.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

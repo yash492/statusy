@@ -104,12 +104,12 @@ func (h Handler) IncidentInfo(ctx context.Context, request api.IncidentInfoReque
 }
 
 // (GET /statuspages/{statuspageSlug}/schedule-maintenances)
-func (h Handler) ScheduleMaintenanceByStatuspage(ctx context.Context, request api.ScheduleMaintenanceByStatuspageRequestObject) (api.ScheduleMaintenanceByStatuspageResponseObject, error) {
+func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request api.ScheduledMaintenanceByStatuspageRequestObject) (api.ScheduledMaintenanceByStatuspageResponseObject, error) {
 	return nil, nil
 }
 
-// (GET /statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
-func (h Handler) ScheduleMaintenanceInfo(ctx context.Context, request api.ScheduleMaintenanceInfoRequestObject) (api.ScheduleMaintenanceInfoResponseObject, error) {
+// (GET /statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID})
+func (h Handler) ScheduledMaintenanceInfo(ctx context.Context, request api.ScheduledMaintenanceInfoRequestObject) (api.ScheduledMaintenanceInfoResponseObject, error) {
 	return nil, nil
 }
 

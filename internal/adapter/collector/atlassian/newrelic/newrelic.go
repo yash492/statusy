@@ -14,9 +14,9 @@ const slug = "newrelic"
 const name = "New Relic"
 
 const (
-	incidentsUrl           = "https://status.newrelic.com/api/v2/incidents.json"
-	componentsUrl          = "https://status.newrelic.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://status.newrelic.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://status.newrelic.com/api/v2/incidents.json"
+	componentsUrl           = "https://status.newrelic.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://status.newrelic.com/api/v2/scheduled-maintenances.json"
 )
 
 type newrelic struct {
@@ -71,13 +71,13 @@ func (n newrelic) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (n newrelic) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (n newrelic) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := n.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

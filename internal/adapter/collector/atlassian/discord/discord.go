@@ -14,9 +14,9 @@ const slug = "discord"
 const name = "Discord"
 
 const (
-	incidentsUrl           = "https://discordstatus.com/api/v2/incidents.json"
-	componentsUrl          = "https://discordstatus.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://discordstatus.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://discordstatus.com/api/v2/incidents.json"
+	componentsUrl           = "https://discordstatus.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://discordstatus.com/api/v2/scheduled-maintenances.json"
 )
 
 type discord struct {
@@ -71,13 +71,13 @@ func (d discord) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (d discord) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (d discord) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := d.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

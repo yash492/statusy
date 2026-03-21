@@ -14,9 +14,9 @@ const slug = "digitalocean"
 const name = "Digital Ocean"
 
 const (
-	incidentsUrl           = "https://status.digitalocean.com/api/v2/incidents.json"
-	componentsUrl          = "https://status.digitalocean.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://status.digitalocean.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://status.digitalocean.com/api/v2/incidents.json"
+	componentsUrl           = "https://status.digitalocean.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://status.digitalocean.com/api/v2/scheduled-maintenances.json"
 )
 
 type digitalOcean struct {
@@ -71,13 +71,13 @@ func (d digitalOcean) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (d digitalOcean) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (d digitalOcean) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := d.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

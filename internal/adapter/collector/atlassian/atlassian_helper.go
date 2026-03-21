@@ -5,6 +5,7 @@ import (
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
+	scheduledmaintenance "github.com/yash492/statusy/internal/domain/scheduledMaintenance"
 )
 
 func FetchComponentsHelper(req ComponentsReq) components.AggregateComponents {
@@ -93,4 +94,25 @@ func FetchIncidentsHelper(req IncidentReq) []incidents.Incident {
 	}
 
 	return incidentList
+}
+
+func FetchscheduledMaintenanceHelper(req ScheduledMaintenanceReq) []scheduledmaintenance.ScheduledMaintenance {
+	scheduledMaintenanceList := []scheduledmaintenance.ScheduledMaintenance{}
+	for _, scheduledMaintenanceReq := range req.ScheduledMaintenances {
+		scheduledMaintenance := scheduledmaintenance.ScheduledMaintenance{
+			Name:              scheduledMaintenanceReq.Name,
+			Link:              scheduledMaintenanceReq.Shortlink,
+			StartsAt:          scheduledMaintenanceReq.StartedAt,
+			EndsAt:            scheduledMaintenanceReq.ResolvedAt,
+			ProviderImpact:    nullable.SetValue(scheduledMaintenanceReq.Impact, scheduledMaintenanceReq.Impact != ""),
+			Impact:            nullable.SetValue(scheduledMaintenanceReq.Impact, scheduledMaintenanceReq.Impact != ""),
+			ProviderID:        scheduledMaintenanceReq.ID,
+			ProviderCreatedAt: scheduledMaintenanceReq.CreatedAt,
+		}
+
+		scheduledMaintenanceList = append(scheduledMaintenanceList, scheduledMaintenance)
+
+	}
+
+	return scheduledMaintenanceList
 }

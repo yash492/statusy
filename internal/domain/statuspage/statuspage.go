@@ -8,7 +8,7 @@ import (
 
 type StatusPageProvider interface {
 	ScrapIncidents() ([]incidents.Incident, error)
-	// ScrapScheduleMaintainance()
+	// ScrapscheduledMaintenance()
 	ScrapComponents() (components.AggregateComponents, error)
 	Slug() services.ServiceSlug
 	ID() uint

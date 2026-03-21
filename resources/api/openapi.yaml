@@ -139,7 +139,7 @@ paths:
                   $ref: '#/components/schemas/Incident'
   /api/statuspages/{statuspageSlug}/schedule-maintenances:
     get:
-      operationId: scheduleMaintenanceByStatuspage
+      operationId: scheduledMaintenanceByStatuspage
       description: Get all scheduled maintenance windows for a status page
       parameters:
         - name: statuspageSlug
@@ -157,9 +157,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Statuspage'
-  /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID}:
+  /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID}:
     get:
-      operationId: scheduleMaintenanceInfo
+      operationId: scheduledMaintenanceInfo
       description: Get detailed information about a specific scheduled maintenance
       parameters:
         - name: statuspageSlug
@@ -168,7 +168,7 @@ paths:
           description: Unique identifier of the status page
           schema:
             type: string
-        - name: scheduleMaintenanceID
+        - name: scheduledMaintenanceID
           in: path
           required: true
           description: Unique identifier of the scheduled maintenance

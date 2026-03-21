@@ -14,9 +14,9 @@ const slug = "github"
 const name = "GitHub"
 
 const (
-	incidentsUrl           = "https://www.githubstatus.com/api/v2/incidents.json"
-	componentsUrl          = "https://www.githubstatus.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://www.githubstatus.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://www.githubstatus.com/api/v2/incidents.json"
+	componentsUrl           = "https://www.githubstatus.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://www.githubstatus.com/api/v2/scheduled-maintenances.json"
 )
 
 type github struct {
@@ -71,13 +71,13 @@ func (g github) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (g github) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (g github) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := g.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

@@ -96,10 +96,10 @@ type ServerInterface interface {
 	IncidentInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, incidentID string)
 
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
-	ScheduleMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string)
+	ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string)
 
-	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
-	ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, scheduleMaintenanceID string)
+	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID})
+	ScheduledMaintenanceInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, scheduledMaintenanceID string)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -137,12 +137,12 @@ func (_ Unimplemented) IncidentInfo(w http.ResponseWriter, r *http.Request, stat
 }
 
 // (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
-func (_ Unimplemented) ScheduleMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
+func (_ Unimplemented) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
-func (_ Unimplemented) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, scheduleMaintenanceID string) {
+// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID})
+func (_ Unimplemented) ScheduledMaintenanceInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, scheduledMaintenanceID string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -335,8 +335,8 @@ func (siw *ServerInterfaceWrapper) IncidentInfo(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
-// ScheduleMaintenanceByStatuspage operation middleware
-func (siw *ServerInterfaceWrapper) ScheduleMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request) {
+// ScheduledMaintenanceByStatuspage operation middleware
+func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -350,7 +350,7 @@ func (siw *ServerInterfaceWrapper) ScheduleMaintenanceByStatuspage(w http.Respon
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ScheduleMaintenanceByStatuspage(w, r, statuspageSlug)
+		siw.Handler.ScheduledMaintenanceByStatuspage(w, r, statuspageSlug)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -360,8 +360,8 @@ func (siw *ServerInterfaceWrapper) ScheduleMaintenanceByStatuspage(w http.Respon
 	handler.ServeHTTP(w, r)
 }
 
-// ScheduleMaintenanceInfo operation middleware
-func (siw *ServerInterfaceWrapper) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.Request) {
+// ScheduledMaintenanceInfo operation middleware
+func (siw *ServerInterfaceWrapper) ScheduledMaintenanceInfo(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -374,17 +374,17 @@ func (siw *ServerInterfaceWrapper) ScheduleMaintenanceInfo(w http.ResponseWriter
 		return
 	}
 
-	// ------------- Path parameter "scheduleMaintenanceID" -------------
-	var scheduleMaintenanceID string
+	// ------------- Path parameter "scheduledMaintenanceID" -------------
+	var scheduledMaintenanceID string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "scheduleMaintenanceID", chi.URLParam(r, "scheduleMaintenanceID"), &scheduleMaintenanceID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "scheduledMaintenanceID", chi.URLParam(r, "scheduledMaintenanceID"), &scheduledMaintenanceID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "scheduleMaintenanceID", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "scheduledMaintenanceID", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ScheduleMaintenanceInfo(w, r, statuspageSlug, scheduleMaintenanceID)
+		siw.Handler.ScheduledMaintenanceInfo(w, r, statuspageSlug, scheduledMaintenanceID)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -526,10 +526,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/incidents/{incidentID}", wrapper.IncidentInfo)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances", wrapper.ScheduleMaintenanceByStatuspage)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances", wrapper.ScheduledMaintenanceByStatuspage)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID}", wrapper.ScheduleMaintenanceInfo)
+		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID}", wrapper.ScheduledMaintenanceInfo)
 	})
 
 	return r
@@ -681,17 +681,17 @@ func (response IncidentInfo200JSONResponse) VisitIncidentInfoResponse(w http.Res
 	return err
 }
 
-type ScheduleMaintenanceByStatuspageRequestObject struct {
+type ScheduledMaintenanceByStatuspageRequestObject struct {
 	StatuspageSlug string `json:"statuspageSlug"`
 }
 
-type ScheduleMaintenanceByStatuspageResponseObject interface {
-	VisitScheduleMaintenanceByStatuspageResponse(w http.ResponseWriter) error
+type ScheduledMaintenanceByStatuspageResponseObject interface {
+	VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error
 }
 
-type ScheduleMaintenanceByStatuspage200JSONResponse []Statuspage
+type ScheduledMaintenanceByStatuspage200JSONResponse []Statuspage
 
-func (response ScheduleMaintenanceByStatuspage200JSONResponse) VisitScheduleMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
+func (response ScheduledMaintenanceByStatuspage200JSONResponse) VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -703,18 +703,18 @@ func (response ScheduleMaintenanceByStatuspage200JSONResponse) VisitScheduleMain
 	return err
 }
 
-type ScheduleMaintenanceInfoRequestObject struct {
-	StatuspageSlug        string `json:"statuspageSlug"`
-	ScheduleMaintenanceID string `json:"scheduleMaintenanceID"`
+type ScheduledMaintenanceInfoRequestObject struct {
+	StatuspageSlug         string `json:"statuspageSlug"`
+	ScheduledMaintenanceID string `json:"scheduledMaintenanceID"`
 }
 
-type ScheduleMaintenanceInfoResponseObject interface {
-	VisitScheduleMaintenanceInfoResponse(w http.ResponseWriter) error
+type ScheduledMaintenanceInfoResponseObject interface {
+	VisitScheduledMaintenanceInfoResponse(w http.ResponseWriter) error
 }
 
-type ScheduleMaintenanceInfo200JSONResponse []Statuspage
+type ScheduledMaintenanceInfo200JSONResponse []Statuspage
 
-func (response ScheduleMaintenanceInfo200JSONResponse) VisitScheduleMaintenanceInfoResponse(w http.ResponseWriter) error {
+func (response ScheduledMaintenanceInfo200JSONResponse) VisitScheduledMaintenanceInfoResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -748,10 +748,10 @@ type StrictServerInterface interface {
 	IncidentInfo(ctx context.Context, request IncidentInfoRequestObject) (IncidentInfoResponseObject, error)
 
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
-	ScheduleMaintenanceByStatuspage(ctx context.Context, request ScheduleMaintenanceByStatuspageRequestObject) (ScheduleMaintenanceByStatuspageResponseObject, error)
+	ScheduledMaintenanceByStatuspage(ctx context.Context, request ScheduledMaintenanceByStatuspageRequestObject) (ScheduledMaintenanceByStatuspageResponseObject, error)
 
-	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduleMaintenanceID})
-	ScheduleMaintenanceInfo(ctx context.Context, request ScheduleMaintenanceInfoRequestObject) (ScheduleMaintenanceInfoResponseObject, error)
+	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID})
+	ScheduledMaintenanceInfo(ctx context.Context, request ScheduledMaintenanceInfoRequestObject) (ScheduledMaintenanceInfoResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -941,25 +941,25 @@ func (sh *strictHandler) IncidentInfo(w http.ResponseWriter, r *http.Request, st
 	}
 }
 
-// ScheduleMaintenanceByStatuspage operation middleware
-func (sh *strictHandler) ScheduleMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
-	var request ScheduleMaintenanceByStatuspageRequestObject
+// ScheduledMaintenanceByStatuspage operation middleware
+func (sh *strictHandler) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
+	var request ScheduledMaintenanceByStatuspageRequestObject
 
 	request.StatuspageSlug = statuspageSlug
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.ScheduleMaintenanceByStatuspage(ctx, request.(ScheduleMaintenanceByStatuspageRequestObject))
+		return sh.ssi.ScheduledMaintenanceByStatuspage(ctx, request.(ScheduledMaintenanceByStatuspageRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "ScheduleMaintenanceByStatuspage")
+		handler = middleware(handler, "ScheduledMaintenanceByStatuspage")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(ScheduleMaintenanceByStatuspageResponseObject); ok {
-		if err := validResponse.VisitScheduleMaintenanceByStatuspageResponse(w); err != nil {
+	} else if validResponse, ok := response.(ScheduledMaintenanceByStatuspageResponseObject); ok {
+		if err := validResponse.VisitScheduledMaintenanceByStatuspageResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -967,26 +967,26 @@ func (sh *strictHandler) ScheduleMaintenanceByStatuspage(w http.ResponseWriter, 
 	}
 }
 
-// ScheduleMaintenanceInfo operation middleware
-func (sh *strictHandler) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, scheduleMaintenanceID string) {
-	var request ScheduleMaintenanceInfoRequestObject
+// ScheduledMaintenanceInfo operation middleware
+func (sh *strictHandler) ScheduledMaintenanceInfo(w http.ResponseWriter, r *http.Request, statuspageSlug string, scheduledMaintenanceID string) {
+	var request ScheduledMaintenanceInfoRequestObject
 
 	request.StatuspageSlug = statuspageSlug
-	request.ScheduleMaintenanceID = scheduleMaintenanceID
+	request.ScheduledMaintenanceID = scheduledMaintenanceID
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.ScheduleMaintenanceInfo(ctx, request.(ScheduleMaintenanceInfoRequestObject))
+		return sh.ssi.ScheduledMaintenanceInfo(ctx, request.(ScheduledMaintenanceInfoRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "ScheduleMaintenanceInfo")
+		handler = middleware(handler, "ScheduledMaintenanceInfo")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(ScheduleMaintenanceInfoResponseObject); ok {
-		if err := validResponse.VisitScheduleMaintenanceInfoResponse(w); err != nil {
+	} else if validResponse, ok := response.(ScheduledMaintenanceInfoResponseObject); ok {
+		if err := validResponse.VisitScheduledMaintenanceInfoResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -997,24 +997,24 @@ func (sh *strictHandler) ScheduleMaintenanceInfo(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
-	"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",
+	"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",
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

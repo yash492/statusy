@@ -14,9 +14,9 @@ const slug = "twilio"
 const name = "Twilio"
 
 const (
-	incidentsUrl           = "https://status.twilio.com/api/v2/incidents.json"
-	componentsUrl          = "https://status.twilio.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://status.twilio.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://status.twilio.com/api/v2/incidents.json"
+	componentsUrl           = "https://status.twilio.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://status.twilio.com/api/v2/scheduled-maintenances.json"
 )
 
 type twilio struct {
@@ -71,13 +71,13 @@ func (t twilio) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (t twilio) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (t twilio) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := t.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

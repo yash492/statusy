@@ -14,9 +14,9 @@ const slug = "plivo"
 const name = "Plivo"
 
 const (
-	incidentsUrl           = "https://status.plivo.com/api/v2/incidents.json"
-	componentsUrl          = "https://status.plivo.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://status.plivo.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://status.plivo.com/api/v2/incidents.json"
+	componentsUrl           = "https://status.plivo.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://status.plivo.com/api/v2/scheduled-maintenances.json"
 )
 
 type plivo struct {
@@ -63,12 +63,12 @@ func (p plivo) ScrapIncidents() ([]incidents.Incident, error) {
 	return atlassian.FetchIncidentsHelper(req), nil
 }
 
-func (p plivo) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+func (p plivo) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := p.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

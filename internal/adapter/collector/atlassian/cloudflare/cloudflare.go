@@ -14,9 +14,9 @@ const slug = "cloudflare"
 const name = "Cloudflare"
 
 const (
-	incidentsUrl           = "https://www.cloudflarestatus.com/api/v2/incidents.json"
-	componentsUrl          = "https://www.cloudflarestatus.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://www.cloudflarestatus.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://www.cloudflarestatus.com/api/v2/incidents.json"
+	componentsUrl           = "https://www.cloudflarestatus.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://www.cloudflarestatus.com/api/v2/scheduled-maintenances.json"
 )
 
 type cloudflare struct {
@@ -71,13 +71,13 @@ func (c cloudflare) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (c cloudflare) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (c cloudflare) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := c.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

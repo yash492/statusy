@@ -39,14 +39,14 @@ func NewScrapperDeps(
 }
 
 type ScrapperApplication struct {
-	cmds                 scrapperCommands
+	commands             scrapperCommands
 	servicesRepo         *servicesdb.PostgresServiceRepository
 	registeredStatusPage map[string]statuspage.StatusPageProvider
 	lg                   *slog.Logger
 }
 
 type scrapperCommands struct {
-	scrapperCmd command.ScrapperCmd
+	scrapper command.ScrapperCmd
 }
 
 func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
@@ -88,8 +88,8 @@ func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
 		lg:                   deps.lg,
 		registeredStatusPage: registeredStatusPage,
 		servicesRepo:         servicesRepo,
-		cmds: scrapperCommands{
-			scrapperCmd: command.NewScrapperCmd(
+		commands: scrapperCommands{
+			scrapper: command.NewScrapperCmd(
 				registeredStatusPage,
 				incidentsRepo,
 				incidentUpdatesRepo,
@@ -122,7 +122,7 @@ func (s ScrapperApplication) Start(ctx context.Context, scrapInterval int) error
 	}
 
 	executeScrape := func() {
-		err := s.cmds.scrapperCmd.Execute(ctx, command.ScrapperParams{
+		err := s.commands.scrapper.Execute(ctx, command.ScrapperParams{
 			Services: servicesResult,
 		})
 

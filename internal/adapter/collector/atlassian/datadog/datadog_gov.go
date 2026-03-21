@@ -14,9 +14,9 @@ const slugGov = "datadog-gov"
 const nameGov = "Datadog GovCloud"
 
 const (
-	incidentsUrlGov           = "https://status.ddog-gov.com/api/v2/incidents.json"
-	componentsUrlGov          = "https://status.ddog-gov.com/api/v2/components.json"
-	scheduleMaintenanceUrlGov = "https://status.ddog-gov.com/api/v2/scheduled-maintenances.json"
+	incidentsUrlGov            = "https://status.ddog-gov.com/api/v2/incidents.json"
+	componentsUrlGov           = "https://status.ddog-gov.com/api/v2/components.json"
+	scheduledMaintenanceUrlGov = "https://status.ddog-gov.com/api/v2/scheduled-maintenances.json"
 )
 
 type datadogGov struct {
@@ -71,13 +71,13 @@ func (d datadogGov) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (d datadogGov) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (d datadogGov) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := d.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrlGov)
+		Get(scheduledMaintenanceUrlGov)
 	if err != nil {
 		return nil, err
 	}

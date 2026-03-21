@@ -14,9 +14,9 @@ const slug = "dropbox"
 const name = "Dropbox"
 
 const (
-	incidentsUrl           = "https://status.dropbox.com/api/v2/incidents.json"
-	componentsUrl          = "https://status.dropbox.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://status.dropbox.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://status.dropbox.com/api/v2/incidents.json"
+	componentsUrl           = "https://status.dropbox.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://status.dropbox.com/api/v2/scheduled-maintenances.json"
 )
 
 type dropbox struct {
@@ -71,13 +71,13 @@ func (c dropbox) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (c dropbox) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (c dropbox) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := c.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

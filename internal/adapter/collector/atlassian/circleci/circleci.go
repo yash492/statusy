@@ -14,9 +14,9 @@ const slug = "circleci"
 const name = "Circle CI"
 
 const (
-	incidentsUrl           = "https://status.circleci.com/api/v2/incidents.json"
-	componentsUrl          = "https://status.circleci.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://status.circleci.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://status.circleci.com/api/v2/incidents.json"
+	componentsUrl           = "https://status.circleci.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://status.circleci.com/api/v2/scheduled-maintenances.json"
 )
 
 type circleCi struct {
@@ -71,13 +71,13 @@ func (c circleCi) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-// ScrapScheduleMaintainance implements statuspage.Statuspage.
-func (c circleCi) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+// ScrapscheduledMaintenance implements statuspage.Statuspage.
+func (c circleCi) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := c.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}

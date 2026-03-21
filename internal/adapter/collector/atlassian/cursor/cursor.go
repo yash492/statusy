@@ -14,9 +14,9 @@ const slug = "cursor"
 const name = "Cursor"
 
 const (
-	incidentsUrl           = "https://status.cursor.com/api/v2/incidents.json"
-	componentsUrl          = "https://status.cursor.com/api/v2/components.json"
-	scheduleMaintenanceUrl = "https://status.cursor.com/api/v2/scheduled-maintenances.json"
+	incidentsUrl            = "https://status.cursor.com/api/v2/incidents.json"
+	componentsUrl           = "https://status.cursor.com/api/v2/components.json"
+	scheduledMaintenanceUrl = "https://status.cursor.com/api/v2/scheduled-maintenances.json"
 )
 
 type cursor struct {
@@ -68,12 +68,12 @@ func (c cursor) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidents, nil
 }
 
-func (c cursor) ScrapScheduleMaintainance() ([]incidents.Incident, error) {
+func (c cursor) ScrapscheduledMaintenance() ([]incidents.Incident, error) {
 	var req atlassian.IncidentReq
 	_, err := c.RestyClient.
 		R().
 		SetResult(&req).
-		Get(scheduleMaintenanceUrl)
+		Get(scheduledMaintenanceUrl)
 	if err != nil {
 		return nil, err
 	}
