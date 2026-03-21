@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS schedule_maintenances (
+CREATE TABLE IF NOT EXISTS scheduled_maintenances (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   link TEXT NOT NULL,
@@ -17,5 +17,5 @@ CREATE TABLE IF NOT EXISTS schedule_maintenances (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS schedule_maintenances;
+DROP TABLE IF EXISTS scheduled_maintenances;
 -- +goose StatementEnd

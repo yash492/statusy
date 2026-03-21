@@ -1,4 +1,4 @@
-INSERT INTO scheduled_maintenance (
+INSERT INTO scheduled_maintenances (
   title,
   link,
   provider_impact,
