@@ -9,7 +9,7 @@
     - AWS Statuspage
 
 - Build a UI for the following spec:
-    - Show incidents for a service (UI Part is done)
+    - Show incidents for a service - ✅
     - Have a search bar for services - ✅
     - Have a separate page to show incident updates - ❌ (Not doing it for this cut)
     - Show actual incident link in the statuspage ✅ (UI Part to redirect to the actual statuspage is done)
@@ -24,7 +24,8 @@
     - Idempotent upserts (no duplicate incidents/updates) ✅
     - Structured logs + error alerts
     - Basic health check endpoint
-    - Implement Schedule Maintenances
+    - Implement Schedule Maintenances ✅
+    - Show Schedule Maintenances in FE
     - Have good erroring system, right now HTTP Handlers are not returning proper errors. 
     - Error tracing is also bad right now.
     - Implement docker compose ✅
