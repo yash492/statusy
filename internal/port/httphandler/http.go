@@ -98,18 +98,8 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 	return resp, nil
 }
 
-// (GET /statuspages/{statuspageSlug}/incidents/{incidentID})
-func (h Handler) IncidentInfo(ctx context.Context, request api.IncidentInfoRequestObject) (api.IncidentInfoResponseObject, error) {
-	return nil, nil
-}
-
 // (GET /statuspages/{statuspageSlug}/schedule-maintenances)
 func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request api.ScheduledMaintenanceByStatuspageRequestObject) (api.ScheduledMaintenanceByStatuspageResponseObject, error) {
-	return nil, nil
-}
-
-// (GET /statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID})
-func (h Handler) ScheduledMaintenanceInfo(ctx context.Context, request api.ScheduledMaintenanceInfoRequestObject) (api.ScheduledMaintenanceInfoResponseObject, error) {
 	return nil, nil
 }
 

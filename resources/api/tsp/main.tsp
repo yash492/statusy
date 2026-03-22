@@ -36,6 +36,29 @@ model Incident {
   provider_created_at: utcDateTime;
 }
 
+model ScheduledMaintenance {
+  @doc("Unique identifier for the incident")
+  id: integer;
+
+  @doc("Title or summary of the incident")
+  title: string;
+
+  @doc("Current status of the incident (investigating, identified, monitoring, resolved)")
+  status: string;
+
+  @doc("The URL of the actual scheduled maintenance event")
+  scheduled_maintenance_url: string;
+
+  @doc("The start time of the scheduled maintenance event in UTC.")
+  starts_at: utcDateTime;
+
+  @doc("The end time of the scheduled maintenance event in UTC")
+  ends_at: utcDateTime;
+
+  @doc("Timestamp when the incident was created by the provider")
+  provider_created_at: utcDateTime;
+}
+
 model PaginationQuery {
   @doc("Page number for paginated results (default: 1)")
   @query
@@ -119,18 +142,18 @@ op incidentByStatuspage(
 ): StatuspageIncidents;
 
 // TODO: Change response
-@doc("Get detailed information about a specific incident with paginated updates")
-@get
-@route("/statuspages/{statuspageSlug}/incidents/{incidentID}")
-op incidentInfo(
-  @doc("Unique identifier of the status page")
-  @path
-  statuspageSlug: string,
+// @doc("Get detailed information about a specific incident with paginated updates")
+// @get
+// @route("/statuspages/{statuspageSlug}/incidents/{incidentID}")
+// op incidentInfo(
+//   @doc("Unique identifier of the status page")
+//   @path
+//   statuspageSlug: string,
 
-  @doc("Unique identifier of the incident")
-  @path
-  incidentID: string,
-): Incident[];
+//   @doc("Unique identifier of the incident")
+//   @path
+//   incidentID: string,
+// ): Incident[];
 
 @doc("Get all scheduled maintenance windows for a status page")
 @get
@@ -139,21 +162,21 @@ op scheduledMaintenanceByStatuspage(
   @doc("Unique identifier of the status page")
   @path
   statuspageSlug: string,
-): Statuspage[];
+): ScheduledMaintenance[];
 
-//TODO: Change response
-@doc("Get detailed information about a specific scheduled maintenance")
-@get
-@route("/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID}")
-op scheduledMaintenanceInfo(
-  @doc("Unique identifier of the status page")
-  @path
-  statuspageSlug: string,
+// TODO: Change response
+// @doc("Get detailed information about a specific scheduled maintenance")
+// @get
+// @route("/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID}")
+// op scheduledMaintenanceInfo(
+//   @doc("Unique identifier of the status page")
+//   @path
+//   statuspageSlug: string,
 
-  @doc("Unique identifier of the scheduled maintenance")
-  @path
-  scheduledMaintenanceID: string,
-): Statuspage[];
+//   @doc("Unique identifier of the scheduled maintenance")
+//   @path
+//   scheduledMaintenanceID: string,
+// ): Statuspage[];
 
 @doc("Get RSS feed for a status page")
 @get

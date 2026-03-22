@@ -111,32 +111,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatuspageIncidents'
-  /api/statuspages/{statuspageSlug}/incidents/{incidentID}:
-    get:
-      operationId: incidentInfo
-      description: Get detailed information about a specific incident with paginated updates
-      parameters:
-        - name: statuspageSlug
-          in: path
-          required: true
-          description: Unique identifier of the status page
-          schema:
-            type: string
-        - name: incidentID
-          in: path
-          required: true
-          description: Unique identifier of the incident
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Incident'
   /api/statuspages/{statuspageSlug}/schedule-maintenances:
     get:
       operationId: scheduledMaintenanceByStatuspage
@@ -156,33 +130,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Statuspage'
-  /api/statuspages/{statuspageSlug}/schedule-maintenances/{scheduledMaintenanceID}:
-    get:
-      operationId: scheduledMaintenanceInfo
-      description: Get detailed information about a specific scheduled maintenance
-      parameters:
-        - name: statuspageSlug
-          in: path
-          required: true
-          description: Unique identifier of the status page
-          schema:
-            type: string
-        - name: scheduledMaintenanceID
-          in: path
-          required: true
-          description: Unique identifier of the scheduled maintenance
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Statuspage'
+                  $ref: '#/components/schemas/ScheduledMaintenance'
 components:
   schemas:
     ErrorResponse:
@@ -243,6 +191,41 @@ components:
         page_size:
           type: integer
           description: 'Number of items per page (default: 20)'
+    ScheduledMaintenance:
+      type: object
+      required:
+        - id
+        - title
+        - status
+        - scheduled_maintenance_url
+        - starts_at
+        - ends_at
+        - provider_created_at
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the incident
+        title:
+          type: string
+          description: Title or summary of the incident
+        status:
+          type: string
+          description: Current status of the incident (investigating, identified, monitoring, resolved)
+        scheduled_maintenance_url:
+          type: string
+          description: The URL of the actual scheduled maintenance event
+        starts_at:
+          type: string
+          format: date-time
+          description: The start time of the scheduled maintenance event in UTC.
+        ends_at:
+          type: string
+          format: date-time
+          description: The end time of the scheduled maintenance event in UTC
+        provider_created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the incident was created by the provider
     Statuspage:
       type: object
       required:
