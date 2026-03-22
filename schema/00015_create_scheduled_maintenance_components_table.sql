@@ -9,7 +9,10 @@ CREATE TABLE IF NOT EXISTS scheduled_maintenance_components (
     deleted_at TIMESTAMPTZ
 );
 
-CREATE UNIQUE INDEX scheduled_maintenance_components_scheduled_maintenance_component_idx ON scheduled_maintenance_components (scheduled_maintenance_id, component_id);
+CREATE UNIQUE INDEX scheduled_maintenance_components_scheduled_maintenance_component_idx ON scheduled_maintenance_components (
+    scheduled_maintenance_id,
+    component_id
+);
 
 -- +goose StatementEnd
 

@@ -13,7 +13,7 @@ import (
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 )
 
-//go:embed queries/insert_schedule_maintenance_components.sql
+//go:embed queries/insert_scheduled_maintenance_components.sql
 var insertScheduleMaintenanceComponentsQuery string
 
 type scheduleMaintenanceComponentDto struct {
