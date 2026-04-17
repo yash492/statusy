@@ -11,6 +11,7 @@ import (
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
+	"golang.org/x/sync/errgroup"
 )
 
 type ScrapperCmd struct {
@@ -62,67 +63,111 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 
 	registeredServices := s.buildProviders(params.Services)
 	s.logger.InfoContext(ctx, "providers prepared", slog.Int("providers_count", len(registeredServices)))
-	scrappedComponents := []components.AggregateComponents{}
+	type serviceScrapeResult struct {
+		Component             components.AggregateComponents
+		Incidents             []incidents.Incident
+		ScheduledMaintenances []scheduledmaintenance.ScheduledMaintenance
+	}
+
+	scrappedComponents := make([]components.AggregateComponents, 0, len(registeredServices))
 	scrappedIncidents := []incidents.Incident{}
 	scrappedScheduledMaintenances := []scheduledmaintenance.ScheduledMaintenance{}
 
-	for _, service := range registeredServices {
-		collectorStart := time.Now()
-		s.logger.InfoContext(ctx, "scraping service", slog.String("slug", service.Slug().String()), slog.Uint64("service_id", uint64(service.ID())))
+	scrapedResults := make([]serviceScrapeResult, len(registeredServices))
+	limitGroup := new(errgroup.Group)
+	limitGroup.SetLimit(10)
 
-		componentsStart := time.Now()
-		scrappedComponentForService, err := service.ScrapComponents()
-		s.logger.InfoContext(
-			ctx,
-			"service components scraped",
-			slog.String("slug", service.Slug().String()),
-			slog.Int64("duration_ms", time.Since(componentsStart).Milliseconds()),
-		)
-		if err != nil {
-			s.logger.ErrorContext(ctx, "error while scrapping components", slog.String("slug", service.Slug().String()), slog.Any("error", err))
-		}
+	for i, service := range registeredServices {
+		i, service := i, service
+		limitGroup.Go(func() error {
+			collectorStart := time.Now()
+			s.logger.InfoContext(ctx, "scraping service", slog.String("slug", service.Slug().String()), slog.Uint64("service_id", uint64(service.ID())))
 
-		incidentsStart := time.Now()
-		scrappedIncidentForService, err := service.ScrapIncidents()
-		s.logger.InfoContext(
-			ctx,
-			"service incidents scraped",
-			slog.String("slug", service.Slug().String()),
-			slog.Int64("duration_ms", time.Since(incidentsStart).Milliseconds()),
-		)
-		if err != nil {
-			s.logger.ErrorContext(ctx, "error while scrapping incidents", slog.String("slug", service.Slug().String()), slog.Any("error", err))
-		}
+			var subGroup errgroup.Group
+			var sc components.AggregateComponents
+			var si []incidents.Incident
+			var ssm []scheduledmaintenance.ScheduledMaintenance
 
-		scheduledMaintenanceStart := time.Now()
-		scrappedScheduledMaintenanceForService, err := service.ScrapScheduledMaintenance()
-		s.logger.InfoContext(
-			ctx,
-			"service scheduled maintenances scraped",
-			slog.String("slug", service.Slug().String()),
-			slog.Int64("duration_ms", time.Since(scheduledMaintenanceStart).Milliseconds()),
-		)
-		if err != nil {
-			s.logger.ErrorContext(ctx, "error while scrapping scheduled maintenances", slog.String("slug", service.Slug().String()), slog.Any("error", err))
-		}
+			subGroup.Go(func() error {
+				componentsStart := time.Now()
+				c, err := service.ScrapComponents()
+				s.logger.InfoContext(
+					ctx,
+					"service components scraped",
+					slog.String("slug", service.Slug().String()),
+					slog.Int64("duration_ms", time.Since(componentsStart).Milliseconds()),
+				)
+				if err != nil {
+					s.logger.ErrorContext(ctx, "error while scrapping components", slog.String("slug", service.Slug().String()), slog.Any("error", err))
+				}
+				sc = c
+				return nil
+			})
 
-		scrappedComponentForService.Service.ID = service.ID()
-		scrappedComponents = append(scrappedComponents, scrappedComponentForService)
-		for _, incident := range scrappedIncidentForService {
-			incident.ServiceID = service.ID()
-			scrappedIncidents = append(scrappedIncidents, incident)
-		}
-		for _, sm := range scrappedScheduledMaintenanceForService {
-			sm.ServiceID = service.ID()
-			scrappedScheduledMaintenances = append(scrappedScheduledMaintenances, sm)
-		}
+			subGroup.Go(func() error {
+				incidentsStart := time.Now()
+				inc, err := service.ScrapIncidents()
+				s.logger.InfoContext(
+					ctx,
+					"service incidents scraped",
+					slog.String("slug", service.Slug().String()),
+					slog.Int64("duration_ms", time.Since(incidentsStart).Milliseconds()),
+				)
+				if err != nil {
+					s.logger.ErrorContext(ctx, "error while scrapping incidents", slog.String("slug", service.Slug().String()), slog.Any("error", err))
+				}
+				si = inc
+				return nil
+			})
 
-		s.logger.InfoContext(
-			ctx,
-			"service scrape completed",
-			slog.String("slug", service.Slug().String()),
-			slog.Int64("duration_ms", time.Since(collectorStart).Milliseconds()),
-		)
+			subGroup.Go(func() error {
+				scheduledMaintenanceStart := time.Now()
+				sm, err := service.ScrapScheduledMaintenance()
+				s.logger.InfoContext(
+					ctx,
+					"service scheduled maintenances scraped",
+					slog.String("slug", service.Slug().String()),
+					slog.Int64("duration_ms", time.Since(scheduledMaintenanceStart).Milliseconds()),
+				)
+				if err != nil {
+					s.logger.ErrorContext(ctx, "error while scrapping scheduled maintenances", slog.String("slug", service.Slug().String()), slog.Any("error", err))
+				}
+				ssm = sm
+				return nil
+			})
+
+			_ = subGroup.Wait()
+
+			sc.Service.ID = service.ID()
+			for idx := range si {
+				si[idx].ServiceID = service.ID()
+			}
+			for idx := range ssm {
+				ssm[idx].ServiceID = service.ID()
+			}
+
+			scrapedResults[i] = serviceScrapeResult{
+				Component:             sc,
+				Incidents:             si,
+				ScheduledMaintenances: ssm,
+			}
+
+			s.logger.InfoContext(
+				ctx,
+				"service scrape completed",
+				slog.String("slug", service.Slug().String()),
+				slog.Int64("duration_ms", time.Since(collectorStart).Milliseconds()),
+			)
+			return nil
+		})
+	}
+
+	_ = limitGroup.Wait()
+
+	for _, result := range scrapedResults {
+		scrappedComponents = append(scrappedComponents, result.Component)
+		scrappedIncidents = append(scrappedIncidents, result.Incidents...)
+		scrappedScheduledMaintenances = append(scrappedScheduledMaintenances, result.ScheduledMaintenances...)
 	}
 
 	s.logger.InfoContext(

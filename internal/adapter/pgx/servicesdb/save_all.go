@@ -27,7 +27,7 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 	for _, service := range servicesYaml {
 		queryArgs := pgx.NamedArgs{
 			"name": service.Name,
-			"slug":  service.Slug,
+			"slug": service.Slug,
 		}
 
 		preparedQuery := batchInserts.Queue(
