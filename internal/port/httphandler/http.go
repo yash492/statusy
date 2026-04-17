@@ -3,6 +3,7 @@ package httphandler
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"github.com/yash492/statusy/internal/command"
 	"github.com/yash492/statusy/internal/port/httphandler/generated/api"
@@ -15,6 +16,7 @@ type Handler struct {
 	ListStatuspageCmd       command.ListStatuspageCmd
 	StatuspageBySlugCmd     command.StatuspageBySlugCmd
 	IncidentByStatuspageCmd command.IncidentByStatuspageCmd
+	GetFeedCmd              command.GetFeedCmd
 }
 
 // (GET /statuspages)
@@ -45,12 +47,40 @@ func (h Handler) ListStatuspages(ctx context.Context, request api.ListStatuspage
 
 // (GET /statuspages/{statuspageSlug}/feed.atom)
 func (h Handler) GetAtomFeed(ctx context.Context, request api.GetAtomFeedRequestObject) (api.GetAtomFeedResponseObject, error) {
-	return nil, nil
+	feed, err := h.GetFeedCmd.Execute(ctx, command.GetFeedParams{
+		StatuspageSlug: request.StatuspageSlug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	atom, err := feed.ToAtom()
+	if err != nil {
+		return nil, err
+	}
+
+	return api.GetAtomFeed200ApplicationatomXmlCharsetUtf8Response{
+		Body: strings.NewReader(atom),
+	}, nil
 }
 
 // (GET /statuspages/{statuspageSlug}/feed.rss)
 func (h Handler) GetRssFeed(ctx context.Context, request api.GetRssFeedRequestObject) (api.GetRssFeedResponseObject, error) {
-	return nil, nil
+	feed, err := h.GetFeedCmd.Execute(ctx, command.GetFeedParams{
+		StatuspageSlug: request.StatuspageSlug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	rss, err := feed.ToRss()
+	if err != nil {
+		return nil, err
+	}
+
+	return api.GetRssFeed200ApplicationrssXmlCharsetUtf8Response{
+		Body: strings.NewReader(rss),
+	}, nil
 }
 
 // (GET /statuspages/{statuspageSlug}/incidents)

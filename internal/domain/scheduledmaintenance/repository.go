@@ -52,6 +52,16 @@ type ScheduledMaintenanceByServiceResult struct {
 	ProviderCreatedAt time.Time
 }
 
+type FeedScheduledMaintenanceByServiceResult struct {
+	ID                 uint
+	ServiceID          uint
+	Title              string
+	Status             string
+	Link               string
+	ProviderCreatedAt  time.Time
+	AffectedComponents string
+}
+
 type ScheduledMaintenanceUpdateParams struct {
 	ScheduledMaintenanceID uint
 	Description            string
@@ -91,6 +101,7 @@ type ScheduledMaintenanceComponentResult struct {
 type Repository interface {
 	SaveAll(ctx context.Context, params []ScheduledMaintenanceParams) ([]ScheduledMaintenanceResult, error)
 	GetByService(ctx context.Context, params ScheduledMaintenanceByServiceParams) ([]ScheduledMaintenanceByServiceResult, error)
+	GetFeedByService(ctx context.Context, params ScheduledMaintenanceByServiceParams) ([]FeedScheduledMaintenanceByServiceResult, error)
 }
 
 type UpdatesRepository interface {

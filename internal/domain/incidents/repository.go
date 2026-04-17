@@ -46,6 +46,16 @@ type IncidentByServiceResult struct {
 	ProviderCreatedAt time.Time
 }
 
+type FeedIncidentByServiceResult struct {
+	ID                 uint
+	ServiceID          uint
+	Title              string
+	Status             string
+	Link               string
+	ProviderCreatedAt  time.Time
+	AffectedComponents string
+}
+
 type IncidentUpdateParams struct {
 	IncidentID     uint
 	Description    string
@@ -85,6 +95,7 @@ type IncidentComponentResult struct {
 type Repository interface {
 	SaveAll(ctx context.Context, params []IncidentParams) ([]IncidentResult, error)
 	GetByService(ctx context.Context, params IncidentByServiceParams) ([]IncidentByServiceResult, error)
+	GetFeedByService(ctx context.Context, params IncidentByServiceParams) ([]FeedIncidentByServiceResult, error)
 }
 
 type UpdatesRepository interface {
