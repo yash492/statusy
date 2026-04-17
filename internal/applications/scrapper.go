@@ -100,8 +100,12 @@ func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
 		deps.writeDB,
 	)
 
-	registeredStatusPage := collector.RegisterAll(resty.New())
+	restyClient := resty.New()
+	restyClient.SetRetryCount(3)
+	restyClient.SetRetryWaitTime(2 * time.Second)
+	restyClient.SetRetryMaxWaitTime(8 * time.Second)
 
+	registeredStatusPage := collector.RegisterAll(restyClient)
 	return ScrapperApplication{
 		lg:                   deps.lg,
 		registeredStatusPage: registeredStatusPage,
