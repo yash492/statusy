@@ -13,9 +13,9 @@ import (
 //go:embed queries/search_by_slug_services.sql
 var searchBySlugServiceQuery string
 
-func (s *PostgresServiceRepository) SearchBySlug(ctx context.Context, slug string) ([]services.ServiceResult, error) {
+func (s *PostgresServiceRepository) SearchByName(ctx context.Context, name string) ([]services.ServiceResult, error) {
 	// Query uses a named parameter `@slug`; match all by default
-	args := pgx.NamedArgs{"name": fmt.Sprintf("%%%s%%", slug)}
+	args := pgx.NamedArgs{"name": fmt.Sprintf("%%%s%%", name)}
 
 	rows, err := s.readDB.Query(ctx, searchBySlugServiceQuery, args)
 	if err != nil {
