@@ -15,7 +15,7 @@ var searchBySlugServiceQuery string
 
 func (s *PostgresServiceRepository) SearchBySlug(ctx context.Context, slug string) ([]services.ServiceResult, error) {
 	// Query uses a named parameter `@slug`; match all by default
-	args := pgx.NamedArgs{"slug": fmt.Sprintf("%%%s%%", slug)}
+	args := pgx.NamedArgs{"name": fmt.Sprintf("%%%s%%", slug)}
 
 	rows, err := s.readDB.Query(ctx, searchBySlugServiceQuery, args)
 	if err != nil {
