@@ -16,6 +16,7 @@ WITH
             JOIN incident_updates ON incidents.id = incident_updates.incident_id
         WHERE
             service_id = @service_id
+        ORDER BY provider_created_at DESC
     )
 SELECT
     id,

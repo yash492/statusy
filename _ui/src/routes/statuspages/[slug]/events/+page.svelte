@@ -112,6 +112,11 @@
 	}
 </script>
 
+<svelte:head>
+	<link rel="alternate" type="application/rss+xml" title="{data.resp.statuspage.name} - RSS Feed" href={feedRssPath} />
+	<link rel="alternate" type="application/atom+xml" title="{data.resp.statuspage.name} - Atom Feed" href={feedAtomPath} />
+</svelte:head>
+
 <div class="mx-auto w-4/5">
 	<div class="w-full">
 		<div class="mb-6 flex justify-between md:mb-4">
