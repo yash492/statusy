@@ -5,6 +5,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
+	import ScheduledMaintenancesTable, { type ScheduledMaintenanceDisplay } from '$lib/derivedcomponents/ScheduledMaintenancesTable.svelte';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ClipboardIcon from '@lucide/svelte/icons/clipboard';
 	import RssIcon from '@lucide/svelte/icons/rss';
@@ -29,7 +30,11 @@
 		pageSize: data.pageSize
 	};
 
-	function toIncidents(raw: typeof data.resp.incidents): Incident[] {
+	const isIncidents = $derived('incidents' in data.resp);
+	const incidentsArray = $derived(isIncidents ? (data.resp as any).incidents : []);
+	const scheduledMaintenancesArray = $derived(!isIncidents ? (data.resp as any).scheduled_maintenances : []);
+
+	function toIncidents(raw: any[]): Incident[] {
 		return raw.map((incident) => ({
 			created_at: incident.provider_created_at,
 			id: incident.id,
@@ -39,7 +44,21 @@
 		}));
 	}
 
-	const incidentData = $derived(toIncidents(data.resp.incidents));
+	function toScheduledMaintenances(raw: any[]): ScheduledMaintenanceDisplay[] {
+		return raw.map((m) => ({
+			id: m.id,
+			title: m.title,
+			status: m.status,
+			starts_at: m.starts_at,
+			ends_at: m.ends_at,
+			scheduled_maintenance_url: m.scheduled_maintenance_url
+		}));
+	}
+
+	const incidentData = $derived(toIncidents(incidentsArray));
+	const scheduledMaintenanceData = $derived(toScheduledMaintenances(scheduledMaintenancesArray));
+	const currentListLength = $derived(isIncidents ? incidentsArray.length : scheduledMaintenancesArray.length);
+
 	const feedBaseUrl = $derived(
 		`${$page.url.origin}/statuspages/${encodeURIComponent(data.resp.statuspage.slug)}`
 	);
@@ -50,8 +69,8 @@
 	// If first page is full, we don't know the total — use MAX to keep Next enabled.
 	// Once a page returns fewer rows than pageSize, we know the exact total.
 	const rowCount = $derived(
-		data.resp.incidents.length < PAGE_SIZE
-			? (data.page - 1) * data.pageSize + data.resp.incidents.length
+		currentListLength < PAGE_SIZE
+			? (data.page - 1) * data.pageSize + currentListLength
 			: Number.MAX_SAFE_INTEGER
 	);
 
@@ -264,7 +283,12 @@
 						/>
 					</Tabs.Content>
 					<Tabs.Content value="scheduled-maintenances">
-						<!-- <IncidentsTable /> -->
+						<ScheduledMaintenancesTable
+							data={scheduledMaintenanceData}
+							{rowCount}
+							paginationState={initialPagination}
+							{onPageChange}
+						/>
 					</Tabs.Content>
 				</Tabs.Root>
 			</div>

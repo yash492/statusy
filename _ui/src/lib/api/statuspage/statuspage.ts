@@ -19,6 +19,21 @@ export interface StatuspageIncidents {
     incidents: Incident[];
 }
 
+export interface ScheduledMaintenance {
+    id: number;
+    title: string;
+    status: string;
+    scheduled_maintenance_url: string;
+    starts_at: string;
+    ends_at: string;
+    provider_created_at: string;
+}
+
+export interface StatuspageScheduledMaintenances {
+    statuspage: Statuspage;
+    scheduled_maintenances: ScheduledMaintenance[];
+}
+
 export class StatuspageApi {
     private readonly basePath = "statuspages";
 
@@ -41,6 +56,17 @@ export class StatuspageApi {
                 },
             })
             .json<StatuspageIncidents>();
+    }
+
+    scheduledMaintenances(slug: string, pageNumber = 1, pageSize = 10) {
+        return KyClient
+            .get(`${this.basePath}/${encodeURIComponent(slug)}/schedule-maintenances`, {
+                searchParams: {
+                    page_number: pageNumber,
+                    page_size: pageSize,
+                },
+            })
+            .json<StatuspageScheduledMaintenances>();
     }
 }
 

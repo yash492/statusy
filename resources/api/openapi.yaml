@@ -122,15 +122,27 @@ paths:
           description: Unique identifier of the status page
           schema:
             type: string
+        - name: page_number
+          in: query
+          required: false
+          description: Page number for scheduled maintenance updates
+          schema:
+            type: integer
+          explode: false
+        - name: page_size
+          in: query
+          required: false
+          description: Number of updates per page
+          schema:
+            type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ScheduledMaintenance'
+                $ref: '#/components/schemas/StatuspageScheduledMaintenances'
 components:
   schemas:
     ErrorResponse:
@@ -252,6 +264,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Incident'
+        statuspage:
+          $ref: '#/components/schemas/Statuspage'
+    StatuspageScheduledMaintenances:
+      type: object
+      required:
+        - scheduled_maintenances
+        - statuspage
+      properties:
+        scheduled_maintenances:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduledMaintenance'
         statuspage:
           $ref: '#/components/schemas/Statuspage'
 servers:
