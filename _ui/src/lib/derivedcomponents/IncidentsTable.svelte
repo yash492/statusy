@@ -35,7 +35,18 @@
 		{
 			accessorKey: 'title',
 			header: 'Title',
-			cell: ({ row }) => row.original.title
+			cell: ({ row }) => {
+				const titleSnippet = createRawSnippet<[{ title: string }]>((getTitle) => {
+					return {
+						render: () => {
+							const t = getTitle().title;
+							const safeT = t.replace(/"/g, '&quot;');
+							return '<div class="max-w-[80vw] md:max-w-[30rem] lg:max-w-[40rem] truncate font-medium" title="' + safeT + '">' + t + '</div>';
+						}
+					};
+				});
+				return renderSnippet(titleSnippet, { title: row.original.title });
+			}
 		},
 		{
 			accessorKey: 'status',

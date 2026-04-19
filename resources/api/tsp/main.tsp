@@ -74,6 +74,11 @@ model StatuspageIncidents {
   statuspage: Statuspage;
 }
 
+model StatuspageScheduledMaintenances {
+  scheduled_maintenances: ScheduledMaintenance[];
+  statuspage: Statuspage;
+}
+
 model ErrorResponse {
   @doc("Error code identifier")
   code: string;
@@ -162,7 +167,15 @@ op scheduledMaintenanceByStatuspage(
   @doc("Unique identifier of the status page")
   @path
   statuspageSlug: string,
-): ScheduledMaintenance[];
+
+  @doc("Page number for scheduled maintenance updates")
+  @query
+  page_number?: integer,
+
+  @doc("Number of updates per page")
+  @query
+  page_size?: integer,
+): StatuspageScheduledMaintenances;
 
 // TODO: Change response
 // @doc("Get detailed information about a specific scheduled maintenance")

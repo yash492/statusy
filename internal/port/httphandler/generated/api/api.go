@@ -83,6 +83,12 @@ type StatuspageIncidents struct {
 	Statuspage Statuspage `json:"statuspage"`
 }
 
+// StatuspageScheduledMaintenances defines model for StatuspageScheduledMaintenances.
+type StatuspageScheduledMaintenances struct {
+	ScheduledMaintenances []ScheduledMaintenance `json:"scheduled_maintenances"`
+	Statuspage            Statuspage             `json:"statuspage"`
+}
+
 // ListStatuspagesParams defines parameters for ListStatuspages.
 type ListStatuspagesParams struct {
 	// Search Search term to filter status pages by name or slug
@@ -92,6 +98,15 @@ type ListStatuspagesParams struct {
 // IncidentByStatuspageParams defines parameters for IncidentByStatuspage.
 type IncidentByStatuspageParams struct {
 	// PageNumber Page number for incident updates
+	PageNumber *int `form:"page_number,omitempty" json:"page_number,omitempty"`
+
+	// PageSize Number of updates per page
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
+// ScheduledMaintenanceByStatuspageParams defines parameters for ScheduledMaintenanceByStatuspage.
+type ScheduledMaintenanceByStatuspageParams struct {
+	// PageNumber Page number for scheduled maintenance updates
 	PageNumber *int `form:"page_number,omitempty" json:"page_number,omitempty"`
 
 	// PageSize Number of updates per page
@@ -117,7 +132,7 @@ type ServerInterface interface {
 	IncidentByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params IncidentByStatuspageParams)
 
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
-	ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string)
+	ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params ScheduledMaintenanceByStatuspageParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -150,7 +165,7 @@ func (_ Unimplemented) IncidentByStatuspage(w http.ResponseWriter, r *http.Reque
 }
 
 // (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
-func (_ Unimplemented) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
+func (_ Unimplemented) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params ScheduledMaintenanceByStatuspageParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -323,8 +338,27 @@ func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.Respo
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ScheduledMaintenanceByStatuspageParams
+
+	// ------------- Optional query parameter "page_number" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_number", r.URL.Query(), &params.PageNumber, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_number", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_size", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ScheduledMaintenanceByStatuspage(w, r, statuspageSlug)
+		siw.Handler.ScheduledMaintenanceByStatuspage(w, r, statuspageSlug, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -594,13 +628,14 @@ func (response IncidentByStatuspage200JSONResponse) VisitIncidentByStatuspageRes
 
 type ScheduledMaintenanceByStatuspageRequestObject struct {
 	StatuspageSlug string `json:"statuspageSlug"`
+	Params         ScheduledMaintenanceByStatuspageParams
 }
 
 type ScheduledMaintenanceByStatuspageResponseObject interface {
 	VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error
 }
 
-type ScheduledMaintenanceByStatuspage200JSONResponse []ScheduledMaintenance
+type ScheduledMaintenanceByStatuspage200JSONResponse StatuspageScheduledMaintenances
 
 func (response ScheduledMaintenanceByStatuspage200JSONResponse) VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
 
@@ -797,10 +832,11 @@ func (sh *strictHandler) IncidentByStatuspage(w http.ResponseWriter, r *http.Req
 }
 
 // ScheduledMaintenanceByStatuspage operation middleware
-func (sh *strictHandler) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string) {
+func (sh *strictHandler) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params ScheduledMaintenanceByStatuspageParams) {
 	var request ScheduledMaintenanceByStatuspageRequestObject
 
 	request.StatuspageSlug = statuspageSlug
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.ScheduledMaintenanceByStatuspage(ctx, request.(ScheduledMaintenanceByStatuspageRequestObject))
@@ -825,24 +861,24 @@ func (sh *strictHandler) ScheduledMaintenanceByStatuspage(w http.ResponseWriter,
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xY32/bNhD+VwhuDxum2MH2MmjYQ9thRYFsGOLmqQgMWjxJLCSSOZ7saoH/94G0JMsW",
-	"7TnoUgTFXhJZpO7H9313R+mRZ6a2RoMmx9NH7rISahEu3+lMSdDkry0aC0gKwoqS/q8El6GypIzmKb/T",
-	"6qEBFp5QuQJkuUFGJTDV20k4tRZ4ypUmKAD5NuH94rLBamr0fQns7vaGmTxYEhk1omKOBDWOWVHEjDtC",
-	"pQtv26JZKwm4zBAEgVwKirhQNTgStWWbEvRBwGwjHOueZas2rPU2ecJzg7W3yKUguCJVQyyIXbBTv28a",
-	"RO+jS6bLcHD9ndJrcKQKQUoXyR5XmbDaaEUGw30EZ6o1yO9jvklRBbGUqQJmkLmmrgW2x86nprYJR3ho",
-	"FILk6QfPf298SPCIyjj694Nls/oIGfkgF1kJsqlA/iG8LrTQGUwlB1q6OH8lMNCSefz7RFxvktV7mwzW",
-	"Hlil2d37NxfT9x9K/WXIsYdmOYLmScV3GtsT8kc6zVxYfiJ3s/9rb1J7p2kdU5AMZfSE8gwufK/93Dkw",
-	"atvR+tCijgD2m3K2Ei3zq4NGYpZGtFdNEQns9uYqRwVaVi3zW84Hdg7+EGnn5zxm/Qx1EfDGS4qgDhff",
-	"IuQ85d/M92N53s3k+TCQt4NPgSjavdR7ms5ZGRE6SW4I6cDgNMVtmNy58b46oXdJtzzha0C3w/x6dj27",
-	"9uEZC1pYxVP+U7iVcCuoDBnPhVXzvbdwr4BIv7hRjpioKibWQlViVR0w59hGUclM2O37FAjMSparikJ7",
-	"9NALv/ZOdrYWI58+HhQ1EKDj6Ydj14udMQKsGZnO6KH3VS9RDOLytfbJVkYCT3NROfCA8ZQ/NIBtL6GU",
-	"76LsCrgWAc8j/d17jpw12u2w+fH62v/LjC/zAJOwtlJZSG7+0fmAH0f2LpLWWBTH4vJkTzu31w04YqVw",
-	"zDVZBiBBzvzubTLhdP64/7GommJ7kuS30LflcLxbtT2ah/zt433dLnYbzhI47UrRVhIo8socMXQQOB8X",
-	"DGEDz8ncxVX8DATNcwA5E2Tqs1S9IlMzvzU0U3EE5yFnb4H89t8B5FdAl4fmh0919QvLSoEO6NeG8quf",
-	"Dxk8dvFsRKFzZ3m6XSyeQNOtc18JS+jciyDpYNifZMkPt2FnT5WFTOUqO8tZfzJ43Y76wktkLzmO4i/f",
-	"5XVTr7qD4nAIb6w/2rsL56gPZrkzExumwylzGsCfO98m7z0yC9gnf7Frp/6G846/zDDYnzefR8f9e8bV",
-	"6DXj3zUdf6fbKC3Nxl3QkmKfCF681L/MuS328eTzT3D+hQJwHUfzFdshz0LtvioKhEKQ8YUXviPwksi6",
-	"dN4pqZ0Ja/n2fvtPAAAA///l2nF7axQAAA==",
+	"H4sIAAAAAAAC/+xYXW/bNhT9KwS3hw1T7GB7GTTsIe2wokA2DHHzVAQBLV5JLCSSubxyqgX+7wNpSZZt",
+	"WnO2eUiLviSOSN+Pc879UJ54ZmprNGhyPH3iLiuhFuHjW50pCZr8Z4vGApKCcKKk/ynBZagsKaN5ym+1",
+	"emiAhW+oXAGy3CCjEpjq7SScWgs85UoTFIB8nfD+8L7B6tDouxLY7c01M3mwJDJqRMUcCWocs6KIGXeE",
+	"ShfetkWzUhLwPkMQBPJeUMSFqsGRqC17LEHvBMwehWPdd9myDWe9TZ7w3GDtLXIpCC5I1RALYhPsod/X",
+	"DaL30SXTZTi4/kbpFThShSCli2SLq0xYbbQig+E5gjPVCuS3Md+kqIJYylQBM8hcU9cC233nh6bWCUd4",
+	"aBSC5Ol7z39vfEhwj8o4+neDZbP8ABn5IBdZCbKpQP4mvC600BkcSg60dHH+SmCgJfP494m43iSrtzYZ",
+	"rDywSrPbd69Ppu8/lPrLkGMPzf0ImmcV33Fsj8gf6Thz4fiZ3M2+1N5B7R2ndUxBMpTRM8ozuPC99t/O",
+	"gVHbjtaHFnUEsF+Us5VomT8dNBKzNKK9aopIYDfXFzkq0LJqmb8yHdgU/CHSzs80Zv0MdRHwxkeKoA4f",
+	"vkbIecq/mm/H8rybyfNhIK8HnwJRtFup9zRNWRkRepDcENKOwekUY/07km5UoafnHp0S58LhSKx/A8o6",
+	"rDO58Y676u9gannCV4BuI8TL2eXs0sdqLGhhFU/5D+FRwq2gMkAxF1bNt97CswIiTfRaOWKiqphYCVWJ",
+	"ZbUjZ8ceFZXMhNu+eYPArGS5qijMDE+Q8GdvZWdrMfLp40FRAwE6nr7fd73YGCPAmpHpjO56X/Z1i6Hi",
+	"fAP6aCsjgae5qBx4wHjKHxrAtq+rlG+i7LpaLQKee0V55wlz1mi3web7y0v/KzOerQCTsLZSWUhu/sH5",
+	"gJ9G9k7T3Egh+0rzZB+OMy8icMRK4ZhrsgxAgpz52+vkgNP50/aPRdUU66Mkv4F+VoWdd9n2aO7yt433",
+	"VbvYXJgk8LBVR/troMgrc8TQTuB8XD2EDZyTuZNL+gwEzXMAORNk6kmqrsjUzF8NE0bswbnL2Rsgf/1X",
+	"APkZ0OWh+e5jXf3EslKgA/q5ofzix10G912cjSh0bpKnm8XiGTTdOPeZsITOvQiSdjagoyz54Tbc7Kmy",
+	"kKlcZZOc9evSq3bUF14ie8l+FH/4Lq+betltz8ObSWP9+447cY76YO43ZmLDdFi9DwP4fePb5L1HZgH7",
+	"5E927dSfMO34/xkG2yX8PDru18WL/c12UtPxF91HpaV5dCe0pNhG/OlLPY7KF93/E93H38yeXwP+tQpw",
+	"FZfRFds4ZIHJq6JAKAQZj3z4rxIviaxL510JtTNhLV/frf8KAAD//4tOOyd5FgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

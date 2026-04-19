@@ -48,10 +48,15 @@ export async function load({ params, url }) {
     }
 
     const statuspageApi = new StatuspageApi();
-    const incidents = await statuspageApi.incidents(params.slug, page, pageSize);
+    let resp;
+    if (type === 'scheduled-maintenances') {
+        resp = await statuspageApi.scheduledMaintenances(params.slug, page, pageSize);
+    } else {
+        resp = await statuspageApi.incidents(params.slug, page, pageSize);
+    }
 
     return {
-        resp: incidents,
+        resp,
         page,
         pageSize,
         type
