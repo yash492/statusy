@@ -1,4 +1,4 @@
 SELECT id, name, slug
 FROM services
-WHERE slug ILIKE @slug
+WHERE name ILIKE @name
 	AND deleted_at IS NULL;
