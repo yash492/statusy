@@ -1,6 +1,7 @@
 volumes:
   psql:
-
+  caddy_data:
+  caddy_config:
 
 services:
   psql:
@@ -28,8 +29,21 @@ services:
       context: ./_ui
       dockerfile: Dockerfile
       args:
-        PUBLIC_API_SERVER_ROUTE: http://localhost:8081
+        PUBLIC_API_SERVER_ROUTE: http://localhost:8081/api
     depends_on:
       - backend
     ports:
       - 3000:3000
+
+  caddy:
+    image: caddy:2.11.3-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:433"
+    volumes:
+      - .caddy/Caddyfile:/etc/caddy/Caddyfile
+      - .caddy/site:/srv
+      - .caddy/caddy_data:/data
+      - .caddy/caddy_config:/config

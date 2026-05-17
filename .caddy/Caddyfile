@@ -1,0 +1,5 @@
+statusy.app {
+	reverse_proxy /api/* localhost:8080
+	reverse_proxy localhost:3000
+    encode zstd gzip
+}
