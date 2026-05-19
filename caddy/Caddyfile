@@ -7,7 +7,7 @@ statusy.app {
         level DEBUG
     }
 
-    reverse_proxy /api/* localhost:8080
-	reverse_proxy localhost:3000
+    reverse_proxy /api/* backend:8081
+    reverse_proxy frontend:3000
     encode zstd gzip 
 }
