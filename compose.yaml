@@ -37,15 +37,19 @@ services:
       - 3000:3000
 
   caddy:
-    image: caddy:2.11.3-alpine
+    build:
+      context: ./.caddy
+      dockerfile: Dockerfile
     container_name: caddy
     restart: unless-stopped
+    environment:
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
     volumes:
-      - .caddy/Caddyfile:/etc/caddy/Caddyfile
-      - .caddy/site:/srv
-      - .caddy/caddy_data:/data
-      - .caddy/caddy_config:/config
+      - caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy/site:/srv
+      - caddy/caddy_data:/data
+      - caddy/caddy_config:/config

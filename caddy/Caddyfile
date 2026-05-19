@@ -1,4 +1,7 @@
 statusy.app {
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
     respond "Hello, privacy!"
     log {
         level DEBUG
