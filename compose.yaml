@@ -30,7 +30,7 @@ services:
       context: ./_ui
       dockerfile: Dockerfile
       args:
-        PUBLIC_API_SERVER_ROUTE: http://localhost:8081/api
+        PUBLIC_API_SERVER_ROUTE: https://statusy.app/api
     depends_on:
       - backend
     ports:
