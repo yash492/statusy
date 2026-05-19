@@ -1,4 +1,4 @@
-:80 {
+statusy.app {
     respond "Hello, privacy!"
     log {
         level DEBUG
