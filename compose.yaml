@@ -3,6 +3,7 @@ volumes:
   caddy_data:
   caddy_config:
 
+
 services:
   psql:
     image: postgres:18-alpine
@@ -41,7 +42,7 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:433"
+      - "443:443"
       - "443:443/udp"
     volumes:
       - .caddy/Caddyfile:/etc/caddy/Caddyfile
