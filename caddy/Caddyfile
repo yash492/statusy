@@ -2,8 +2,12 @@ statusy.app {
     tls {
         dns cloudflare {env.CLOUDFLARE_API_TOKEN}
     }
-    respond "Hello, privacy!"
+    
     log {
         level DEBUG
     }
+
+    reverse_proxy /api/* localhost:8080
+	reverse_proxy localhost:3000
+    encode zstd gzip 
 }
