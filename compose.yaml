@@ -42,6 +42,7 @@ services:
     ports:
       - "80:80"
       - "443:433"
+      - "443:443/udp"
     volumes:
       - .caddy/Caddyfile:/etc/caddy/Caddyfile
       - .caddy/site:/srv
