@@ -48,7 +48,7 @@
 	},
 	"dependencies": {
 		"@js-temporal/polyfill": "^0.5.1",
-		"ky": "^1.14.3",
+		"ky": "2.0.2",
 		"mode-watcher": "^1.1.0"
 	}
 }
