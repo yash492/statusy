@@ -19,7 +19,7 @@
 	/>
 </svelte:head>
 
-<div class="relative w-full overflow-x-hidden bg-black text-white">
+<div class="relative w-full overflow-x-hidden text-white">
 	<div class="mx-auto flex w-3/5 flex-col justify-between pt-12 md:pt-20">
 		<!-- Hero Section -->
 		<header class="relative mb-16 flex flex-col items-center text-center">

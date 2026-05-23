@@ -28,6 +28,8 @@ SELECT
 FROM incident_status_cte
 WHERE
     rank_ = 1
+ORDER BY 
+    provider_created_at DESC
 OFFSET
     @offset
 LIMIT @limit
