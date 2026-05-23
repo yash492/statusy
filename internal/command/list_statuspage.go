@@ -36,7 +36,7 @@ type ListStatuspageResult struct {
 func (s ListStatuspageCmd) Execute(ctx context.Context, params ListStatuspageParams) ([]ListStatuspageResult, error) {
 
 	search := strings.TrimSpace(params.Search)
-	servicesList, err := s.servicesRepo.SearchBySlug(ctx, search)
+	servicesList, err := s.servicesRepo.SearchByName(ctx, search)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to list status pages", slog.Any("err", err))
 		return nil, err
