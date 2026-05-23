@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import InfoIcon from '@lucide/svelte/icons/info';
 
 	let modifierKeyPrefix = $state('⌘ + K');
 
@@ -13,7 +12,7 @@
 </script>
 
 <svelte:head>
-	<title>Statusy | The Open Status Page Aggregator</title>
+	<title>Statusy | The Open Source Status Page Aggregator</title>
 	<meta
 		name="description"
 		content="Aggregated real-time status pages, incident history, RSS feeds and Slack integration for your system dependencies."
@@ -53,17 +52,6 @@
 				<img src="/logos/statusy.svg" height="24" width="24" alt="logo" />
 				<span class="font-bold text-white">Statusy</span>
 				<span>© {new Date().getFullYear()}</span>
-			</div>
-			<div class="flex items-center gap-6">
-				<span class="flex items-center gap-1.5">
-					<InfoIcon class="h-4 w-4" />
-					<span
-						>Press <kbd
-							class="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-xs text-zinc-300"
-							>⌘ + K</kbd
-						> to search anywhere</span
-					>
-				</span>
 			</div>
 		</footer>
 	</div>
