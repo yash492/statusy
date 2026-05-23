@@ -175,7 +175,7 @@
 </script>
 
 <svelte:window onkeydown={handleWindowKeydown} />
-<nav class="mt-8 w-full">
+<nav class="mt-8 h-23 w-full">
 	<div class="mx-auto w-4/5">
 		<div class=" flex justify-between">
 			<div class="flex items-center gap-2">
