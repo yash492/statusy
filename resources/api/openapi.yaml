@@ -259,6 +259,7 @@ components:
       required:
         - incidents
         - statuspage
+        - total_count
       properties:
         incidents:
           type: array
@@ -266,11 +267,14 @@ components:
             $ref: '#/components/schemas/Incident'
         statuspage:
           $ref: '#/components/schemas/Statuspage'
+        total_count:
+          type: integer
     StatuspageScheduledMaintenances:
       type: object
       required:
         - scheduled_maintenances
         - statuspage
+        - total_count
       properties:
         scheduled_maintenances:
           type: array
@@ -278,6 +282,8 @@ components:
             $ref: '#/components/schemas/ScheduledMaintenance'
         statuspage:
           $ref: '#/components/schemas/Statuspage'
+        total_count:
+          type: integer
 servers:
   - url: https://statusy.app
     description: A Status Page Aggregator

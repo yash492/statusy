@@ -17,6 +17,7 @@ export interface Incident {
 export interface StatuspageIncidents {
 	statuspage: Statuspage;
 	incidents: Incident[];
+	total_count: number;
 }
 
 export interface ScheduledMaintenance {
@@ -32,6 +33,7 @@ export interface ScheduledMaintenance {
 export interface StatuspageScheduledMaintenances {
 	statuspage: Statuspage;
 	scheduled_maintenances: ScheduledMaintenance[];
+	total_count: number;
 }
 
 export class StatuspageApi {

@@ -50,6 +50,7 @@ type ScheduledMaintenanceByServiceResult struct {
 	EndsAt            time.Time
 	Link              string
 	ProviderCreatedAt time.Time
+	TotalCount        int64
 }
 
 type ScheduledMaintenanceUpdateParams struct {

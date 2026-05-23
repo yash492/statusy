@@ -22,6 +22,7 @@ type scheduledMaintenanceByServiceDto struct {
 	EndsAt            time.Time `db:"ends_at"`
 	Link              string    `db:"link"`
 	ProviderCreatedAt time.Time `db:"provider_created_at"`
+	TotalCount        int64     `db:"total_count"`
 	CreatedAt         time.Time `db:"created_at"`
 	UpdatedAt         time.Time `db:"updated_at"`
 }
@@ -58,6 +59,7 @@ func (c *PostgresScheduledMaintenanceRepository) GetByService(ctx context.Contex
 			EndsAt:            item.EndsAt,
 			ProviderCreatedAt: item.ProviderCreatedAt,
 			Link:              item.Link,
+			TotalCount:        item.TotalCount,
 		})
 	}
 

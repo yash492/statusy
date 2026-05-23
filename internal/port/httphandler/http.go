@@ -83,7 +83,8 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 			Name: result.ServiceName,
 			Slug: result.ServiceSlug,
 		},
-		Incidents: make([]api.Incident, 0, len(result.Incidents)),
+		Incidents:  make([]api.Incident, 0, len(result.Incidents)),
+		TotalCount: result.TotalCount,
 	}
 
 	for _, incident := range result.Incidents {
@@ -129,6 +130,7 @@ func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request a
 			Slug: result.ServiceSlug,
 		},
 		ScheduledMaintenances: make([]api.ScheduledMaintenance, 0, len(result.ScheduledMaintenances)),
+		TotalCount:            result.TotalCount,
 	}
 
 	for _, m := range result.ScheduledMaintenances {

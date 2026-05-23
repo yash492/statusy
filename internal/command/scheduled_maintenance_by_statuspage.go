@@ -50,6 +50,7 @@ type ScheduledMaintenanceByStatuspageResult struct {
 	ScheduledMaintenances []ScheduledMaintenanceByStatuspageIncident
 	ServiceName           string
 	ServiceSlug           string
+	TotalCount            int
 }
 
 func (c ScheduledMaintenanceByStatuspageCmd) Execute(ctx context.Context, params ScheduledMaintenanceByStatuspageParams) (ScheduledMaintenanceByStatuspageResult, error) {
@@ -93,6 +94,11 @@ func (c ScheduledMaintenanceByStatuspageCmd) Execute(ctx context.Context, params
 		return ScheduledMaintenanceByStatuspageResult{}, err
 	}
 
+	totalCount := 0
+	if len(maintenanceRows) > 0 {
+		totalCount = int(maintenanceRows[0].TotalCount)
+	}
+
 	maintenances := make([]ScheduledMaintenanceByStatuspageIncident, 0, len(maintenanceRows))
 	for _, m := range maintenanceRows {
 		maintenances = append(maintenances, ScheduledMaintenanceByStatuspageIncident{
@@ -100,7 +106,7 @@ func (c ScheduledMaintenanceByStatuspageCmd) Execute(ctx context.Context, params
 			Title:             m.Title,
 			Status:            m.Status,
 			StartsAt:          m.StartsAt,
-			EndsAt:           m.EndsAt,
+			EndsAt:            m.EndsAt,
 			ProviderCreatedAt: m.ProviderCreatedAt,
 			Link:              m.Link,
 		})
@@ -110,6 +116,7 @@ func (c ScheduledMaintenanceByStatuspageCmd) Execute(ctx context.Context, params
 		ScheduledMaintenances: maintenances,
 		ServiceName:           service.Name,
 		ServiceSlug:           service.Slug,
+		TotalCount:            totalCount,
 	}
 
 	return result, nil

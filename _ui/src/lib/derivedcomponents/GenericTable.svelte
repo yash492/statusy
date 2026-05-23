@@ -153,7 +153,17 @@
 </div>
 
 {#if enablePagination}
-	<div class="flex items-center justify-end space-x-2 pt-4">
+	<div class="flex items-center justify-between pt-4">
+		<div class="text-sm text-muted-foreground">
+			{#if rowCount !== undefined && rowCount > 0}
+				Showing {paginationState.pageIndex * paginationState.pageSize + 1} to {Math.min(
+					(paginationState.pageIndex + 1) * paginationState.pageSize,
+					rowCount
+				)} of {rowCount} entries
+			{:else}
+				Showing 0 entries
+			{/if}
+		</div>
 		<div class="space-x-2">
 			<Button
 				variant="outline"

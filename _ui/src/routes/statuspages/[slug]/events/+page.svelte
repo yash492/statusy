@@ -72,13 +72,7 @@
 	const feedAtomPath = $derived(`${feedBaseUrl}/feed.atom`);
 	const slackSnippet = $derived(`/feed subscribe ${feedRssPath}`);
 
-	// If first page is full, we don't know the total — use MAX to keep Next enabled.
-	// Once a page returns fewer rows than pageSize, we know the exact total.
-	const rowCount = $derived(
-		currentListLength < PAGE_SIZE
-			? (data.page - 1) * data.pageSize + currentListLength
-			: Number.MAX_SAFE_INTEGER
-	);
+	const rowCount = $derived(data.resp.total_count);
 
 	async function onPageChange(pagination: PaginationState) {
 		const params = new URLSearchParams(window.location.search);

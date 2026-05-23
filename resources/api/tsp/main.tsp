@@ -72,11 +72,13 @@ model PaginationQuery {
 model StatuspageIncidents {
   incidents: Incident[];
   statuspage: Statuspage;
+  total_count: integer;
 }
 
 model StatuspageScheduledMaintenances {
   scheduled_maintenances: ScheduledMaintenance[];
   statuspage: Statuspage;
+  total_count: integer;
 }
 
 model ErrorResponse {

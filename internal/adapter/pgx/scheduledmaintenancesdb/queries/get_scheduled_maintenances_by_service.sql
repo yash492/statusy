@@ -28,7 +28,8 @@ SELECT
     starts_at,
     ends_at,
     link,
-    provider_created_at
+    provider_created_at,
+    COUNT(*) OVER() AS total_count
 FROM scheduled_maintenance_status_cte
 WHERE
     rank_ = 1
