@@ -1,42 +1,43 @@
 <script lang="ts">
 	import { renderSnippet } from '$lib/components/ui/data-table';
 	import { Temporal } from '@js-temporal/polyfill';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { createRawSnippet } from 'svelte';
 	import GenericTable from './GenericTable.svelte';
 
-	export type Incident = {
+	export type ScheduledMaintenanceDisplay = {
 		id: number;
 		title: string;
 		status: string;
-		created_at: string;
-		incident_url: string;
+		starts_at: string;
+		ends_at: string;
+		scheduled_maintenance_url: string;
 	};
 
-	import type { PaginationState } from '@tanstack/table-core';
-
 	let { data, rowCount, paginationState, onPageChange } = $props<{
-		data: Incident[];
+		data: ScheduledMaintenanceDisplay[];
 		rowCount?: number;
 		paginationState?: PaginationState;
 		onPageChange?: (p: PaginationState) => void;
 	}>();
 
-	const columns: ColumnDef<Incident>[] = [
-		{
-			accessorKey: 'created_at',
-			header: 'Created At',
-			meta: { class: 'w-[25%]' },
-			cell: ({ row }) => {
-				const createdAt = row.getValue<string>('created_at');
-				const instant = Temporal.Instant.from(createdAt);
-				return instant.toLocaleString();
-			}
-		},
+	function formatTime(isoString: string) {
+		const instant = Temporal.Instant.from(isoString);
+		return new Intl.DateTimeFormat('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: '2-digit',
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true
+		}).format(instant.epochMilliseconds);
+	}
+
+	const columns: ColumnDef<ScheduledMaintenanceDisplay>[] = [
 		{
 			accessorKey: 'title',
 			header: 'Title',
-			meta: { class: 'w-[60%]' },
+			meta: { class: 'w-[45%]' },
 			cell: ({ row }) => {
 				const titleSnippet = createRawSnippet<[{ title: string }]>((getTitle) => {
 					return {
@@ -51,29 +52,46 @@
 			}
 		},
 		{
+			accessorKey: 'starts_at',
+			header: 'Starts At',
+			meta: { class: 'w-[20%]' },
+			cell: ({ row }) => formatTime(row.getValue<string>('starts_at'))
+		},
+		{
+			accessorKey: 'ends_at',
+			header: 'Ends At',
+			meta: { class: 'w-[20%]' },
+			cell: ({ row }) => formatTime(row.getValue<string>('ends_at'))
+		},
+		{
 			accessorKey: 'status',
 			header: 'Status',
 			meta: { class: 'w-[15%] min-w-[100px]' },
 			cell: ({ row }) => {
 				const statusSnippet = createRawSnippet<[{ status: string }]>((getStatus) => {
 					const { status } = getStatus();
-					let color = 'bg-red-500';
+					let color = 'bg-blue-500';
 					switch (status) {
-						case 'investigating':
+						case 'scheduled':
+							color = 'bg-blue-500';
+							break;
+						case 'in_progress':
 							color = 'bg-yellow-500';
 							break;
-						case 'resolved':
+						case 'verifying':
+							color = 'bg-purple-500';
+							break;
+						case 'completed':
 							color = 'bg-green-500';
 							break;
-						case 'postmortem':
-							color = 'bg-green-500';
+						default:
+							color = 'bg-gray-500';
 					}
 					return {
 						render: () => `
-						<div class="capitalize  rounded-md text-center py-1 flex w-fit justify-center items-center gap-2 ">
-							<div class="rounded-full w-2 h-2 ${color}">
-							</div>
-							${status}
+						<div class="capitalize rounded-md text-center py-1 flex w-fit justify-center items-center gap-2 ">
+							<div class="rounded-full w-2 h-2 ${color}"></div>
+							${status.replace('_', ' ')}
 						</div>`
 					};
 				});
@@ -89,7 +107,7 @@
 	{data}
 	{columns}
 	onRowClick={(row) => {
-		window.open(row.incident_url, '_blank', 'noopener,noreferrer');
+		window.open(row.scheduled_maintenance_url, '_blank', 'noopener,noreferrer');
 	}}
 	pagination
 	{paginationState}

@@ -175,12 +175,12 @@
 </script>
 
 <svelte:window onkeydown={handleWindowKeydown} />
-<nav class="mt-8 h-28 w-full">
+<nav class="mt-8 h-23 w-full">
 	<div class="mx-auto w-4/5">
 		<div class=" flex justify-between">
 			<div class="flex items-center gap-2">
 				<img src="/logos/statusy.svg" height="30rem" width="30rem" alt="statusy_logo" />
-				<p class="text-2xl font-bold">Statusy</p>
+				<a href="/" class="text-2xl font-bold">Statusy</a>
 			</div>
 			<div class="flex gap-2">
 				<Dialog.Root open={isSearchDialogOpen} onOpenChange={handleDialogOpenChange}>

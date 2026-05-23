@@ -50,6 +50,7 @@ type IncidentByStatuspageResult struct {
 	Incidents   []IncidentByStatuspageIncident
 	ServiceName string
 	ServiceSlug string
+	TotalCount  int
 }
 
 func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByStatuspageParams) (IncidentByStatuspageResult, error) {
@@ -93,6 +94,11 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 		return IncidentByStatuspageResult{}, err
 	}
 
+	totalCount := 0
+	if len(incidentRows) > 0 {
+		totalCount = int(incidentRows[0].TotalCount)
+	}
+
 	incidents := make([]IncidentByStatuspageIncident, 0, len(incidentRows))
 	for _, incident := range incidentRows {
 		incidents = append(incidents, IncidentByStatuspageIncident{
@@ -108,6 +114,7 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 		Incidents:   incidents,
 		ServiceName: service.Name,
 		ServiceSlug: service.Slug,
+		TotalCount:  totalCount,
 	}
 
 	return result, nil

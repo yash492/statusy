@@ -72,6 +72,13 @@ model PaginationQuery {
 model StatuspageIncidents {
   incidents: Incident[];
   statuspage: Statuspage;
+  total_count: integer;
+}
+
+model StatuspageScheduledMaintenances {
+  scheduled_maintenances: ScheduledMaintenance[];
+  statuspage: Statuspage;
+  total_count: integer;
 }
 
 model ErrorResponse {
@@ -162,7 +169,15 @@ op scheduledMaintenanceByStatuspage(
   @doc("Unique identifier of the status page")
   @path
   statuspageSlug: string,
-): ScheduledMaintenance[];
+
+  @doc("Page number for scheduled maintenance updates")
+  @query
+  page_number?: integer,
+
+  @doc("Number of updates per page")
+  @query
+  page_size?: integer,
+): StatuspageScheduledMaintenances;
 
 // TODO: Change response
 // @doc("Get detailed information about a specific scheduled maintenance")

@@ -13,6 +13,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenancesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/command"
 	"github.com/yash492/statusy/internal/port/httphandler"
@@ -54,10 +55,16 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 		deps.readDB,
 		deps.writeDB,
 	)
+	scheduledMaintenancesRepo := scheduledmaintenancesdb.NewPostgresScheduledMaintenanceRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
 	handler := httphandler.Handler{
-		ListStatuspageCmd:       command.NewListStatuspageCmd(lg, servicesRepo),
-		StatuspageBySlugCmd:     command.NewStatuspageBySlugCmd(lg, servicesRepo),
-		IncidentByStatuspageCmd: command.NewIncidentByStatuspageCmd(lg, servicesRepo, incidentsRepo),
+		ListStatuspageCmd:                   command.NewListStatuspageCmd(lg, servicesRepo),
+		StatuspageBySlugCmd:                 command.NewStatuspageBySlugCmd(lg, servicesRepo),
+		IncidentByStatuspageCmd:             command.NewIncidentByStatuspageCmd(lg, servicesRepo, incidentsRepo),
+		ScheduledMaintenanceByStatuspageCmd: command.NewScheduledMaintenanceByStatuspageCmd(lg, servicesRepo, scheduledMaintenancesRepo),
 	}
 	return ServerApplication{
 		HttpHandler: handler,

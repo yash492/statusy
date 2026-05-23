@@ -12,9 +12,10 @@ var _ api.StrictServerInterface = Handler{}
 
 type Handler struct {
 	lg                      *slog.Logger
-	ListStatuspageCmd       command.ListStatuspageCmd
-	StatuspageBySlugCmd     command.StatuspageBySlugCmd
-	IncidentByStatuspageCmd command.IncidentByStatuspageCmd
+	ListStatuspageCmd                   command.ListStatuspageCmd
+	StatuspageBySlugCmd                 command.StatuspageBySlugCmd
+	IncidentByStatuspageCmd             command.IncidentByStatuspageCmd
+	ScheduledMaintenanceByStatuspageCmd command.ScheduledMaintenanceByStatuspageCmd
 }
 
 // (GET /statuspages)
@@ -82,7 +83,8 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 			Name: result.ServiceName,
 			Slug: result.ServiceSlug,
 		},
-		Incidents: make([]api.Incident, 0, len(result.Incidents)),
+		Incidents:  make([]api.Incident, 0, len(result.Incidents)),
+		TotalCount: result.TotalCount,
 	}
 
 	for _, incident := range result.Incidents {
@@ -100,7 +102,50 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 
 // (GET /statuspages/{statuspageSlug}/schedule-maintenances)
 func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request api.ScheduledMaintenanceByStatuspageRequestObject) (api.ScheduledMaintenanceByStatuspageResponseObject, error) {
-	return nil, nil
+
+	pageNumber := 0
+	pageSize := 0
+
+	if request.Params.PageNumber != nil {
+		pageNumber = *request.Params.PageNumber
+	}
+
+	if request.Params.PageSize != nil {
+		pageSize = *request.Params.PageSize
+	}
+
+	result, err := h.ScheduledMaintenanceByStatuspageCmd.Execute(ctx, command.ScheduledMaintenanceByStatuspageParams{
+		StatuspageSlug: request.StatuspageSlug,
+		PageNumber:     pageNumber,
+		PageSize:       pageSize,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := api.ScheduledMaintenanceByStatuspage200JSONResponse{
+		Statuspage: api.Statuspage{
+			Name: result.ServiceName,
+			Slug: result.ServiceSlug,
+		},
+		ScheduledMaintenances: make([]api.ScheduledMaintenance, 0, len(result.ScheduledMaintenances)),
+		TotalCount:            result.TotalCount,
+	}
+
+	for _, m := range result.ScheduledMaintenances {
+		resp.ScheduledMaintenances = append(resp.ScheduledMaintenances, api.ScheduledMaintenance{
+			Id:                      int(m.ID),
+			Title:                   m.Title,
+			Status:                  m.Status,
+			StartsAt:                m.StartsAt,
+			EndsAt:                  m.EndsAt,
+			ProviderCreatedAt:       m.ProviderCreatedAt,
+			ScheduledMaintenanceUrl: m.Link,
+		})
+	}
+
+	return resp, nil
 }
 
 // (GET /statuspages/{statuspageSlug})

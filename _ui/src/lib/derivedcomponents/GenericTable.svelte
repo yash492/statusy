@@ -77,12 +77,16 @@
 </script>
 
 <div class="rounded-md border">
-	<Table.Root>
+	<Table.Root class="table-fixed">
 		<Table.Header>
 			{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 				<Table.Row>
 					{#each headerGroup.headers as header (header.id)}
-						<Table.Head class="[&:has([role=checkbox])]:ps-3">
+						<Table.Head
+							class="[&:has([role=checkbox])]:ps-3 {(
+								header.column.columnDef as { meta?: { class?: string } }
+							).meta?.class || ''}"
+						>
 							{#if !header.isPlaceholder}
 								<FlexRender
 									content={header.column.columnDef.header}
@@ -126,7 +130,11 @@
 						}}
 					>
 						{#each row.getVisibleCells() as cell (cell.id)}
-							<Table.Cell class="[&:has([role=checkbox])]:ps-3">
+							<Table.Cell
+								class="[&:has([role=checkbox])]:ps-3 {(
+									cell.column.columnDef as { meta?: { class?: string } }
+								).meta?.class || ''}"
+							>
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
 							</Table.Cell>
 						{/each}
@@ -145,7 +153,17 @@
 </div>
 
 {#if enablePagination}
-	<div class="flex items-center justify-end space-x-2 pt-4">
+	<div class="flex items-center justify-between pt-4">
+		<div class="text-sm text-muted-foreground">
+			{#if rowCount !== undefined && rowCount > 0}
+				Showing {paginationState.pageIndex * paginationState.pageSize + 1} to {Math.min(
+					(paginationState.pageIndex + 1) * paginationState.pageSize,
+					rowCount
+				)} of {rowCount} entries
+			{:else}
+				Showing 0 entries
+			{/if}
+		</div>
 		<div class="space-x-2">
 			<Button
 				variant="outline"

@@ -44,6 +44,7 @@ type IncidentByServiceResult struct {
 	Status            string
 	Link              string
 	ProviderCreatedAt time.Time
+	TotalCount        int64
 }
 
 type IncidentUpdateParams struct {

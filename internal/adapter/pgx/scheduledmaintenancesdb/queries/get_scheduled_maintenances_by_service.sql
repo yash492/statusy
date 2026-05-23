@@ -18,6 +18,7 @@ WITH
             JOIN scheduled_maintenance_updates ON scheduled_maintenances.id = scheduled_maintenance_updates.scheduled_maintenance_id
         WHERE
             service_id = @service_id
+        ORDER BY provider_created_at DESC
     )
 SELECT
     id,
@@ -25,9 +26,10 @@ SELECT
     title,
     status,
     starts_at,
-    ends_at
+    ends_at,
     link,
-    provider_created_at
+    provider_created_at,
+    COUNT(*) OVER() AS total_count
 FROM scheduled_maintenance_status_cte
 WHERE
     rank_ = 1

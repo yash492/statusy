@@ -23,7 +23,8 @@ SELECT
     title,
     status,
     link,
-    provider_created_at
+    provider_created_at,
+    COUNT(*) OVER() AS total_count
 FROM incident_status_cte
 WHERE
     rank_ = 1

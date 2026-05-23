@@ -20,6 +20,7 @@ type incidentByServiceDto struct {
 	Status            string    `db:"status"`
 	Link              string    `db:"link"`
 	ProviderCreatedAt time.Time `db:"provider_created_at"`
+	TotalCount        int64     `db:"total_count"`
 	CreatedAt         time.Time `db:"created_at"`
 	UpdatedAt         time.Time `db:"updated_at"`
 }
@@ -54,6 +55,7 @@ func (c *PostgresIncidentRepository) GetByService(ctx context.Context, params in
 			Status:            item.Status,
 			ProviderCreatedAt: item.ProviderCreatedAt,
 			Link:              item.Link,
+			TotalCount:        item.TotalCount,
 		})
 	}
 
