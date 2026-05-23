@@ -26,6 +26,7 @@
 		{
 			accessorKey: 'created_at',
 			header: 'Created At',
+			meta: { class: 'w-[25%]' },
 			cell: ({ row }) => {
 				const createdAt = row.getValue<string>('created_at');
 				const instant = Temporal.Instant.from(createdAt);
@@ -35,13 +36,14 @@
 		{
 			accessorKey: 'title',
 			header: 'Title',
+			meta: { class: 'w-[60%]' },
 			cell: ({ row }) => {
 				const titleSnippet = createRawSnippet<[{ title: string }]>((getTitle) => {
 					return {
 						render: () => {
 							const t = getTitle().title;
 							const safeT = t.replace(/"/g, '&quot;');
-							return '<div class="max-w-[80vw] md:max-w-[30rem] lg:max-w-[40rem] truncate font-medium" title="' + safeT + '">' + t + '</div>';
+							return '<div class="truncate font-medium" title="' + safeT + '">' + t + '</div>';
 						}
 					};
 				});
@@ -51,6 +53,7 @@
 		{
 			accessorKey: 'status',
 			header: 'Status',
+			meta: { class: 'w-[15%] min-w-[100px]' },
 			cell: ({ row }) => {
 				const statusSnippet = createRawSnippet<[{ status: string }]>((getStatus) => {
 					const { status } = getStatus();

@@ -37,13 +37,14 @@
 		{
 			accessorKey: 'title',
 			header: 'Title',
+			meta: { class: 'w-[45%]' },
 			cell: ({ row }) => {
 				const titleSnippet = createRawSnippet<[{ title: string }]>((getTitle) => {
 					return {
 						render: () => {
 							const t = getTitle().title;
 							const safeT = t.replace(/"/g, '&quot;');
-							return '<div class="w-[50vw] md:w-[50%] max-w-[50vw] md:max-w-[50%] truncate font-medium" title="' + safeT + '">' + t + '</div>';
+							return '<div class="truncate font-medium" title="' + safeT + '">' + t + '</div>';
 						}
 					};
 				});
@@ -53,16 +54,19 @@
 		{
 			accessorKey: 'starts_at',
 			header: 'Starts At',
+			meta: { class: 'w-[20%]' },
 			cell: ({ row }) => formatTime(row.getValue<string>('starts_at'))
 		},
 		{
 			accessorKey: 'ends_at',
 			header: 'Ends At',
+			meta: { class: 'w-[20%]' },
 			cell: ({ row }) => formatTime(row.getValue<string>('ends_at'))
 		},
 		{
 			accessorKey: 'status',
 			header: 'Status',
+			meta: { class: 'w-[15%] min-w-[100px]' },
 			cell: ({ row }) => {
 				const statusSnippet = createRawSnippet<[{ status: string }]>((getStatus) => {
 					const { status } = getStatus();

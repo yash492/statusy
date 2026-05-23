@@ -77,12 +77,16 @@
 </script>
 
 <div class="rounded-md border">
-	<Table.Root>
+	<Table.Root class="table-fixed">
 		<Table.Header>
 			{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 				<Table.Row>
 					{#each headerGroup.headers as header (header.id)}
-						<Table.Head class="[&:has([role=checkbox])]:ps-3">
+						<Table.Head
+							class="[&:has([role=checkbox])]:ps-3 {(
+								header.column.columnDef as { meta?: { class?: string } }
+							).meta?.class || ''}"
+						>
 							{#if !header.isPlaceholder}
 								<FlexRender
 									content={header.column.columnDef.header}
@@ -126,7 +130,11 @@
 						}}
 					>
 						{#each row.getVisibleCells() as cell (cell.id)}
-							<Table.Cell class="[&:has([role=checkbox])]:ps-3">
+							<Table.Cell
+								class="[&:has([role=checkbox])]:ps-3 {(
+									cell.column.columnDef as { meta?: { class?: string } }
+								).meta?.class || ''}"
+							>
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
 							</Table.Cell>
 						{/each}

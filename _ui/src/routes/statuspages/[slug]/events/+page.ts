@@ -47,18 +47,18 @@ export async function load({ params, url }) {
 		throw redirect(302, `${url.pathname}?${paramsWithDefaults.toString()}`);
 	}
 
-    const statuspageApi = new StatuspageApi();
-    let resp;
-    if (type === 'scheduled-maintenances') {
-        resp = await statuspageApi.scheduledMaintenances(params.slug, page, pageSize);
-    } else {
-        resp = await statuspageApi.incidents(params.slug, page, pageSize);
-    }
+	const statuspageApi = new StatuspageApi();
+	let resp;
+	if (type === 'scheduled-maintenances') {
+		resp = await statuspageApi.scheduledMaintenances(params.slug, page, pageSize);
+	} else {
+		resp = await statuspageApi.incidents(params.slug, page, pageSize);
+	}
 
-    return {
-        resp,
-        page,
-        pageSize,
-        type
-    };
+	return {
+		resp,
+		page,
+		pageSize,
+		type
+	};
 }

@@ -5,7 +5,9 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
-	import ScheduledMaintenancesTable, { type ScheduledMaintenanceDisplay } from '$lib/derivedcomponents/ScheduledMaintenancesTable.svelte';
+	import ScheduledMaintenancesTable, {
+		type ScheduledMaintenanceDisplay
+	} from '$lib/derivedcomponents/ScheduledMaintenancesTable.svelte';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ClipboardIcon from '@lucide/svelte/icons/clipboard';
 	import RssIcon from '@lucide/svelte/icons/rss';
@@ -32,7 +34,9 @@
 
 	const isIncidents = $derived('incidents' in data.resp);
 	const incidentsArray = $derived(isIncidents ? (data.resp as any).incidents : []);
-	const scheduledMaintenancesArray = $derived(!isIncidents ? (data.resp as any).scheduled_maintenances : []);
+	const scheduledMaintenancesArray = $derived(
+		!isIncidents ? (data.resp as any).scheduled_maintenances : []
+	);
 
 	function toIncidents(raw: any[]): Incident[] {
 		return raw.map((incident) => ({
@@ -57,7 +61,9 @@
 
 	const incidentData = $derived(toIncidents(incidentsArray));
 	const scheduledMaintenanceData = $derived(toScheduledMaintenances(scheduledMaintenancesArray));
-	const currentListLength = $derived(isIncidents ? incidentsArray.length : scheduledMaintenancesArray.length);
+	const currentListLength = $derived(
+		isIncidents ? incidentsArray.length : scheduledMaintenancesArray.length
+	);
 
 	const feedBaseUrl = $derived(
 		`${$page.url.origin}/statuspages/${encodeURIComponent(data.resp.statuspage.slug)}`

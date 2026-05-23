@@ -20,18 +20,18 @@ export interface StatuspageIncidents {
 }
 
 export interface ScheduledMaintenance {
-    id: number;
-    title: string;
-    status: string;
-    scheduled_maintenance_url: string;
-    starts_at: string;
-    ends_at: string;
-    provider_created_at: string;
+	id: number;
+	title: string;
+	status: string;
+	scheduled_maintenance_url: string;
+	starts_at: string;
+	ends_at: string;
+	provider_created_at: string;
 }
 
 export interface StatuspageScheduledMaintenances {
-    statuspage: Statuspage;
-    scheduled_maintenances: ScheduledMaintenance[];
+	statuspage: Statuspage;
+	scheduled_maintenances: ScheduledMaintenance[];
 }
 
 export class StatuspageApi {
@@ -47,25 +47,21 @@ export class StatuspageApi {
 		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}`).json<Statuspage>();
 	}
 
-    incidents(slug: string, pageNumber = 1, pageSize = 10) {
-        return KyClient
-            .get(`${this.basePath}/${encodeURIComponent(slug)}/incidents`, {
-                searchParams: {
-                    page_number: pageNumber,
-                    page_size: pageSize,
-                },
-            })
-            .json<StatuspageIncidents>();
-    }
+	incidents(slug: string, pageNumber = 1, pageSize = 10) {
+		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}/incidents`, {
+			searchParams: {
+				page_number: pageNumber,
+				page_size: pageSize
+			}
+		}).json<StatuspageIncidents>();
+	}
 
-    scheduledMaintenances(slug: string, pageNumber = 1, pageSize = 10) {
-        return KyClient
-            .get(`${this.basePath}/${encodeURIComponent(slug)}/schedule-maintenances`, {
-                searchParams: {
-                    page_number: pageNumber,
-                    page_size: pageSize,
-                },
-            })
-            .json<StatuspageScheduledMaintenances>();
-    }
+	scheduledMaintenances(slug: string, pageNumber = 1, pageSize = 10) {
+		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}/schedule-maintenances`, {
+			searchParams: {
+				page_number: pageNumber,
+				page_size: pageSize
+			}
+		}).json<StatuspageScheduledMaintenances>();
+	}
 }

@@ -34,12 +34,12 @@
 
 			<!-- Search Shortcut Text -->
 			<p class="mt-8 text-sm text-zinc-500">
-				Press{' '}
+				Press
 				<kbd
 					class="rounded border border-zinc-800 bg-zinc-950 px-1.5 py-0.5 font-mono text-xs text-zinc-400"
 				>
 					{modifierKeyPrefix}
-				</kbd>{' '}
+				</kbd>
 				to search anywhere
 			</p>
 		</header>
