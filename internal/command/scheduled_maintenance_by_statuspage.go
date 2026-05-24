@@ -50,6 +50,7 @@ type ScheduledMaintenanceByStatuspageResult struct {
 	ScheduledMaintenances []ScheduledMaintenanceByStatuspageIncident
 	ServiceName           string
 	ServiceSlug           string
+	ServiceID             uint
 	TotalCount            int
 }
 
@@ -117,6 +118,7 @@ func (c ScheduledMaintenanceByStatuspageCmd) Execute(ctx context.Context, params
 		ServiceName:           service.Name,
 		ServiceSlug:           service.Slug,
 		TotalCount:            totalCount,
+		ServiceID:             service.ID,
 	}
 
 	return result, nil

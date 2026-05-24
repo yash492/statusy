@@ -11,7 +11,7 @@ import (
 var _ api.StrictServerInterface = Handler{}
 
 type Handler struct {
-	lg                      *slog.Logger
+	lg                                  *slog.Logger
 	ListStatuspageCmd                   command.ListStatuspageCmd
 	StatuspageBySlugCmd                 command.StatuspageBySlugCmd
 	IncidentByStatuspageCmd             command.IncidentByStatuspageCmd
@@ -82,6 +82,7 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 		Statuspage: api.Statuspage{
 			Name: result.ServiceName,
 			Slug: result.ServiceSlug,
+			Id:   int(result.ServiceID),
 		},
 		Incidents:  make([]api.Incident, 0, len(result.Incidents)),
 		TotalCount: result.TotalCount,
@@ -128,6 +129,7 @@ func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request a
 		Statuspage: api.Statuspage{
 			Name: result.ServiceName,
 			Slug: result.ServiceSlug,
+			Id:   int(result.ServiceID),
 		},
 		ScheduledMaintenances: make([]api.ScheduledMaintenance, 0, len(result.ScheduledMaintenances)),
 		TotalCount:            result.TotalCount,

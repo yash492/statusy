@@ -51,6 +51,7 @@ type IncidentByStatuspageResult struct {
 	ServiceName string
 	ServiceSlug string
 	TotalCount  int
+	ServiceID   uint
 }
 
 func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByStatuspageParams) (IncidentByStatuspageResult, error) {
@@ -115,6 +116,7 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 		ServiceName: service.Name,
 		ServiceSlug: service.Slug,
 		TotalCount:  totalCount,
+		ServiceID:   service.ID,
 	}
 
 	return result, nil
