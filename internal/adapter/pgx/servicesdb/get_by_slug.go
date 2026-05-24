@@ -30,5 +30,6 @@ func (s *PostgresServiceRepository) GetBySlug(ctx context.Context, slug string) 
 		ID:   item.ID,
 		Name: item.Name,
 		Slug: item.Slug,
+		URL:  item.URL,
 	}, nil
 }

@@ -244,6 +244,7 @@ components:
         - id
         - name
         - slug
+        - url
       properties:
         id:
           type: integer
@@ -254,6 +255,9 @@ components:
         slug:
           type: string
           description: URL-friendly slug for the status page
+        url:
+          type: string
+          description: Root domain URL of the status page
     StatuspageIncidents:
       type: object
       required:

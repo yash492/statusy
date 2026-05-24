@@ -38,6 +38,7 @@ func (s *PostgresServiceRepository) SearchByName(ctx context.Context, name strin
 			ID:   service.ID,
 			Name: service.Name,
 			Slug: service.Slug,
+			URL:  service.URL,
 		})
 	}
 

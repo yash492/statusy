@@ -17,6 +17,7 @@ type serviceDto struct {
 	ID   uint
 	Name string
 	Slug string
+	URL  string
 }
 
 func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []services.ServiceParams) ([]services.ServiceResult, error) {
@@ -28,6 +29,7 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 		queryArgs := pgx.NamedArgs{
 			"name": service.Name,
 			"slug": service.Slug,
+			"url":  service.URL,
 		}
 
 		preparedQuery := batchInserts.Queue(
@@ -59,6 +61,7 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 			ID:   item.ID,
 			Name: item.Name,
 			Slug: item.Slug,
+			URL:  item.URL,
 		}
 	})
 

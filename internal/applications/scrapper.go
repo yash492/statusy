@@ -138,6 +138,7 @@ func (s ScrapperApplication) Start(ctx context.Context, scrapInterval int) error
 		serviceParams = append(serviceParams, services.ServiceParams{
 			Name: provider.Name(),
 			Slug: provider.Slug().String(),
+			URL:  provider.GetStatuspageUrl(),
 		})
 	}
 

@@ -236,7 +236,7 @@
 												<li>
 													<button
 														type="button"
-														class={`w-full cursor-pointer px-3 py-2 text-left ${
+														class={`w-full cursor-pointer px-3 py-2 text-left flex flex-col gap-0.5 ${
 															index === activeIndex
 																? 'bg-accent text-accent-foreground'
 																: 'hover:bg-accent/60'
@@ -247,6 +247,9 @@
 														aria-selected={index === activeIndex}
 													>
 														<p class="text-sm font-medium">{result.name}</p>
+														{#if result.url}
+															<span class="text-xs text-zinc-500 font-mono select-none">{result.url}</span>
+														{/if}
 													</button>
 												</li>
 											{/each}

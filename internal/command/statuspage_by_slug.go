@@ -33,6 +33,7 @@ type StatuspageBySlugResult struct {
 	ID   uint
 	Name string
 	Slug string
+	URL  string
 }
 
 func (c StatuspageBySlugCmd) Execute(ctx context.Context, params StatuspageBySlugParams) (StatuspageBySlugResult, error) {
@@ -56,5 +57,6 @@ func (c StatuspageBySlugCmd) Execute(ctx context.Context, params StatuspageBySlu
 		ID:   service.ID,
 		Name: service.Name,
 		Slug: service.Slug,
+		URL:  service.URL,
 	}, nil
 }

@@ -38,6 +38,7 @@ func (h Handler) ListStatuspages(ctx context.Context, request api.ListStatuspage
 			Id:   int(r.ID),
 			Name: r.Name,
 			Slug: r.Slug,
+			Url:  "",
 		})
 	}
 
@@ -83,6 +84,7 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 			Name: result.ServiceName,
 			Slug: result.ServiceSlug,
 			Id:   int(result.ServiceID),
+			Url:  result.ServiceUrl,
 		},
 		Incidents:  make([]api.Incident, 0, len(result.Incidents)),
 		TotalCount: result.TotalCount,
@@ -130,6 +132,7 @@ func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request a
 			Name: result.ServiceName,
 			Slug: result.ServiceSlug,
 			Id:   int(result.ServiceID),
+			Url:  result.ServiceUrl,
 		},
 		ScheduledMaintenances: make([]api.ScheduledMaintenance, 0, len(result.ScheduledMaintenances)),
 		TotalCount:            result.TotalCount,
@@ -163,5 +166,6 @@ func (h Handler) StatuspageBySlug(ctx context.Context, request api.StatuspageByS
 		Id:   int(result.ID),
 		Name: result.Name,
 		Slug: result.Slug,
+		Url:  result.URL,
 	}, nil
 }

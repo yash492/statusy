@@ -4,6 +4,7 @@ export interface Statuspage {
 	id: number;
 	name: string;
 	slug: string;
+	url: string;
 }
 
 export interface Incident {

@@ -8,11 +8,13 @@ type ServiceResult struct {
 	ID   uint
 	Name string
 	Slug string
+	URL  string
 }
 
 type ServiceParams struct {
 	Name string
 	Slug string
+	URL  string
 }
 
 type Repository interface {

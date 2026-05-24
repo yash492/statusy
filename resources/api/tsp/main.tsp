@@ -17,6 +17,9 @@ model Statuspage {
 
   @doc("URL-friendly slug for the status page")
   slug: string;
+
+  @doc("Root domain URL of the status page")
+  url: string;
 }
 
 model Incident {
