@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.circleci.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.circleci.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.circleci.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.circleci.com"
 )
 
 type circleCi struct {
@@ -86,6 +87,10 @@ func (c circleCi) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledM
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (c circleCi) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (c circleCi) NewWithServiceID(id uint) statuspage.StatusPageProvider {

@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.digitalocean.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.digitalocean.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.digitalocean.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.digitalocean.com"
 )
 
 type digitalOcean struct {
@@ -86,6 +87,10 @@ func (d digitalOcean) ScrapScheduledMaintenance() ([]scheduledmaintenance.Schedu
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (d digitalOcean) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (d digitalOcean) NewWithServiceID(id uint) statuspage.StatusPageProvider {

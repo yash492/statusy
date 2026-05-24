@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://discordstatus.com/api/v2/incidents.json"
 	componentsUrl           = "https://discordstatus.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://discordstatus.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://discordstatus.com"
 )
 
 type discord struct {
@@ -86,6 +87,10 @@ func (d discord) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMa
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (d discord) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (d discord) NewWithServiceID(id uint) statuspage.StatusPageProvider {

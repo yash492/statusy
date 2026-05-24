@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://www.zoomstatus.com/api/v2/incidents.json"
 	componentsUrl           = "https://www.zoomstatus.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://www.zoomstatus.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://www.zoomstatus.com"
 )
 
 type zoomProvider struct {
@@ -86,6 +87,10 @@ func (z zoomProvider) ScrapScheduledMaintenance() ([]scheduledmaintenance.Schedu
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (z zoomProvider) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (z zoomProvider) NewWithServiceID(id uint) statuspage.StatusPageProvider {

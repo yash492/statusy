@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.plivo.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.plivo.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.plivo.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.plivo.com"
 )
 
 type plivo struct {
@@ -77,6 +78,10 @@ func (p plivo) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMain
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (p plivo) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (p plivo) NewWithServiceID(id uint) statuspage.StatusPageProvider {

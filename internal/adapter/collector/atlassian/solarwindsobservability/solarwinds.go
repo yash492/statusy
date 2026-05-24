@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.cloud.solarwinds.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.cloud.solarwinds.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.cloud.solarwinds.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.cloud.solarwinds.com"
 )
 
 type solarWinds struct {
@@ -86,6 +87,10 @@ func (s solarWinds) ScrapScheduledMaintenance() ([]scheduledmaintenance.Schedule
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (s solarWinds) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (s solarWinds) NewWithServiceID(id uint) statuspage.StatusPageProvider {

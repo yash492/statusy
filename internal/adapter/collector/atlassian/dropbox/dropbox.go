@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.dropbox.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.dropbox.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.dropbox.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.dropbox.com"
 )
 
 type dropbox struct {
@@ -86,6 +87,10 @@ func (c dropbox) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMa
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (c dropbox) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (c dropbox) NewWithServiceID(id uint) statuspage.StatusPageProvider {

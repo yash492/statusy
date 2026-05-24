@@ -18,6 +18,7 @@ const (
 	incidentsUrlGov            = "https://status.ddog-gov.com/api/v2/incidents.json"
 	componentsUrlGov           = "https://status.ddog-gov.com/api/v2/components.json"
 	scheduledMaintenanceUrlGov = "https://status.ddog-gov.com/api/v2/scheduled-maintenances.json"
+	statusPageUrlGov           = "https://status.ddog-gov.com"
 )
 
 type datadogGov struct {
@@ -86,6 +87,10 @@ func (d datadogGov) ScrapScheduledMaintenance() ([]scheduledmaintenance.Schedule
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (d datadogGov) GetStatuspageUrl() string {
+	return statusPageUrlGov
 }
 
 func (d datadogGov) NewWithServiceID(id uint) statuspage.StatusPageProvider {

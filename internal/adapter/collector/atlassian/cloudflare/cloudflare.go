@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://www.cloudflarestatus.com/api/v2/incidents.json"
 	componentsUrl           = "https://www.cloudflarestatus.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://www.cloudflarestatus.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://www.cloudflarestatus.com"
 )
 
 type cloudflare struct {
@@ -86,6 +87,10 @@ func (c cloudflare) ScrapScheduledMaintenance() ([]scheduledmaintenance.Schedule
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (c cloudflare) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (c cloudflare) NewWithServiceID(id uint) statuspage.StatusPageProvider {

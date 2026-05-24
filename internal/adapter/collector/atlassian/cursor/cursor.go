@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.cursor.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.cursor.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.cursor.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.cursor.com"
 )
 
 type cursor struct {
@@ -82,6 +83,10 @@ func (c cursor) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMai
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (c cursor) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (c cursor) NewWithServiceID(id uint) statuspage.StatusPageProvider {

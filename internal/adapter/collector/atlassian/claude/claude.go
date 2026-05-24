@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.claude.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.claude.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.claude.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.claude.com"
 )
 
 type claude struct {
@@ -86,6 +87,10 @@ func (c claude) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMai
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (c claude) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (c claude) NewWithServiceID(id uint) statuspage.StatusPageProvider {

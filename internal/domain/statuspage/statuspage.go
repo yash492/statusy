@@ -15,4 +15,5 @@ type StatusPageProvider interface {
 	ID() uint
 	Name() string
 	NewWithServiceID(id uint) StatusPageProvider
+	GetStatuspageUrl() string
 }

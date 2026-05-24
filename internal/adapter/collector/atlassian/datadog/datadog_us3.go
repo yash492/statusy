@@ -18,6 +18,7 @@ const (
 	incidentsUrlUS3            = "https://status.us3.datadoghq.com/api/v2/incidents.json"
 	componentsUrlUS3           = "https://status.us3.datadoghq.com/api/v2/components.json"
 	scheduledMaintenanceUrlUS3 = "https://status.us3.datadoghq.com/api/v2/scheduled-maintenances.json"
+	statusPageUrlUS3           = "https://status.us3.datadoghq.com"
 )
 
 type datadogUS3 struct {
@@ -86,6 +87,10 @@ func (d datadogUS3) ScrapScheduledMaintenance() ([]scheduledmaintenance.Schedule
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (d datadogUS3) GetStatuspageUrl() string {
+	return statusPageUrlUS3
 }
 
 func (d datadogUS3) NewWithServiceID(id uint) statuspage.StatusPageProvider {

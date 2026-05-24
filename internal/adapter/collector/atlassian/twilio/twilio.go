@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.twilio.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.twilio.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.twilio.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.twilio.com"
 )
 
 type twilio struct {
@@ -86,6 +87,10 @@ func (t twilio) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMai
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (t twilio) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (t twilio) NewWithServiceID(id uint) statuspage.StatusPageProvider {

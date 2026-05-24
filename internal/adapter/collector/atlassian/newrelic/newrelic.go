@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://status.newrelic.com/api/v2/incidents.json"
 	componentsUrl           = "https://status.newrelic.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://status.newrelic.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://status.newrelic.com"
 )
 
 type newrelic struct {
@@ -86,6 +87,10 @@ func (n newrelic) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledM
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (n newrelic) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (n newrelic) NewWithServiceID(id uint) statuspage.StatusPageProvider {

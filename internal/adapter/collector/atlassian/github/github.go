@@ -18,6 +18,7 @@ const (
 	incidentsUrl            = "https://www.githubstatus.com/api/v2/incidents.json"
 	componentsUrl           = "https://www.githubstatus.com/api/v2/components.json"
 	scheduledMaintenanceUrl = "https://www.githubstatus.com/api/v2/scheduled-maintenances.json"
+	statusPageUrl           = "https://www.githubstatus.com"
 )
 
 type github struct {
@@ -86,6 +87,10 @@ func (g github) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMai
 	scheduledMaintenances := atlassian.FetchScheduledMaintenanceHelper(req)
 
 	return scheduledMaintenances, nil
+}
+
+func (g github) GetStatuspageUrl() string {
+	return statusPageUrl
 }
 
 func (g github) NewWithServiceID(id uint) statuspage.StatusPageProvider {
