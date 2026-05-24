@@ -5,6 +5,23 @@
 Statusy aggregates incidents and component status from external provider status pages into a single backend.
 It stores normalized data in PostgreSQL and serves it for API and UI consumption.
 
+## Running the Application
+
+Run the backend, frontend, and database services:
+
+```bash
+docker compose up --build
+```
+
+- **Frontend UI:** [http://localhost:3000](http://localhost:3000)
+- **Backend API:** [http://localhost:8081/api](http://localhost:8081/api)
+
+To stop all services:
+
+```bash
+docker compose down
+```
+
 ## Supported Status Pages
 
 - [Anthropic Claude](https://status.claude.com)
@@ -36,22 +53,5 @@ It stores normalized data in PostgreSQL and serves it for API and UI consumption
 
 - TypeSpec compiler (`tsp`)
 - oapi-codegen
-
-## Running the Application
-
-Run the backend, frontend, and database services:
-
-```bash
-docker compose up --build
-```
-
-- **Frontend UI:** [http://localhost:3000](http://localhost:3000)
-- **Backend API:** [http://localhost:8081/api](http://localhost:8081/api)
-
-To stop all services:
-
-```bash
-docker compose down 
-```
 
 
