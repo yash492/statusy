@@ -1,0 +1,5 @@
+node_modules
+.svelte-kit
+build
+.env.local
+.DS_Store
