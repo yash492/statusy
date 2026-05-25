@@ -1,4 +1,4 @@
-package atlassian
+ package atlassian
 
 import (
 	"github.com/samber/lo"
