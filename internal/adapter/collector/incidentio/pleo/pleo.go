@@ -1,4 +1,4 @@
-package openai
+package pleo
 
 import (
 	"github.com/yash492/statusy/internal/adapter/collector/incidentio"
@@ -11,33 +11,33 @@ import (
 	"resty.dev/v3"
 )
 
-const slug = "openai"
-const name = "OpenAI"
+const slug = "pleo"
+const name = "Pleo"
 
 const (
-	statusPageUrl = "https://status.openai.com"
-	summaryUrl    = "https://status.openai.com/proxy/status.openai.com"
-	incidentsUrl  = "https://status.openai.com/proxy/status.openai.com/incidents"
+	statusPageUrl = "https://status.pleo.io"
+	summaryUrl    = "https://status.pleo.io/proxy/status.pleo.io"
+	incidentsUrl  = "https://status.pleo.io/proxy/status.pleo.io/incidents"
 )
 
-type openai struct {
+type pleo struct {
 	RestyClient *resty.Client
 	ServiceID   uint
 }
 
-func (o openai) ID() uint {
-	return o.ServiceID
+func (p pleo) ID() uint {
+	return p.ServiceID
 }
 
-func (o openai) Name() string {
+func (p pleo) Name() string {
 	return name
 }
 
-var _ statuspage.StatusPageProvider = openai{}
+var _ statuspage.StatusPageProvider = pleo{}
 
-func (o openai) ScrapComponents() (components.AggregateComponents, error) {
+func (p pleo) ScrapComponents() (components.AggregateComponents, error) {
 	var statusReq incidentio.StatusReq
-	_, err := o.RestyClient.
+	_, err := p.RestyClient.
 		R().
 		SetResult(&statusReq).
 		EnableRetryDefaultConditions().
@@ -49,13 +49,13 @@ func (o openai) ScrapComponents() (components.AggregateComponents, error) {
 	return incidentio.FetchComponentsHelper(statusReq), nil
 }
 
-func (o openai) Slug() services.ServiceSlug {
+func (p pleo) Slug() services.ServiceSlug {
 	return slug
 }
 
-func (o openai) ScrapIncidents() ([]incidents.Incident, error) {
+func (p pleo) ScrapIncidents() ([]incidents.Incident, error) {
 	var req incidentio.IncidentsReq
-	_, err := o.RestyClient.
+	_, err := p.RestyClient.
 		R().
 		SetResult(&req).
 		Get(incidentsUrl)
@@ -66,9 +66,9 @@ func (o openai) ScrapIncidents() ([]incidents.Incident, error) {
 	return incidentio.FetchIncidentsHelper(req, statusPageUrl), nil
 }
 
-func (o openai) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
+func (p pleo) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
 	var req incidentio.IncidentsReq
-	_, err := o.RestyClient.
+	_, err := p.RestyClient.
 		R().
 		SetResult(&req).
 		Get(incidentsUrl)
@@ -79,17 +79,17 @@ func (o openai) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMai
 	return incidentio.FetchScheduledMaintenancesHelper(req, statusPageUrl), nil
 }
 
-func (o openai) GetStatuspageUrl() string {
+func (p pleo) GetStatuspageUrl() string {
 	return statusPageUrl
 }
 
-func (o openai) NewWithServiceID(id uint) statuspage.StatusPageProvider {
-	o.ServiceID = id
-	return o
+func (p pleo) NewWithServiceID(id uint) statuspage.StatusPageProvider {
+	p.ServiceID = id
+	return p
 }
 
 func Register(client *resty.Client) {
-	registry.Register(slug, openai{
+	registry.Register(slug, pleo{
 		RestyClient: client,
 	})
 }

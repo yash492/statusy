@@ -67,3 +67,118 @@ func TestFetchIncidentsHelper(t *testing.T) {
 		}
 	}
 }
+
+func TestFetchIncidentsAndMaintenances(t *testing.T) {
+	mockJSON := `{
+  "incidents": [
+    {
+      "updates": [
+        {
+          "published_at": "2026-01-30T10:42:56.002Z",
+          "id": "01KG77ZCW3DBEXXB00VHC5GVZV",
+          "message_string": "Some customers are unable to access the Invoices page. We have identified the issue and are working on a fix.",
+          "to_status": "identified",
+          "component_statuses": [
+            {
+              "component_id": "01JEV56RY027PA4NYX5H2RNAMC",
+              "status": "degraded_performance"
+            }
+          ],
+          "automated_update": false
+        }
+      ],
+      "component_impacts": [
+        {
+          "start_at": "2026-01-30T10:42:56.002Z",
+          "end_at": "2026-01-30T12:38:56.689Z",
+          "id": "01KG77ZCW3QHCS75F58Y381918",
+          "component_id": "01JEV56RY027PA4NYX5H2RNAMC",
+          "status_page_incident_id": "01KG77ZCW3ZCZBXCRP47BT0KFG",
+          "status": "degraded_performance"
+        }
+      ],
+      "status_summaries": [
+        {
+          "start_at": "2026-01-30T10:42:56.002Z",
+          "end_at": "2026-01-30T11:21:05.2Z",
+          "worst_component_status": "degraded_performance"
+        }
+      ],
+      "published_at": "2026-01-30T10:42:56.002Z",
+      "id": "01KG77ZCW3ZCZBXCRP47BT0KFG",
+      "status_page_id": "01JEV56RY0P76Q6QPHRZN5SJ9D",
+      "name": "Invoices page not loading for some customers",
+      "status": "resolved",
+      "affected_components": [
+        {
+          "component_id": "01JEV56RY027PA4NYX5H2RNAMC",
+          "status": "degraded_performance",
+          "current_status": "operational"
+        }
+      ],
+      "type": "incident"
+    },
+    {
+      "updates": [
+        {
+          "published_at": "2026-01-21T14:43:41.913Z",
+          "id": "01KFGG5S6T1Q0YQFDB2YWSFBAD",
+          "message_string": "We're reaching out to inform you of a scheduled maintenance window...",
+          "to_status": "maintenance_scheduled",
+          "component_statuses": [
+            {
+              "component_id": "01JEV56RY04T2614381RR4X5AJ",
+              "status": "under_maintenance"
+            }
+          ],
+          "automated_update": false
+        }
+      ],
+      "component_impacts": [
+        {
+          "start_at": "2026-01-25T00:00:00Z",
+          "end_at": "2026-01-25T02:00:00Z",
+          "id": "01KFS9X4QSQXBEZYZ8M4PCKVJA",
+          "component_id": "01JEV56RY0GV18JSH8N9GECJ1G",
+          "status_page_incident_id": "01KFGG5S6TRSJJNNBB3TQATY24",
+          "status": "under_maintenance"
+        }
+      ],
+      "status_summaries": [
+        {
+          "start_at": "2026-01-25T00:00:00Z",
+          "end_at": "2026-01-25T02:00:00Z",
+          "worst_component_status": "under_maintenance"
+        }
+      ],
+      "published_at": "2026-01-21T14:43:41.913Z",
+      "id": "01KFGG5S6TRSJJNNBB3TQATY24",
+      "status_page_id": "01JEV56RY0P76Q6QPHRZN5SJ9D",
+      "name": "Scheduled Pleo Maintenance",
+      "status": "maintenance_complete",
+      "affected_components": [
+        {
+          "component_id": "01JEV56RY0GV18JSH8N9GECJ1G",
+          "status": "under_maintenance",
+          "current_status": "operational"
+        }
+      ],
+      "type": "maintenance"
+    }
+  ]
+}`
+
+	var req incidentio.IncidentsReq
+	err := json.Unmarshal([]byte(mockJSON), &req)
+	assert.NoError(t, err)
+
+	incidentsResult := incidentio.FetchIncidentsHelper(req, "https://status.pleo.io")
+	assert.Len(t, incidentsResult, 1)
+	assert.Equal(t, "01KG77ZCW3ZCZBXCRP47BT0KFG", incidentsResult[0].ProviderID)
+	assert.Equal(t, "Invoices page not loading for some customers", incidentsResult[0].Name)
+
+	maintenancesResult := incidentio.FetchScheduledMaintenancesHelper(req, "https://status.pleo.io")
+	assert.Len(t, maintenancesResult, 1)
+	assert.Equal(t, "01KFGG5S6TRSJJNNBB3TQATY24", maintenancesResult[0].ProviderID)
+	assert.Equal(t, "Scheduled Pleo Maintenance", maintenancesResult[0].Name)
+}
