@@ -67,8 +67,16 @@ func (o openai) ScrapIncidents() ([]incidents.Incident, error) {
 }
 
 func (o openai) ScrapScheduledMaintenance() ([]scheduledmaintenance.ScheduledMaintenance, error) {
-	// Scheduled maintenance is skipped for now as requested
-	return []scheduledmaintenance.ScheduledMaintenance{}, nil
+	var req incidentio.IncidentsReq
+	_, err := o.RestyClient.
+		R().
+		SetResult(&req).
+		Get(incidentsUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return incidentio.FetchScheduledMaintenancesHelper(req, statusPageUrl), nil
 }
 
 func (o openai) GetStatuspageUrl() string {

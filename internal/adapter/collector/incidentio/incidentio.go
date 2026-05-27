@@ -6,6 +6,7 @@ import (
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
+	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 )
 
 // StatusReq represents the statuspage summary JSON response.
@@ -63,6 +64,7 @@ type Incident struct {
 	Updates            []Update            `json:"updates"`
 	AffectedComponents []AffectedComponent `json:"affected_components"`
 	StatusSummaries    []StatusSummary     `json:"status_summaries"`
+	Type               string              `json:"type"`
 }
 
 type Update struct {
@@ -133,6 +135,10 @@ func FetchComponentsHelper(req StatusReq) components.AggregateComponents {
 func FetchIncidentsHelper(req IncidentsReq, statusPageUrl string) []incidents.Incident {
 	incidentList := []incidents.Incident{}
 	for _, incidentReq := range req.Incidents {
+		if incidentReq.Type != "" && incidentReq.Type != "incident" {
+			continue
+		}
+
 		worstImpact := ""
 		for _, summary := range incidentReq.StatusSummaries {
 			worstImpact = getWorseStatus(worstImpact, summary.WorstComponentStatus)
@@ -170,6 +176,73 @@ func FetchIncidentsHelper(req IncidentsReq, statusPageUrl string) []incidents.In
 	}
 
 	return incidentList
+}
+
+// FetchScheduledMaintenancesHelper parses IncidentsReq, filtering and mapping historical scheduled maintenance windows to domain models.
+func FetchScheduledMaintenancesHelper(req IncidentsReq, statusPageUrl string) []scheduledmaintenance.ScheduledMaintenance {
+	maintenanceList := []scheduledmaintenance.ScheduledMaintenance{}
+	for _, incidentReq := range req.Incidents {
+		if incidentReq.Type != "maintenance" {
+			continue
+		}
+
+		var startsAt time.Time
+		var endsAt time.Time
+
+		if len(incidentReq.StatusSummaries) > 0 {
+			summary := incidentReq.StatusSummaries[0]
+			startsAt = summary.StartAt
+			if summary.EndAt != nil {
+				endsAt = *summary.EndAt
+			}
+		}
+
+		if startsAt.IsZero() {
+			startsAt = incidentReq.PublishedAt
+		}
+		if endsAt.IsZero() {
+			endsAt = startsAt.Add(2 * time.Hour)
+		}
+
+		worstImpact := ""
+		for _, summary := range incidentReq.StatusSummaries {
+			worstImpact = getWorseStatus(worstImpact, summary.WorstComponentStatus)
+		}
+
+		maintenance := scheduledmaintenance.ScheduledMaintenance{
+			Name:              incidentReq.Name,
+			Link:              statusPageUrl + "/incidents/" + incidentReq.ID,
+			StartsAt:          startsAt,
+			EndsAt:            endsAt,
+			ProviderImpact:    nullable.SetValue(worstImpact, worstImpact != ""),
+			Impact:            nullable.SetValue(worstImpact, worstImpact != ""),
+			ProviderID:        incidentReq.ID,
+			ProviderCreatedAt: incidentReq.PublishedAt,
+			Components:        []components.Component{},
+		}
+
+		for _, comp := range incidentReq.AffectedComponents {
+			maintenance.Components = append(maintenance.Components, components.Component{
+				ProviderID: comp.ComponentID,
+			})
+		}
+
+		maintenance.Updates = make([]scheduledmaintenance.ScheduledMaintenanceUpdate, len(incidentReq.Updates))
+		for idx, update := range incidentReq.Updates {
+			maintenance.Updates[idx] = scheduledmaintenance.ScheduledMaintenanceUpdate{
+				Description:                    update.MessageString,
+				ScheduledMaintenanceProviderID: maintenance.ProviderID,
+				ProviderID:                     update.ID,
+				Status:                         update.ToStatus,
+				ProviderStatus:                 update.ToStatus,
+				StatusTime:                     update.PublishedAt,
+			}
+		}
+
+		maintenanceList = append(maintenanceList, maintenance)
+	}
+
+	return maintenanceList
 }
 
 func getWorseStatus(current, next string) string {
