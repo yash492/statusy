@@ -15,7 +15,9 @@ import (
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/solarwindsobservability"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/twilio"
 	"github.com/yash492/statusy/internal/adapter/collector/atlassian/zoom"
+	"github.com/yash492/statusy/internal/adapter/collector/incidentio/hashicorp"
 	"github.com/yash492/statusy/internal/adapter/collector/incidentio/openai"
+	"github.com/yash492/statusy/internal/adapter/collector/incidentio/pleo"
 	"github.com/yash492/statusy/internal/adapter/collector/registry"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 	"resty.dev/v3"
@@ -37,5 +39,7 @@ func RegisterAll(client *resty.Client) map[string]statuspage.StatusPageProvider 
 	datadog.Register(client)
 	cursor.Register(client)
 	openai.Register(client)
+	pleo.Register(client)
+	hashicorp.Register(client)
 	return registry.GetAll()
 }
