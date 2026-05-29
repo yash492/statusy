@@ -21,11 +21,33 @@ export interface ViewData {
 
 const paymentServices: ServiceInfo[] = [
 	{
-		id: 2,
-		name: 'OpenAI',
+		id: 0,
+		name: 'RazorPay',
+		slug: 'razorpay',
+		provider: 'Incident.io',
+		status: 'operational',
+		components: ['API', 'Dashboard'],
+		lastChecked: '5 mins ago',
+		lastIncident: 'Degraded performance in ChatGPT response times',
+		history: [...Array(10).fill('operational'), 'degraded', 'operational', 'operational', 'degraded', 'degraded']
+	},
+	{
+		id: 99,
+		name: 'Claude',
 		slug: 'openai',
 		provider: 'Incident.io',
 		status: 'degraded',
+		components: ['API', 'ChatGPT'],
+		lastChecked: '5 mins ago',
+		lastIncident: 'Degraded performance in ChatGPT response times',
+		history: [...Array(10).fill('operational'), 'degraded', 'operational', 'operational', 'degraded', 'degraded']
+	},
+	{
+		id: 2,
+		name: 'Stripe',
+		slug: 'stripe',
+		provider: 'Incident.io',
+		status: 'operational',
 		components: ['API', 'ChatGPT'],
 		lastChecked: '5 mins ago',
 		lastIncident: 'Degraded performance in ChatGPT response times',
