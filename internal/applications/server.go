@@ -89,6 +89,8 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 		AddViewServiceCmd:                   command.NewAddViewServiceCmd(lg, viewsRepo),
 		EditViewServiceCmd:                  command.NewEditViewServiceCmd(lg, viewsRepo),
 		DeleteViewServiceCmd:                command.NewDeleteViewServiceCmd(lg, viewsRepo),
+		EditViewCmd:                         command.NewEditViewCmd(lg, viewsRepo),
+		DeleteViewCmd:                       command.NewDeleteViewCmd(lg, viewsRepo),
 	}
 	return ServerApplication{
 		HttpHandler: handler,

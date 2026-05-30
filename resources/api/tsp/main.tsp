@@ -399,3 +399,39 @@ op deleteViewService(
   @path
   serviceId: integer,
 ): void;
+
+model EditViewRequest {
+  @doc("Display name of the view")
+  name: string;
+
+  @doc("URL-friendly slug for the view")
+  slug: string;
+
+  @doc("Description of the view")
+  description: string;
+
+  @doc("Whether this is the default view")
+  is_default: boolean;
+}
+
+@doc("Edit a view's details")
+@put
+@route("/views/{viewSlug}")
+op editView(
+  @doc("The view slug")
+  @path
+  viewSlug: string,
+
+  @body
+  body: EditViewRequest,
+): View;
+
+@doc("Delete a view")
+@delete
+@route("/views/{viewSlug}")
+op deleteView(
+  @doc("The view slug")
+  @path
+  viewSlug: string,
+): void;
+

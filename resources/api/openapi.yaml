@@ -173,6 +173,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/View'
+  /api/views/{viewSlug}:
+    put:
+      operationId: editView
+      description: Edit a view's details
+      parameters:
+        - name: viewSlug
+          in: path
+          required: true
+          description: The view slug
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditViewRequest'
+    delete:
+      operationId: deleteView
+      description: Delete a view
+      parameters:
+        - name: viewSlug
+          in: path
+          required: true
+          description: The view slug
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
   /api/views/{viewSlug}/services:
     post:
       operationId: addViewService
@@ -335,6 +372,26 @@ components:
           items:
             $ref: '#/components/schemas/Component'
           description: List of components within this group
+    EditViewRequest:
+      type: object
+      required:
+        - name
+        - slug
+        - description
+        - is_default
+      properties:
+        name:
+          type: string
+          description: Display name of the view
+        slug:
+          type: string
+          description: URL-friendly slug for the view
+        description:
+          type: string
+          description: Description of the view
+        is_default:
+          type: boolean
+          description: Whether this is the default view
     EditViewServiceRequest:
       type: object
       required:

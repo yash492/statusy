@@ -65,6 +65,21 @@ type ComponentGroup struct {
 	ProviderId string `json:"provider_id"`
 }
 
+// EditViewRequest defines model for EditViewRequest.
+type EditViewRequest struct {
+	// Description Description of the view
+	Description string `json:"description"`
+
+	// IsDefault Whether this is the default view
+	IsDefault bool `json:"is_default"`
+
+	// Name Display name of the view
+	Name string `json:"name"`
+
+	// Slug URL-friendly slug for the view
+	Slug string `json:"slug"`
+}
+
 // EditViewServiceRequest defines model for EditViewServiceRequest.
 type EditViewServiceRequest struct {
 	// ComponentGroupIds List of specific component group IDs to include (ignored if include_all_components is true)
@@ -250,6 +265,9 @@ type GetUnconfiguredServicesParams struct {
 	Search *string `form:"search,omitempty" json:"search,omitempty"`
 }
 
+// EditViewJSONRequestBody defines body for EditView for application/json ContentType.
+type EditViewJSONRequestBody = EditViewRequest
+
 // AddViewServiceJSONRequestBody defines body for AddViewService for application/json ContentType.
 type AddViewServiceJSONRequestBody = AddViewServiceRequest
 
@@ -282,6 +300,12 @@ type ServerInterface interface {
 
 	// (POST /api/views/default)
 	GetDefaultView(w http.ResponseWriter, r *http.Request)
+
+	// (DELETE /api/views/{viewSlug})
+	DeleteView(w http.ResponseWriter, r *http.Request, viewSlug string)
+
+	// (PUT /api/views/{viewSlug})
+	EditView(w http.ResponseWriter, r *http.Request, viewSlug string)
 
 	// (POST /api/views/{viewSlug}/services)
 	AddViewService(w http.ResponseWriter, r *http.Request, viewSlug string)
@@ -337,6 +361,16 @@ func (_ Unimplemented) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r
 
 // (POST /api/views/default)
 func (_ Unimplemented) GetDefaultView(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (DELETE /api/views/{viewSlug})
+func (_ Unimplemented) DeleteView(w http.ResponseWriter, r *http.Request, viewSlug string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (PUT /api/views/{viewSlug})
+func (_ Unimplemented) EditView(w http.ResponseWriter, r *http.Request, viewSlug string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -589,6 +623,56 @@ func (siw *ServerInterfaceWrapper) GetDefaultView(w http.ResponseWriter, r *http
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetDefaultView(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteView operation middleware
+func (siw *ServerInterfaceWrapper) DeleteView(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "viewSlug" -------------
+	var viewSlug string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteView(w, r, viewSlug)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// EditView operation middleware
+func (siw *ServerInterfaceWrapper) EditView(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "viewSlug" -------------
+	var viewSlug string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.EditView(w, r, viewSlug)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -865,6 +949,12 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/api/views/default", wrapper.GetDefaultView)
 	})
 	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/views/{viewSlug}", wrapper.DeleteView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/views/{viewSlug}", wrapper.EditView)
+	})
+	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/views/{viewSlug}/services", wrapper.AddViewService)
 	})
 	r.Group(func(r chi.Router) {
@@ -1069,6 +1159,45 @@ func (response GetDefaultView200JSONResponse) VisitGetDefaultViewResponse(w http
 	return err
 }
 
+type DeleteViewRequestObject struct {
+	ViewSlug string `json:"viewSlug"`
+}
+
+type DeleteViewResponseObject interface {
+	VisitDeleteViewResponse(w http.ResponseWriter) error
+}
+
+type DeleteView204Response struct {
+}
+
+func (response DeleteView204Response) VisitDeleteViewResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type EditViewRequestObject struct {
+	ViewSlug string `json:"viewSlug"`
+	Body     *EditViewJSONRequestBody
+}
+
+type EditViewResponseObject interface {
+	VisitEditViewResponse(w http.ResponseWriter) error
+}
+
+type EditView200JSONResponse View
+
+func (response EditView200JSONResponse) VisitEditViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type AddViewServiceRequestObject struct {
 	ViewSlug string `json:"viewSlug"`
 	Body     *AddViewServiceJSONRequestBody
@@ -1182,6 +1311,12 @@ type StrictServerInterface interface {
 
 	// (POST /api/views/default)
 	GetDefaultView(ctx context.Context, request GetDefaultViewRequestObject) (GetDefaultViewResponseObject, error)
+
+	// (DELETE /api/views/{viewSlug})
+	DeleteView(ctx context.Context, request DeleteViewRequestObject) (DeleteViewResponseObject, error)
+
+	// (PUT /api/views/{viewSlug})
+	EditView(ctx context.Context, request EditViewRequestObject) (EditViewResponseObject, error)
 
 	// (POST /api/views/{viewSlug}/services)
 	AddViewService(ctx context.Context, request AddViewServiceRequestObject) (AddViewServiceResponseObject, error)
@@ -1433,6 +1568,65 @@ func (sh *strictHandler) GetDefaultView(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// DeleteView operation middleware
+func (sh *strictHandler) DeleteView(w http.ResponseWriter, r *http.Request, viewSlug string) {
+	var request DeleteViewRequestObject
+
+	request.ViewSlug = viewSlug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteView(ctx, request.(DeleteViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteViewResponseObject); ok {
+		if err := validResponse.VisitDeleteViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// EditView operation middleware
+func (sh *strictHandler) EditView(w http.ResponseWriter, r *http.Request, viewSlug string) {
+	var request EditViewRequestObject
+
+	request.ViewSlug = viewSlug
+
+	var body EditViewJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.EditView(ctx, request.(EditViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "EditView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(EditViewResponseObject); ok {
+		if err := validResponse.VisitEditViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // AddViewService operation middleware
 func (sh *strictHandler) AddViewService(w http.ResponseWriter, r *http.Request, viewSlug string) {
 	var request AddViewServiceRequestObject
@@ -1557,40 +1751,41 @@ func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"AAD///0KXQJ2MwAA",
+	"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",
+	"AP//ui5SCBU4AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

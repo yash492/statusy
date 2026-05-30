@@ -16,6 +16,10 @@ type Repository interface {
 	AddViewService(ctx context.Context, vs ViewService, componentIDs []int, componentGroupIDs []int) (ViewService, error)
 	UpdateViewService(ctx context.Context, vs ViewService, componentIDs []int, componentGroupIDs []int) (ViewService, error)
 	DeleteViewService(ctx context.Context, viewID uint, serviceID uint) error
+
+	UpdateView(ctx context.Context, view View) (View, error)
+	DeleteView(ctx context.Context, viewID uint) error
+	CountViews(ctx context.Context) (int, error)
 }
 
 

@@ -22,6 +22,8 @@ type Handler struct {
 	AddViewServiceCmd                    command.AddViewServiceCmd
 	EditViewServiceCmd                   command.EditViewServiceCmd
 	DeleteViewServiceCmd                 command.DeleteViewServiceCmd
+	EditViewCmd                          command.EditViewCmd
+	DeleteViewCmd                        command.DeleteViewCmd
 }
 
 // (GET /statuspages)
@@ -350,4 +352,52 @@ func (h Handler) DeleteViewService(ctx context.Context, request api.DeleteViewSe
 
 	return api.DeleteViewService204Response{}, nil
 }
+
+// (PUT /views/{viewSlug})
+func (h Handler) EditView(ctx context.Context, request api.EditViewRequestObject) (api.EditViewResponseObject, error) {
+	result, err := h.EditViewCmd.Execute(ctx, command.EditViewParams{
+		CurrentSlug: request.ViewSlug,
+		Name:        request.Body.Name,
+		Slug:        request.Body.Slug,
+		Description: request.Body.Description,
+		IsDefault:   request.Body.IsDefault,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	services := make([]api.ViewServiceStatus, 0, len(result.Services))
+	for _, s := range result.Services {
+		services = append(services, api.ViewServiceStatus{
+			Id:                   int(s.ID),
+			Name:                 s.Name,
+			Slug:                 s.Slug,
+			Status:               s.Status,
+			LastIncident:         s.LastIncident,
+			IncludeAllComponents: s.IncludeAllComponents,
+		})
+	}
+
+	return api.EditView200JSONResponse{
+		Id:          int(result.ID),
+		Name:        result.Name,
+		Slug:        result.Slug,
+		Description: result.Description,
+		IsDefault:   result.IsDefault,
+		Services:    services,
+	}, nil
+}
+
+// (DELETE /views/{viewSlug})
+func (h Handler) DeleteView(ctx context.Context, request api.DeleteViewRequestObject) (api.DeleteViewResponseObject, error) {
+	err := h.DeleteViewCmd.Execute(ctx, command.DeleteViewParams{
+		Slug: request.ViewSlug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.DeleteView204Response{}, nil
+}
+
 
