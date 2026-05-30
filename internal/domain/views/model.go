@@ -21,3 +21,12 @@ type ViewServiceStatus struct {
 	LastIncident         string
 	IncludeAllComponents bool
 }
+
+type ViewService struct {
+	ID                   uint
+	ViewID               uint
+	ServiceID            uint
+	IncludeAllComponents bool
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
+}

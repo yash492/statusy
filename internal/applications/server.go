@@ -86,6 +86,9 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 		GetOrCreateDefaultViewCmd:           command.NewGetOrCreateDefaultViewCmd(lg, viewsRepo),
 		GetUnconfiguredServicesCmd:          command.NewGetUnconfiguredServicesCmd(lg, viewsRepo),
 		GetServiceComponentsCmd:             command.NewGetServiceComponentsCmd(lg, servicesRepo, componentsRepo, componentGroupsRepo),
+		AddViewServiceCmd:                   command.NewAddViewServiceCmd(lg, viewsRepo),
+		EditViewServiceCmd:                  command.NewEditViewServiceCmd(lg, viewsRepo),
+		DeleteViewServiceCmd:                command.NewDeleteViewServiceCmd(lg, viewsRepo),
 	}
 	return ServerApplication{
 		HttpHandler: handler,

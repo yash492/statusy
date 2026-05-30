@@ -49,3 +49,13 @@ type viewServiceDto struct {
 	UpdatedAt            time.Time  `db:"updated_at"`
 	DeletedAt            *time.Time `db:"deleted_at"`
 }
+
+// viewServiceFullDto maps a full row from the view_services table.
+type viewServiceFullDto struct {
+	ID                   uint      `db:"id"`
+	ViewID               uint      `db:"view_id"`
+	ServiceID            uint      `db:"service_id"`
+	IncludeAllComponents bool      `db:"include_all_components"`
+	CreatedAt            time.Time `db:"created_at"`
+	UpdatedAt            time.Time `db:"updated_at"`
+}

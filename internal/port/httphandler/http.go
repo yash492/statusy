@@ -19,6 +19,9 @@ type Handler struct {
 	GetOrCreateDefaultViewCmd           command.GetOrCreateDefaultViewCmd
 	GetUnconfiguredServicesCmd           command.GetUnconfiguredServicesCmd
 	GetServiceComponentsCmd              command.GetServiceComponentsCmd
+	AddViewServiceCmd                    command.AddViewServiceCmd
+	EditViewServiceCmd                   command.EditViewServiceCmd
+	DeleteViewServiceCmd                 command.DeleteViewServiceCmd
 }
 
 // (GET /statuspages)
@@ -273,5 +276,78 @@ func (h Handler) GetServiceComponents(ctx context.Context, request api.GetServic
 		GroupedComponents:   grouped,
 		UngroupedComponents: ungrouped,
 	}, nil
+}
+
+// (POST /views/{viewSlug}/services)
+func (h Handler) AddViewService(ctx context.Context, request api.AddViewServiceRequestObject) (api.AddViewServiceResponseObject, error) {
+	componentIDs := []int{}
+	if request.Body.ComponentIds != nil {
+		componentIDs = *request.Body.ComponentIds
+	}
+
+	componentGroupIDs := []int{}
+	if request.Body.ComponentGroupIds != nil {
+		componentGroupIDs = *request.Body.ComponentGroupIds
+	}
+
+	result, err := h.AddViewServiceCmd.Execute(ctx, command.AddViewServiceParams{
+		ViewSlug:             request.ViewSlug,
+		ServiceID:            request.Body.ServiceId,
+		IncludeAllComponents: request.Body.IncludeAllComponents,
+		ComponentIDs:         componentIDs,
+		ComponentGroupIDs:    componentGroupIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.AddViewService200JSONResponse{
+		Id:                   int(result.ID),
+		ServiceId:            int(result.ServiceID),
+		IncludeAllComponents: result.IncludeAllComponents,
+	}, nil
+}
+
+// (PUT /views/{viewSlug}/services/{serviceId})
+func (h Handler) EditViewService(ctx context.Context, request api.EditViewServiceRequestObject) (api.EditViewServiceResponseObject, error) {
+	componentIDs := []int{}
+	if request.Body.ComponentIds != nil {
+		componentIDs = *request.Body.ComponentIds
+	}
+
+	componentGroupIDs := []int{}
+	if request.Body.ComponentGroupIds != nil {
+		componentGroupIDs = *request.Body.ComponentGroupIds
+	}
+
+	result, err := h.EditViewServiceCmd.Execute(ctx, command.EditViewServiceParams{
+		ViewSlug:             request.ViewSlug,
+		ServiceID:            request.ServiceId,
+		IncludeAllComponents: request.Body.IncludeAllComponents,
+		ComponentIDs:         componentIDs,
+		ComponentGroupIDs:    componentGroupIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.EditViewService200JSONResponse{
+		Id:                   int(result.ID),
+		ServiceId:            int(result.ServiceID),
+		IncludeAllComponents: result.IncludeAllComponents,
+	}, nil
+}
+
+// (DELETE /views/{viewSlug}/services/{serviceId})
+func (h Handler) DeleteViewService(ctx context.Context, request api.DeleteViewServiceRequestObject) (api.DeleteViewServiceResponseObject, error) {
+	err := h.DeleteViewServiceCmd.Execute(ctx, command.DeleteViewServiceParams{
+		ViewSlug:  request.ViewSlug,
+		ServiceID: request.ServiceId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.DeleteViewService204Response{}, nil
 }
 

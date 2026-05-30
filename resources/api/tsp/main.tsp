@@ -323,4 +323,79 @@ op getServiceComponents(
   serviceSlug: string,
 ): ServiceComponents;
 
+model AddViewServiceRequest {
+  @doc("The ID of the service to add to the view")
+  service_id: integer;
 
+  @doc("Whether to include all components of the service")
+  include_all_components: boolean;
+
+  @doc("List of specific component IDs to include (ignored if include_all_components is true)")
+  component_ids?: integer[];
+
+  @doc("List of specific component group IDs to include (ignored if include_all_components is true)")
+  component_group_ids?: integer[];
+}
+
+model EditViewServiceRequest {
+  @doc("Whether to include all components of the service")
+  include_all_components: boolean;
+
+  @doc("List of specific component IDs to include (ignored if include_all_components is true)")
+  component_ids?: integer[];
+
+  @doc("List of specific component group IDs to include (ignored if include_all_components is true)")
+  component_group_ids?: integer[];
+}
+
+model ViewServiceResponse {
+  @doc("Unique identifier for the view-service mapping")
+  id: integer;
+
+  @doc("The ID of the service")
+  service_id: integer;
+
+  @doc("Whether all components of this service are included")
+  include_all_components: boolean;
+}
+
+@doc("Add a service to a view with component configuration")
+@post
+@route("/views/{viewSlug}/services")
+op addViewService(
+  @doc("The view slug")
+  @path
+  viewSlug: string,
+
+  @body
+  body: AddViewServiceRequest,
+): ViewServiceResponse;
+
+@doc("Edit a service's component configuration in a view")
+@put
+@route("/views/{viewSlug}/services/{serviceId}")
+op editViewService(
+  @doc("The view slug")
+  @path
+  viewSlug: string,
+
+  @doc("The service ID")
+  @path
+  serviceId: integer,
+
+  @body
+  body: EditViewServiceRequest,
+): ViewServiceResponse;
+
+@doc("Remove a service from a view")
+@delete
+@route("/views/{viewSlug}/services/{serviceId}")
+op deleteViewService(
+  @doc("The view slug")
+  @path
+  viewSlug: string,
+
+  @doc("The service ID")
+  @path
+  serviceId: integer,
+): void;

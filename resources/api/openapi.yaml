@@ -173,6 +173,79 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/View'
+  /api/views/{viewSlug}/services:
+    post:
+      operationId: addViewService
+      description: Add a service to a view with component configuration
+      parameters:
+        - name: viewSlug
+          in: path
+          required: true
+          description: The view slug
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewServiceResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddViewServiceRequest'
+  /api/views/{viewSlug}/services/{serviceId}:
+    put:
+      operationId: editViewService
+      description: Edit a service's component configuration in a view
+      parameters:
+        - name: viewSlug
+          in: path
+          required: true
+          description: The view slug
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          required: true
+          description: The service ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewServiceResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditViewServiceRequest'
+    delete:
+      operationId: deleteViewService
+      description: Remove a service from a view
+      parameters:
+        - name: viewSlug
+          in: path
+          required: true
+          description: The view slug
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          required: true
+          description: The service ID
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
   /api/views/{viewSlug}/unconfigured-services:
     get:
       operationId: getUnconfiguredServices
@@ -202,6 +275,28 @@ paths:
                   $ref: '#/components/schemas/Statuspage'
 components:
   schemas:
+    AddViewServiceRequest:
+      type: object
+      required:
+        - service_id
+        - include_all_components
+      properties:
+        service_id:
+          type: integer
+          description: The ID of the service to add to the view
+        include_all_components:
+          type: boolean
+          description: Whether to include all components of the service
+        component_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component IDs to include (ignored if include_all_components is true)
+        component_group_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component group IDs to include (ignored if include_all_components is true)
     Component:
       type: object
       required:
@@ -240,6 +335,24 @@ components:
           items:
             $ref: '#/components/schemas/Component'
           description: List of components within this group
+    EditViewServiceRequest:
+      type: object
+      required:
+        - include_all_components
+      properties:
+        include_all_components:
+          type: boolean
+          description: Whether to include all components of the service
+        component_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component IDs to include (ignored if include_all_components is true)
+        component_group_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component group IDs to include (ignored if include_all_components is true)
     ErrorResponse:
       type: object
       required:
@@ -441,6 +554,22 @@ components:
           items:
             $ref: '#/components/schemas/ViewServiceStatus'
           description: Configuration of services in this view
+    ViewServiceResponse:
+      type: object
+      required:
+        - id
+        - service_id
+        - include_all_components
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the view-service mapping
+        service_id:
+          type: integer
+          description: The ID of the service
+        include_all_components:
+          type: boolean
+          description: Whether all components of this service are included
     ViewServiceStatus:
       type: object
       required:
