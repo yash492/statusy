@@ -153,8 +153,11 @@ func (r *PostgresViewsRepository) GetBySlug(ctx context.Context, slug string) (v
 	}, nil
 }
 
-func (r *PostgresViewsRepository) GetUnconfiguredServices(ctx context.Context, viewID uint) ([]services.ServiceResult, error) {
-	rows, err := r.readDB.Query(ctx, getUnconfiguredServicesQuery, pgx.NamedArgs{"view_id": viewID})
+func (r *PostgresViewsRepository) GetUnconfiguredServices(ctx context.Context, viewID uint, search string) ([]services.ServiceResult, error) {
+	rows, err := r.readDB.Query(ctx, getUnconfiguredServicesQuery, pgx.NamedArgs{
+		"view_id": viewID,
+		"search":  search,
+	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error querying unconfigured services", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
 		return nil, err

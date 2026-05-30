@@ -184,6 +184,13 @@ paths:
           description: The view slug
           schema:
             type: string
+        - name: search
+          in: query
+          required: false
+          description: Search term to filter services by name or slug
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.

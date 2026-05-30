@@ -27,6 +27,7 @@ func NewGetUnconfiguredServicesCmd(logger *slog.Logger, viewsRepo views.Reposito
 
 type GetUnconfiguredServicesParams struct {
 	ViewSlug string
+	Search   string
 }
 
 func (c GetUnconfiguredServicesCmd) Execute(ctx context.Context, params GetUnconfiguredServicesParams) ([]services.ServiceResult, error) {
@@ -45,7 +46,7 @@ func (c GetUnconfiguredServicesCmd) Execute(ctx context.Context, params GetUncon
 		return nil, err
 	}
 
-	unconfigured, err := c.viewsRepo.GetUnconfiguredServices(ctx, view.ID)
+	unconfigured, err := c.viewsRepo.GetUnconfiguredServices(ctx, view.ID, params.Search)
 	if err != nil {
 		c.logger.ErrorContext(ctx, "failed to fetch unconfigured services", slog.Uint64("view_id", uint64(view.ID)), slog.Any("err", err))
 		return nil, err

@@ -11,6 +11,6 @@ type Repository interface {
 	GetBySlug(ctx context.Context, slug string) (View, error)
 	Save(ctx context.Context, view View) (View, error)
 	GetServicesByViewID(ctx context.Context, viewID uint) ([]ViewServiceStatus, error)
-	GetUnconfiguredServices(ctx context.Context, viewID uint) ([]services.ServiceResult, error)
+	GetUnconfiguredServices(ctx context.Context, viewID uint, search string) ([]services.ServiceResult, error)
 }
 

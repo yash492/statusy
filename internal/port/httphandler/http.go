@@ -204,8 +204,14 @@ func (h Handler) StatuspageBySlug(ctx context.Context, request api.StatuspageByS
 
 // (GET /views/{viewSlug}/unconfigured-services)
 func (h Handler) GetUnconfiguredServices(ctx context.Context, request api.GetUnconfiguredServicesRequestObject) (api.GetUnconfiguredServicesResponseObject, error) {
+	search := ""
+	if request.Params.Search != nil {
+		search = *request.Params.Search
+	}
+
 	result, err := h.GetUnconfiguredServicesCmd.Execute(ctx, command.GetUnconfiguredServicesParams{
 		ViewSlug: request.ViewSlug,
+		Search:   search,
 	})
 	if err != nil {
 		return nil, err

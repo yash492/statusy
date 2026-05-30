@@ -308,6 +308,10 @@ op getUnconfiguredServices(
   @doc("The view slug")
   @path
   viewSlug: string,
+
+  @doc("Search term to filter services by name or slug")
+  @query
+  search?: string,
 ): Statuspage[];
 
 @doc("Get all components and groups for a service")

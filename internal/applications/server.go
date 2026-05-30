@@ -94,18 +94,7 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 }
 
 func (s ServerApplication) Start(ctx context.Context, addr string) error {
-	serverInterface := api.NewStrictHandlerWithOptions(s.HttpHandler, nil, api.StrictHTTPServerOptions{
-		RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		},
-		ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
-			if errors.Is(err, command.ErrStatuspageNotFound) || errors.Is(err, command.ErrViewNotFound) {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		},
-	})
+	serverInterface := api.NewStrictHandler(s.HttpHandler, nil)
 
 	r := chi.NewRouter()
 	r.Use(

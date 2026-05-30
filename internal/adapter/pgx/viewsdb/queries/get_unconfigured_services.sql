@@ -12,5 +12,11 @@ WHERE
     FROM view_services
     WHERE view_id = @view_id AND deleted_at IS NULL
   )
+  AND (
+    @search::TEXT = ''
+    OR name ILIKE '%' || @search || '%'
+  )
 ORDER BY
-  name ASC;
+  name ASC
+LIMIT 5;
+

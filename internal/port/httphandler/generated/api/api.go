@@ -205,6 +205,12 @@ type ScheduledMaintenanceByStatuspageParams struct {
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
 
+// GetUnconfiguredServicesParams defines parameters for GetUnconfiguredServices.
+type GetUnconfiguredServicesParams struct {
+	// Search Search term to filter services by name or slug
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
@@ -233,7 +239,7 @@ type ServerInterface interface {
 	GetDefaultView(w http.ResponseWriter, r *http.Request)
 
 	// (GET /api/views/{viewSlug}/unconfigured-services)
-	GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string)
+	GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string, params GetUnconfiguredServicesParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -281,7 +287,7 @@ func (_ Unimplemented) GetDefaultView(w http.ResponseWriter, r *http.Request) {
 }
 
 // (GET /api/views/{viewSlug}/unconfigured-services)
-func (_ Unimplemented) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string) {
+func (_ Unimplemented) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string, params GetUnconfiguredServicesParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -537,8 +543,19 @@ func (siw *ServerInterfaceWrapper) GetUnconfiguredServices(w http.ResponseWriter
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetUnconfiguredServicesParams
+
+	// ------------- Optional query parameter "search" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "search", r.URL.Query(), &params.Search, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "search", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetUnconfiguredServices(w, r, viewSlug)
+		siw.Handler.GetUnconfiguredServices(w, r, viewSlug, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -883,6 +900,7 @@ func (response GetDefaultView200JSONResponse) VisitGetDefaultViewResponse(w http
 
 type GetUnconfiguredServicesRequestObject struct {
 	ViewSlug string `json:"viewSlug"`
+	Params   GetUnconfiguredServicesParams
 }
 
 type GetUnconfiguredServicesResponseObject interface {
@@ -1172,10 +1190,11 @@ func (sh *strictHandler) GetDefaultView(w http.ResponseWriter, r *http.Request) 
 }
 
 // GetUnconfiguredServices operation middleware
-func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string) {
+func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string, params GetUnconfiguredServicesParams) {
 	var request GetUnconfiguredServicesRequestObject
 
 	request.ViewSlug = viewSlug
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.GetUnconfiguredServices(ctx, request.(GetUnconfiguredServicesRequestObject))
@@ -1200,34 +1219,34 @@ func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xZUW/bOBL+KwTvHlqcEgd3Lwcv9iFNsUWB7mIRN92HojAYcWSxkEiVpOx6A//3BSlS",
-	"piRKlZOmmy360kYm9Q3n+2Y4Q+oOp6KsBAeuFV7eYZXmUBL755UfMA+VFBVIzcAOMWr+paBSySrNBMdL",
-	"fMPZpxoQo8A1yxhIlAmJdA6otYATrPcV4CVmXMMGJD4kmJMShmgvmaoKskdmFIlsDEdpyfjGwFRSbBkF",
-	"uY6t7Xc3eKYqSFnG0pnL9PCHBEv4VDMJFC/fG/fdurt2P7QvituPkGqzrpbFV1LU1ZDKLv3dZb9hShvn",
-	"j3PQjumccaRzptDGIiaYaSjt2/+WkOEl/tfi+MLCCbo4qnloV0mkJHvzfE892xV8FVX7aI+i7ZiRmQon",
-	"oV4xuV/z1Jp/aM4wjxMj1w+ua1kMQd/mgG6u33h+SaprUiClia4VqsgmBh7hOpVANNA10RETrASlSVmh",
-	"XQ68s2C0Iwq5d9Ht3o55TJzgTMjSIGJKNJxpZhkeLKJZ7NDuVS2lseGccR62pp8xvgWl2YZoxjfJkVea",
-	"oFJwpoW0v0tQotgCfR6zrZkuIOayLgAJiVRdlkTu+8bnhVQD3jrYkzLOfizMVmkOtC6A/kpMXHDCUxiG",
-	"HHCq4vrlgIBTZPj3jigPicojJoKtIZZxdPP2arZ8XzHUn0Y4emrWATUnJd84tyPhL/W4cnb4RO3Of+Te",
-	"IPfGZQ0lSNo0OiE9QW5ZCled2t7NTVuHgK5Pqv9N9VJt6qjGzsk9QNOLRBoBBxgttG+PBtHrl9Fs9a/H",
-	"q38I4GrrMPocgirqzTSCnRFBqPkp1LazwybrofQOme3FY0Bzj7QeA0ksTkZ8jAaijXVT9B/akAT9wwMb",
-	"vihSEAFR5W+u35xlkgGnxd5KP72wIBxiu/S1EBpRYdI+3K0noSY6RCeVMTUtgu8OI/sBC4dmhVvbasby",
-	"uKP7FEoQIQZHaFKsU1E3HWxf5j4H7Zo7Frsw04zEGpkIO9Gtej5V0Xbpb6NtxJkTOXzHYDckqhPng2w8",
-	"PvmQ3xqUB7dwXZTwpKLWFDJSF5FW5o8cdA6yOcsyZYHc5B7grRAFEH7aNjPmmdtfYx2O4Bnb1JJ4gvxU",
-	"5E/cDnNWzBl9XB/QBEs04E7c7OJOfXlrCvE7qgR8jAVZ14mvV0aC8ho94hY1hTUpisk67oOIFEVYwW0M",
-	"MNU2C0TabtFA0kZNGI+xgii9ZsFBvmvyMtVsG3S+wSh6BmWl96gRBrEMccEh2uqeUC/7NJ1eK2cgjXT9",
-	"l5uNhI09PXUbf8/ss7oynTkVO/78PpHZduNd1kcjYBilBxsumbA7b3OAcAVmjxO8BakaVy7OL84vjK+i",
-	"Ak4qhpf4f/anBFdE59b5BanYwmfE4s79tSrqzWHRDcMNRELjFeh+JBJOw66dBCKYLLJ7zWvavDs8Npil",
-	"SVKCBqnw8v2MfpiZ340/nuklDrzAoR5a1pC4G9+gbLXafTCTVSW4ajL9vxcXzY2lqVnWe1JVBUutD4uP",
-	"qik5R7zJ+jlw1eo4dM8sF5RGOVFI1WkKQIGem9mHxMnVVs1xYWy7b5QhW8IKclt0dqLmWhUJO9sc14HI",
-	"NEcZK7S9JegKZbBWgc0vaLRqwDTIEmnhQLvWb33CS68ifK4KQQEvM1IocKp+qkHuQ1kNMH5MBec1V91W",
-	"qHvuebimi7vjg03Eyew7zjWsOja7+h3X+2LvcmJSwGExix4XYonXWfjTyb1AsMcQaJEB0HOiRTkp1aUW",
-	"JTJT/cbYoXOwOZrpvwDQ70AuQ81/PpfFTyjNiVSgf651dvb/roJ9E48mlFTTBe16tTpBpmulvhOVpFJP",
-	"QqTOzcBk29HO9FL5L2JTmvlrhBf7VXj8fHrqJYMvf2aX53V5684XbUdeV5RoW5nn1FGzmHUDEyumwSm+",
-	"v4DfGtsi8xZRBdI7P9u0Yn/CtOFvUwyOl1OPE8f+2uOsf4UzGdPxTxs7xqnYqRlbUuzq558f6nFWfsT9",
-	"feI+fgV57xzYMtipRXDrVQk1Et9Cuk+T/XuvQVV92Yy/a4YfjRSL/0DP78x/TcbXPHVXakDPwnu36Yz3",
-	"t25caHQEQIwjMkrQTWBq5S3NOD0bvImjs/flm/bu3/7U5a5F4zRdosYWspuQvxAS0n3xWOJc60otF273",
-	"35+TqsKHD4e/AgAA//+NpV3qWyYAAA==",
+	"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",
+	"+cyVoe05qSq8+7D7JwAA//8nUv6i5CYAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
