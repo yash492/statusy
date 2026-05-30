@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"log/slog"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -16,16 +15,7 @@ import (
 //go:embed queries/insert_component.sql
 var insertComponentQuery string
 
-type componentDto struct {
-	ID               uint
-	Name             string
-	ProviderID       string
-	ServiceID        uint
-	ComponentGroupID pgtype.Uint64
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
-	DeletedAt        pgtype.Timestamptz
-}
+
 
 func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []components.ComponentParams) ([]components.ComponentResult, error) {
 	batchInserts := &pgx.Batch{}

@@ -12,9 +12,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/yash492/statusy/internal/adapter/pgx/componentgroupsdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/componentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenancesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/viewsdb"
 	"github.com/yash492/statusy/internal/command"
 	"github.com/yash492/statusy/internal/port/httphandler"
 	"github.com/yash492/statusy/internal/port/httphandler/generated/api"
@@ -60,11 +63,29 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 		deps.readDB,
 		deps.writeDB,
 	)
+	viewsRepo := viewsdb.NewPostgresViewsRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
+	componentsRepo := componentsdb.NewPostgresComponentRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
+	componentGroupsRepo := componentgroupsdb.NewPostgresComponentGroupsRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
 	handler := httphandler.Handler{
 		ListStatuspageCmd:                   command.NewListStatuspageCmd(lg, servicesRepo),
 		StatuspageBySlugCmd:                 command.NewStatuspageBySlugCmd(lg, servicesRepo),
 		IncidentByStatuspageCmd:             command.NewIncidentByStatuspageCmd(lg, servicesRepo, incidentsRepo),
 		ScheduledMaintenanceByStatuspageCmd: command.NewScheduledMaintenanceByStatuspageCmd(lg, servicesRepo, scheduledMaintenancesRepo),
+		GetOrCreateDefaultViewCmd:           command.NewGetOrCreateDefaultViewCmd(lg, viewsRepo),
+		GetUnconfiguredServicesCmd:          command.NewGetUnconfiguredServicesCmd(lg, viewsRepo),
+		GetServiceComponentsCmd:             command.NewGetServiceComponentsCmd(lg, servicesRepo, componentsRepo, componentGroupsRepo),
 	}
 	return ServerApplication{
 		HttpHandler: handler,
@@ -73,7 +94,18 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 }
 
 func (s ServerApplication) Start(ctx context.Context, addr string) error {
-	serverInterface := api.NewStrictHandler(s.HttpHandler, nil)
+	serverInterface := api.NewStrictHandlerWithOptions(s.HttpHandler, nil, api.StrictHTTPServerOptions{
+		RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		},
+		ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			if errors.Is(err, command.ErrStatuspageNotFound) || errors.Is(err, command.ErrViewNotFound) {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		},
+	})
 
 	r := chi.NewRouter()
 	r.Use(

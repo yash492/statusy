@@ -4,11 +4,8 @@ check-tsp:
 		exit 1; \
 	}
 
-install-tsp:
-	npm install -g @typespec/compiler
-
 compile-tsp: check-tsp
-	tsp compile ./resources/api/tsp/main.tsp
+	bun x tsp compile ./resources/api/tsp/main.tsp
 
 
 check-oapi:

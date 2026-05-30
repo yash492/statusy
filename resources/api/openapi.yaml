@@ -4,6 +4,24 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /api/services/{serviceSlug}/components:
+    get:
+      operationId: getServiceComponents
+      description: Get all components and groups for a service
+      parameters:
+        - name: serviceSlug
+          in: path
+          required: true
+          description: The service slug
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceComponents'
   /api/statuspages:
     get:
       operationId: listStatuspages
@@ -143,8 +161,78 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatuspageScheduledMaintenances'
+  /api/views/default:
+    post:
+      operationId: getDefaultView
+      description: Get or create default view
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+  /api/views/{viewSlug}/unconfigured-services:
+    get:
+      operationId: getUnconfiguredServices
+      description: Get all services not configured in a view
+      parameters:
+        - name: viewSlug
+          in: path
+          required: true
+          description: The view slug
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Statuspage'
 components:
   schemas:
+    Component:
+      type: object
+      required:
+        - id
+        - name
+        - provider_id
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the component
+        name:
+          type: string
+          description: Display name of the component
+        provider_id:
+          type: string
+          description: Provider-specific identifier for the component
+    ComponentGroup:
+      type: object
+      required:
+        - id
+        - name
+        - provider_id
+        - components
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the component group
+        name:
+          type: string
+          description: Display name of the component group
+        provider_id:
+          type: string
+          description: Provider-specific identifier for the component group
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+          description: List of components within this group
     ErrorResponse:
       type: object
       required:
@@ -238,6 +326,34 @@ components:
           type: string
           format: date-time
           description: Timestamp when the incident was created by the provider
+    ServiceComponents:
+      type: object
+      required:
+        - service_id
+        - service_name
+        - service_slug
+        - grouped_components
+        - ungrouped_components
+      properties:
+        service_id:
+          type: integer
+          description: The service ID
+        service_name:
+          type: string
+          description: The service name
+        service_slug:
+          type: string
+          description: The service slug
+        grouped_components:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentGroup'
+          description: List of component groups for the service
+        ungrouped_components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+          description: List of ungrouped components for the service
     Statuspage:
       type: object
       required:
@@ -288,6 +404,64 @@ components:
           $ref: '#/components/schemas/Statuspage'
         total_count:
           type: integer
+    View:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - description
+        - is_default
+        - services
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the view
+        name:
+          type: string
+          description: Display name of the view
+        slug:
+          type: string
+          description: URL-friendly slug for the view
+        description:
+          type: string
+          description: Description of the view
+        is_default:
+          type: boolean
+          description: Whether this is the default view
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewServiceStatus'
+          description: Configuration of services in this view
+    ViewServiceStatus:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - status
+        - last_incident
+        - include_all_components
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the status page service
+        name:
+          type: string
+          description: Display name of the service
+        slug:
+          type: string
+          description: URL-friendly slug of the service
+        status:
+          type: string
+          description: Aggregated status of the service (up or down)
+        last_incident:
+          type: string
+          description: Active incident description (empty string if none)
+        include_all_components:
+          type: boolean
+          description: Whether all components of this service are included in the view
 servers:
   - url: https://statusy.app
     description: A Status Page Aggregator

@@ -16,6 +16,9 @@ type Handler struct {
 	StatuspageBySlugCmd                 command.StatuspageBySlugCmd
 	IncidentByStatuspageCmd             command.IncidentByStatuspageCmd
 	ScheduledMaintenanceByStatuspageCmd command.ScheduledMaintenanceByStatuspageCmd
+	GetOrCreateDefaultViewCmd           command.GetOrCreateDefaultViewCmd
+	GetUnconfiguredServicesCmd           command.GetUnconfiguredServicesCmd
+	GetServiceComponentsCmd              command.GetServiceComponentsCmd
 }
 
 // (GET /statuspages)
@@ -153,6 +156,35 @@ func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request a
 	return resp, nil
 }
 
+// (POST /api/views/default)
+func (h Handler) GetDefaultView(ctx context.Context, request api.GetDefaultViewRequestObject) (api.GetDefaultViewResponseObject, error) {
+	view, err := h.GetOrCreateDefaultViewCmd.Execute(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	services := make([]api.ViewServiceStatus, 0, len(view.Services))
+	for _, s := range view.Services {
+		services = append(services, api.ViewServiceStatus{
+			Id:                   int(s.ID),
+			Name:                 s.Name,
+			Slug:                 s.Slug,
+			Status:               s.Status,
+			LastIncident:         s.LastIncident,
+			IncludeAllComponents: s.IncludeAllComponents,
+		})
+	}
+
+	return api.GetDefaultView200JSONResponse{
+		Id:          int(view.ID),
+		Name:        view.Name,
+		Slug:        view.Slug,
+		Description: view.Description,
+		IsDefault:   view.IsDefault,
+		Services:    services,
+	}, nil
+}
+
 // (GET /statuspages/{statuspageSlug})
 func (h Handler) StatuspageBySlug(ctx context.Context, request api.StatuspageBySlugRequestObject) (api.StatuspageBySlugResponseObject, error) {
 	result, err := h.StatuspageBySlugCmd.Execute(ctx, command.StatuspageBySlugParams{
@@ -169,3 +201,71 @@ func (h Handler) StatuspageBySlug(ctx context.Context, request api.StatuspageByS
 		Url:  result.URL,
 	}, nil
 }
+
+// (GET /views/{viewSlug}/unconfigured-services)
+func (h Handler) GetUnconfiguredServices(ctx context.Context, request api.GetUnconfiguredServicesRequestObject) (api.GetUnconfiguredServicesResponseObject, error) {
+	result, err := h.GetUnconfiguredServicesCmd.Execute(ctx, command.GetUnconfiguredServicesParams{
+		ViewSlug: request.ViewSlug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	servicesList := make(api.GetUnconfiguredServices200JSONResponse, 0, len(result))
+	for _, s := range result {
+		servicesList = append(servicesList, api.Statuspage{
+			Id:   int(s.ID),
+			Name: s.Name,
+			Slug: s.Slug,
+			Url:  s.URL,
+		})
+	}
+
+	return servicesList, nil
+}
+
+// (GET /services/{serviceSlug}/components)
+func (h Handler) GetServiceComponents(ctx context.Context, request api.GetServiceComponentsRequestObject) (api.GetServiceComponentsResponseObject, error) {
+	result, err := h.GetServiceComponentsCmd.Execute(ctx, command.GetServiceComponentsParams{
+		ServiceSlug: request.ServiceSlug,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	grouped := make([]api.ComponentGroup, 0, len(result.GroupedComponents))
+	for _, g := range result.GroupedComponents {
+		comps := make([]api.Component, 0, len(g.Components))
+		for _, c := range g.Components {
+			comps = append(comps, api.Component{
+				Id:         int(c.ID),
+				Name:       c.Name,
+				ProviderId: c.ProviderID,
+			})
+		}
+		grouped = append(grouped, api.ComponentGroup{
+			Id:         int(g.ID),
+			Name:       g.Name,
+			ProviderId: g.ProviderID,
+			Components: comps,
+		})
+	}
+
+	ungrouped := make([]api.Component, 0, len(result.UngroupedComponents))
+	for _, c := range result.UngroupedComponents {
+		ungrouped = append(ungrouped, api.Component{
+			Id:         int(c.ID),
+			Name:       c.Name,
+			ProviderId: c.ProviderID,
+		})
+	}
+
+	return api.GetServiceComponents200JSONResponse{
+		ServiceId:           int(result.ServiceID),
+		ServiceName:         result.ServiceName,
+		ServiceSlug:         result.ServiceSlug,
+		GroupedComponents:   grouped,
+		UngroupedComponents: ungrouped,
+	}, nil
+}
+

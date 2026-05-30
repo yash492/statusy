@@ -4,10 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"log/slog"
-	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
@@ -16,15 +14,7 @@ import (
 //go:embed queries/insert_component_groups.sql
 var insertComponentgroupQuery string
 
-type componentGroupDto struct {
-	ID         uint             `db:"id"`
-	Name       string           `db:"name"`
-	ProviderID string           `db:"provider_id"`
-	ServiceID  uint             `db:"service_id"`
-	CreatedAt  time.Time        `db:"created_at"`
-	UpdatedAt  time.Time        `db:"updated_at"`
-	DeletedAt  pgtype.Timestamp `db:"deleted_at"`
-}
+
 
 func (c *PostgresComponentGroupsRepository) SaveAll(ctx context.Context, params []components.GroupParams) ([]components.ComponentGroupResult, error) {
 	batchInserts := &pgx.Batch{}

@@ -23,6 +23,33 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
+// Component defines model for Component.
+type Component struct {
+	// Id Unique identifier for the component
+	Id int `json:"id"`
+
+	// Name Display name of the component
+	Name string `json:"name"`
+
+	// ProviderId Provider-specific identifier for the component
+	ProviderId string `json:"provider_id"`
+}
+
+// ComponentGroup defines model for ComponentGroup.
+type ComponentGroup struct {
+	// Components List of components within this group
+	Components []Component `json:"components"`
+
+	// Id Unique identifier for the component group
+	Id int `json:"id"`
+
+	// Name Display name of the component group
+	Name string `json:"name"`
+
+	// ProviderId Provider-specific identifier for the component group
+	ProviderId string `json:"provider_id"`
+}
+
 // Incident defines model for Incident.
 type Incident struct {
 	// Id Unique identifier for the incident
@@ -65,6 +92,24 @@ type ScheduledMaintenance struct {
 	Title string `json:"title"`
 }
 
+// ServiceComponents defines model for ServiceComponents.
+type ServiceComponents struct {
+	// GroupedComponents List of component groups for the service
+	GroupedComponents []ComponentGroup `json:"grouped_components"`
+
+	// ServiceId The service ID
+	ServiceId int `json:"service_id"`
+
+	// ServiceName The service name
+	ServiceName string `json:"service_name"`
+
+	// ServiceSlug The service slug
+	ServiceSlug string `json:"service_slug"`
+
+	// UngroupedComponents List of ungrouped components for the service
+	UngroupedComponents []Component `json:"ungrouped_components"`
+}
+
 // Statuspage defines model for Statuspage.
 type Statuspage struct {
 	// Id Unique identifier for the status page
@@ -94,6 +139,48 @@ type StatuspageScheduledMaintenances struct {
 	TotalCount            int                    `json:"total_count"`
 }
 
+// View defines model for View.
+type View struct {
+	// Description Description of the view
+	Description string `json:"description"`
+
+	// Id Unique identifier for the view
+	Id int `json:"id"`
+
+	// IsDefault Whether this is the default view
+	IsDefault bool `json:"is_default"`
+
+	// Name Display name of the view
+	Name string `json:"name"`
+
+	// Services Configuration of services in this view
+	Services []ViewServiceStatus `json:"services"`
+
+	// Slug URL-friendly slug for the view
+	Slug string `json:"slug"`
+}
+
+// ViewServiceStatus defines model for ViewServiceStatus.
+type ViewServiceStatus struct {
+	// Id Unique identifier for the status page service
+	Id int `json:"id"`
+
+	// IncludeAllComponents Whether all components of this service are included in the view
+	IncludeAllComponents bool `json:"include_all_components"`
+
+	// LastIncident Active incident description (empty string if none)
+	LastIncident string `json:"last_incident"`
+
+	// Name Display name of the service
+	Name string `json:"name"`
+
+	// Slug URL-friendly slug of the service
+	Slug string `json:"slug"`
+
+	// Status Aggregated status of the service (up or down)
+	Status string `json:"status"`
+}
+
 // ListStatuspagesParams defines parameters for ListStatuspages.
 type ListStatuspagesParams struct {
 	// Search Search term to filter status pages by name or slug
@@ -121,6 +208,9 @@ type ScheduledMaintenanceByStatuspageParams struct {
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (GET /api/services/{serviceSlug}/components)
+	GetServiceComponents(w http.ResponseWriter, r *http.Request, serviceSlug string)
+
 	// (GET /api/statuspages)
 	ListStatuspages(w http.ResponseWriter, r *http.Request, params ListStatuspagesParams)
 
@@ -138,11 +228,22 @@ type ServerInterface interface {
 
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params ScheduledMaintenanceByStatuspageParams)
+
+	// (POST /api/views/default)
+	GetDefaultView(w http.ResponseWriter, r *http.Request)
+
+	// (GET /api/views/{viewSlug}/unconfigured-services)
+	GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
+
+// (GET /api/services/{serviceSlug}/components)
+func (_ Unimplemented) GetServiceComponents(w http.ResponseWriter, r *http.Request, serviceSlug string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
 
 // (GET /api/statuspages)
 func (_ Unimplemented) ListStatuspages(w http.ResponseWriter, r *http.Request, params ListStatuspagesParams) {
@@ -174,6 +275,16 @@ func (_ Unimplemented) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// (POST /api/views/default)
+func (_ Unimplemented) GetDefaultView(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /api/views/{viewSlug}/unconfigured-services)
+func (_ Unimplemented) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler            ServerInterface
@@ -182,6 +293,31 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// GetServiceComponents operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceComponents(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "serviceSlug" -------------
+	var serviceSlug string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "serviceSlug", chi.URLParam(r, "serviceSlug"), &serviceSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "serviceSlug", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetServiceComponents(w, r, serviceSlug)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // ListStatuspages operation middleware
 func (siw *ServerInterfaceWrapper) ListStatuspages(w http.ResponseWriter, r *http.Request) {
@@ -373,6 +509,45 @@ func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.Respo
 	handler.ServeHTTP(w, r)
 }
 
+// GetDefaultView operation middleware
+func (siw *ServerInterfaceWrapper) GetDefaultView(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetDefaultView(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetUnconfiguredServices operation middleware
+func (siw *ServerInterfaceWrapper) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "viewSlug" -------------
+	var viewSlug string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetUnconfiguredServices(w, r, viewSlug)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -487,6 +662,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/services/{serviceSlug}/components", wrapper.GetServiceComponents)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/statuspages", wrapper.ListStatuspages)
 	})
 	r.Group(func(r chi.Router) {
@@ -504,8 +682,36 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances", wrapper.ScheduledMaintenanceByStatuspage)
 	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/views/default", wrapper.GetDefaultView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views/{viewSlug}/unconfigured-services", wrapper.GetUnconfiguredServices)
+	})
 
 	return r
+}
+
+type GetServiceComponentsRequestObject struct {
+	ServiceSlug string `json:"serviceSlug"`
+}
+
+type GetServiceComponentsResponseObject interface {
+	VisitGetServiceComponentsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceComponents200JSONResponse ServiceComponents
+
+func (response GetServiceComponents200JSONResponse) VisitGetServiceComponentsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
 }
 
 type ListStatuspagesRequestObject struct {
@@ -654,8 +860,54 @@ func (response ScheduledMaintenanceByStatuspage200JSONResponse) VisitScheduledMa
 	return err
 }
 
+type GetDefaultViewRequestObject struct {
+}
+
+type GetDefaultViewResponseObject interface {
+	VisitGetDefaultViewResponse(w http.ResponseWriter) error
+}
+
+type GetDefaultView200JSONResponse View
+
+func (response GetDefaultView200JSONResponse) VisitGetDefaultViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetUnconfiguredServicesRequestObject struct {
+	ViewSlug string `json:"viewSlug"`
+}
+
+type GetUnconfiguredServicesResponseObject interface {
+	VisitGetUnconfiguredServicesResponse(w http.ResponseWriter) error
+}
+
+type GetUnconfiguredServices200JSONResponse []Statuspage
+
+func (response GetUnconfiguredServices200JSONResponse) VisitGetUnconfiguredServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+
+	// (GET /api/services/{serviceSlug}/components)
+	GetServiceComponents(ctx context.Context, request GetServiceComponentsRequestObject) (GetServiceComponentsResponseObject, error)
 
 	// (GET /api/statuspages)
 	ListStatuspages(ctx context.Context, request ListStatuspagesRequestObject) (ListStatuspagesResponseObject, error)
@@ -674,6 +926,12 @@ type StrictServerInterface interface {
 
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduledMaintenanceByStatuspage(ctx context.Context, request ScheduledMaintenanceByStatuspageRequestObject) (ScheduledMaintenanceByStatuspageResponseObject, error)
+
+	// (POST /api/views/default)
+	GetDefaultView(ctx context.Context, request GetDefaultViewRequestObject) (GetDefaultViewResponseObject, error)
+
+	// (GET /api/views/{viewSlug}/unconfigured-services)
+	GetUnconfiguredServices(ctx context.Context, request GetUnconfiguredServicesRequestObject) (GetUnconfiguredServicesResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -703,6 +961,32 @@ type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
 	options     StrictHTTPServerOptions
+}
+
+// GetServiceComponents operation middleware
+func (sh *strictHandler) GetServiceComponents(w http.ResponseWriter, r *http.Request, serviceSlug string) {
+	var request GetServiceComponentsRequestObject
+
+	request.ServiceSlug = serviceSlug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceComponents(ctx, request.(GetServiceComponentsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceComponents")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetServiceComponentsResponseObject); ok {
+		if err := validResponse.VisitGetServiceComponentsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
 }
 
 // ListStatuspages operation middleware
@@ -863,28 +1147,87 @@ func (sh *strictHandler) ScheduledMaintenanceByStatuspage(w http.ResponseWriter,
 	}
 }
 
+// GetDefaultView operation middleware
+func (sh *strictHandler) GetDefaultView(w http.ResponseWriter, r *http.Request) {
+	var request GetDefaultViewRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDefaultView(ctx, request.(GetDefaultViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDefaultView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetDefaultViewResponseObject); ok {
+		if err := validResponse.VisitGetDefaultViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetUnconfiguredServices operation middleware
+func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string) {
+	var request GetUnconfiguredServicesRequestObject
+
+	request.ViewSlug = viewSlug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetUnconfiguredServices(ctx, request.(GetUnconfiguredServicesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetUnconfiguredServices")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetUnconfiguredServicesResponseObject); ok {
+		if err := validResponse.VisitGetUnconfiguredServicesResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xX32/bNhD+VwhuDxum2MH2MmjYQ9phRYFsGOLmqQgMWjxJLCSSIU92tcD/+0DqhyWZ",
-	"Fuxt2dKiL61j0t93/L473vGJJqrUSoJES+MnapMcSuY/vpWJ4CDRfdZGaTAowK8I7v7lYBMjNAolaUzv",
-	"pXisgPhfiFSAIakyBHMgosOJKNYaaEyFRMjA0H1Eu8V1ZYpj0Hc5kPu7W6JSj8QSrFhBLDKsLNEsC4Fb",
-	"NEJmDlsbtRUczDoxwBD4mmGAQpRgkZWa7HKQo4DJjlnS/pZsar/WYdKIpsqUDpFyhnCFooRQEE2wx7yv",
-	"K2McR3uY9oQ99TdCbsGiyBgKmUUHXXlESiUFKuO/N2BVsQX+bYgbBRYQOjIWQJQhtipLZuop+THUPqIG",
-	"HithgNP4vfO/A+8POLEyrP5Dj6w2HyBBF+QqyYFXBfDfmMsLyWQCxykHktuwfzkQkJw4/buD2A6SlAdM",
-	"AlsnrJDk/t3rs+37F1P9ZaRjJ816IM1FxXda2xPpb/C0c375Qu8WX2rvqPZO2zq0IOrL6ILy9BTurv2n",
-	"fWBwbQfrQ7IyINgvwuqC1cSt9jkSQhrYXlRZILC726vUCJC8qInbMh/YAS5YHHdKIeHKqT0sklmokJP+",
-	"0G3IDdW8CV1TtgE3hksCofQfvjaQ0ph+tTz0+WXb5Jd9h9/3nMwYVh9qp/N9DmWQIQ5HISvWiaqawWFq",
-	"81SDPuYR4xhmXpFQ/wioE6yQ86UKdqn/TbYTh7lIw72fvlLl6ZrLqlW1phHdgrFNpl8vrhfXLkSlQTIt",
-	"aEx/8F9FVDPMvXJLpsXywO2/yyBw598Ki4QVBWFbJgq2KUYlY8lOYE6U3+16DTCT5CQVBfoW5/xkbu0t",
-	"b7FWA04Xj2ElIBhL4/dT6lUDhmBKgqoFHbNvumvGkLYg4aMuFAcap6yw4ASjMX2swNRd7ca0ibK9hEs2",
-	"sK8v/Adnn9VK2kab76+v3X+Jct55mZjWhUj84ZYfrAv4aYB3XoqOE2qUmM7s4+7rUgoskpxZYqskAeDA",
-	"F273PjrydPl0+GNVVNn+pMlvoGutfkTf1J2aY/8O8b6qV82GWQOPO0vw0vUWucwcODQKnA5rCU0Fz+nc",
-	"uYY9h0HLFIAvGKpy1qobVCVxW31DZBM5x569AXTbfwXgn4FdTprvPpbFTyTJmbGAP1eYXv04dnBK8WxG",
-	"GWtnfbpbrS6w6c7az8QlY+2LMGk0X510yTW3fmdnlYZEpCKZ9awbxl7Vq2ETf3nuRdMo/nC3vKzKTTvs",
-	"9w+pSrvnmT2zj7pg1g1MqJkOZqFpAL833CrtGIkG0x3+bGor/oR54v+mGRxG/OfJ4254vJoOwrM5HX6X",
-	"74TkamfPuJJCA/Snn+phVb7k/d/J+/BD7vIacK8wMNtwGt2QhpB4J2+yzEDGUJn28R3THFHbeNmWUL1g",
-	"WtP9w/6vAAAA//+cBhmZKBcAAA==",
+	"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",
+	"35+TqsKHD4e/AgAA//+NpV3qWyYAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

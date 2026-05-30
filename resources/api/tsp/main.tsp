@@ -213,3 +213,110 @@ op getAtomFeed(
   @path
   statuspageSlug: string,
 ): AtomResponse;
+
+model ViewServiceStatus {
+  @doc("Unique identifier for the status page service")
+  id: integer;
+
+  @doc("Display name of the service")
+  name: string;
+
+  @doc("URL-friendly slug of the service")
+  slug: string;
+
+  @doc("Aggregated status of the service (up or down)")
+  status: string;
+
+  @doc("Active incident description (empty string if none)")
+  last_incident: string;
+
+  @doc("Whether all components of this service are included in the view")
+  include_all_components: boolean;
+}
+
+model View {
+  @doc("Unique identifier for the view")
+  id: integer;
+
+  @doc("Display name of the view")
+  name: string;
+
+  @doc("URL-friendly slug for the view")
+  slug: string;
+
+  @doc("Description of the view")
+  description: string;
+
+  @doc("Whether this is the default view")
+  is_default: boolean;
+
+  @doc("Configuration of services in this view")
+  services: ViewServiceStatus[];
+}
+
+@doc("Get or create default view")
+@post
+@route("/views/default")
+op getDefaultView(): View;
+
+model Component {
+  @doc("Unique identifier for the component")
+  id: integer;
+
+  @doc("Display name of the component")
+  name: string;
+
+  @doc("Provider-specific identifier for the component")
+  provider_id: string;
+}
+
+model ComponentGroup {
+  @doc("Unique identifier for the component group")
+  id: integer;
+
+  @doc("Display name of the component group")
+  name: string;
+
+  @doc("Provider-specific identifier for the component group")
+  provider_id: string;
+
+  @doc("List of components within this group")
+  components: Component[];
+}
+
+model ServiceComponents {
+  @doc("The service ID")
+  service_id: integer;
+
+  @doc("The service name")
+  service_name: string;
+
+  @doc("The service slug")
+  service_slug: string;
+
+  @doc("List of component groups for the service")
+  grouped_components: ComponentGroup[];
+
+  @doc("List of ungrouped components for the service")
+  ungrouped_components: Component[];
+}
+
+@doc("Get all services not configured in a view")
+@get
+@route("/views/{viewSlug}/unconfigured-services")
+op getUnconfiguredServices(
+  @doc("The view slug")
+  @path
+  viewSlug: string,
+): Statuspage[];
+
+@doc("Get all components and groups for a service")
+@get
+@route("/services/{serviceSlug}/components")
+op getServiceComponents(
+  @doc("The service slug")
+  @path
+  serviceSlug: string,
+): ServiceComponents;
+
+

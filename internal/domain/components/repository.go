@@ -27,4 +27,5 @@ type ComponentResult struct {
 
 type Repository interface {
 	SaveAll(ctx context.Context, params []ComponentParams) ([]ComponentResult, error)
+	GetByServiceID(ctx context.Context, serviceID uint) ([]ComponentResult, error)
 }
