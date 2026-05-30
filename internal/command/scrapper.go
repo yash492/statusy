@@ -78,7 +78,6 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 	limitGroup.SetLimit(10)
 
 	for i, service := range registeredServices {
-		i, service := i, service
 		limitGroup.Go(func() error {
 			collectorStart := time.Now()
 			s.logger.InfoContext(ctx, "scraping service", slog.String("slug", service.Slug().String()), slog.Uint64("service_id", uint64(service.ID())))
