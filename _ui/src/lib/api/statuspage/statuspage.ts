@@ -37,6 +37,27 @@ export interface StatuspageScheduledMaintenances {
 	total_count: number;
 }
 
+export interface Component {
+	id: number;
+	name: string;
+	provider_id: string;
+}
+
+export interface ComponentGroup {
+	id: number;
+	name: string;
+	provider_id: string;
+	components: Component[];
+}
+
+export interface ServiceComponents {
+	service_id: number;
+	service_name: string;
+	service_slug: string;
+	grouped_components: ComponentGroup[];
+	ungrouped_components: Component[];
+}
+
 export class StatuspageApi {
 	private readonly basePath = 'statuspages';
 
@@ -66,5 +87,9 @@ export class StatuspageApi {
 				page_size: pageSize
 			}
 		}).json<StatuspageScheduledMaintenances>();
+	}
+
+	getComponents(serviceSlug: string) {
+		return KyClient.get(`services/${encodeURIComponent(serviceSlug)}/components`).json<ServiceComponents>();
 	}
 }

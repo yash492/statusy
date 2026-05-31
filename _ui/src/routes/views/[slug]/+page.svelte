@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { ViewsApi } from '$lib/api/views/views';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
@@ -17,6 +18,7 @@
 	let { data }: { data: PageData } = $props();
 
 	const view = $derived(data.view);
+	const viewsApi = new ViewsApi();
 
 	// View Settings and Meta State
 	let viewName = $state(data.view.name);
@@ -110,13 +112,24 @@
 		isDeleteConfirmOpen = true;
 	}
 
-	function confirmRemove() {
+	async function confirmRemove() {
 		if (serviceToDelete) {
-			const updated = localServices.filter((s) => s.id !== serviceToDelete.id);
-			localServices = updated;
-			localStorage.setItem(`statusy_view_${data.view.slug}`, JSON.stringify(updated));
-			isDeleteConfirmOpen = false;
-			serviceToDelete = null;
+			try {
+				await viewsApi.deleteViewService(data.view.slug, serviceToDelete.id);
+				const updated = localServices.filter((s) => s.id !== serviceToDelete.id);
+				localServices = updated;
+				localStorage.setItem(`statusy_view_${data.view.slug}`, JSON.stringify(updated));
+				isDeleteConfirmOpen = false;
+				serviceToDelete = null;
+			} catch (err: any) {
+				let msg = 'Failed to remove service';
+				if (err.response) {
+					msg = await err.response.text();
+				} else {
+					msg = err.message || msg;
+				}
+				alert(msg);
+			}
 		}
 	}
 
@@ -131,52 +144,105 @@
 	// Edit View Dialog State
 	let isEditViewOpen = $state(false);
 	let editViewName = $state('');
+	let editViewSlug = $state('');
 	let editViewDescription = $state('');
 	let editViewIsDefault = $state(false);
+	let editViewError = $state<string | null>(null);
 	let isMenuOpen = $state(false);
 
 	function openEditViewDialog() {
 		editViewName = viewName;
+		editViewSlug = data.view.slug;
 		editViewDescription = viewDescription;
 		editViewIsDefault = isDefaultView;
+		editViewError = null;
 		isEditViewOpen = true;
 	}
 
-	function saveViewMeta() {
-		localStorage.setItem(`statusy_view_meta_${data.view.slug}`, JSON.stringify({
-			name: editViewName,
-			description: editViewDescription
-		}));
-		viewName = editViewName;
-		viewDescription = editViewDescription;
+	async function saveViewMeta() {
+		editViewError = null;
+		try {
+			await viewsApi.edit(data.view.slug, {
+				name: editViewName,
+				slug: editViewSlug,
+				description: editViewDescription,
+				is_default: editViewIsDefault
+			});
 
-		if (editViewIsDefault) {
-			localStorage.setItem('statusy_default_view_slug', data.view.slug);
-			isDefaultView = true;
-		} else {
-			if (localStorage.getItem('statusy_default_view_slug') === data.view.slug) {
-				localStorage.removeItem('statusy_default_view_slug');
+			// If slug changed, update localStorage keys
+			if (editViewSlug !== data.view.slug) {
+				const services = localStorage.getItem(`statusy_view_${data.view.slug}`);
+				if (services) {
+					localStorage.setItem(`statusy_view_${editViewSlug}`, services);
+					localStorage.removeItem(`statusy_view_${data.view.slug}`);
+				}
+				localStorage.setItem(`statusy_view_meta_${editViewSlug}`, JSON.stringify({
+					name: editViewName,
+					description: editViewDescription
+				}));
+				localStorage.removeItem(`statusy_view_meta_${data.view.slug}`);
+			} else {
+				localStorage.setItem(`statusy_view_meta_${data.view.slug}`, JSON.stringify({
+					name: editViewName,
+					description: editViewDescription
+				}));
 			}
-			isDefaultView = false;
+
+			viewName = editViewName;
+			viewDescription = editViewDescription;
+
+			if (editViewIsDefault) {
+				localStorage.setItem('statusy_default_view_slug', editViewSlug);
+				isDefaultView = true;
+			} else {
+				if (localStorage.getItem('statusy_default_view_slug') === data.view.slug) {
+					localStorage.removeItem('statusy_default_view_slug');
+				}
+				isDefaultView = false;
+			}
+
+			isEditViewOpen = false;
+
+			if (editViewSlug !== data.view.slug) {
+				void goto(`/views/${editViewSlug}`);
+			}
+		} catch (err: any) {
+			if (err.response) {
+				editViewError = await err.response.text();
+			} else {
+				editViewError = err.message || 'Failed to update view details';
+			}
 		}
-		isEditViewOpen = false;
 	}
 
 	// Delete View Dialog State
 	let isDeleteViewOpen = $state(false);
+	let deleteViewError = $state<string | null>(null);
 
 	function openDeleteViewDialog() {
+		deleteViewError = null;
 		isDeleteViewOpen = true;
 	}
 
-	function confirmDeleteView() {
-		localStorage.removeItem(`statusy_view_${data.view.slug}`);
-		localStorage.removeItem(`statusy_view_meta_${data.view.slug}`);
-		if (localStorage.getItem('statusy_default_view_slug') === data.view.slug) {
-			localStorage.removeItem('statusy_default_view_slug');
+	async function confirmDeleteView() {
+		deleteViewError = null;
+		try {
+			await viewsApi.delete(data.view.slug);
+
+			localStorage.removeItem(`statusy_view_${data.view.slug}`);
+			localStorage.removeItem(`statusy_view_meta_${data.view.slug}`);
+			if (localStorage.getItem('statusy_default_view_slug') === data.view.slug) {
+				localStorage.removeItem('statusy_default_view_slug');
+			}
+			isDeleteViewOpen = false;
+			void goto('/');
+		} catch (err: any) {
+			if (err.response) {
+				deleteViewError = await err.response.text();
+			} else {
+				deleteViewError = err.message || 'Failed to delete view';
+			}
 		}
-		isDeleteViewOpen = false;
-		void goto('/');
 	}
 </script>
 
@@ -486,12 +552,27 @@
 		</Dialog.Header>
 
 		<div class="grid gap-4 py-4">
+			{#if editViewError}
+				<div class="rounded-lg border border-red-500/20 bg-red-950/20 p-3 text-sm text-red-400">
+					{editViewError}
+				</div>
+			{/if}
+
 			<div class="grid gap-2">
 				<Label for="view-name" class="text-sm font-semibold text-zinc-300">Name</Label>
 				<Input
 					id="view-name"
 					bind:value={editViewName}
 					placeholder="Payment Gateways"
+					class="border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700"
+				/>
+			</div>
+			<div class="grid gap-2">
+				<Label for="view-slug" class="text-sm font-semibold text-zinc-300">Slug</Label>
+				<Input
+					id="view-slug"
+					bind:value={editViewSlug}
+					placeholder="payment-gateways"
 					class="border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700"
 				/>
 			</div>
@@ -550,6 +631,11 @@
 				<AlertTriangle class="size-5 text-red-500" />
 				Delete View?
 			</Dialog.Title>
+			{#if deleteViewError}
+				<div class="mt-2 rounded-lg border border-red-500/20 bg-red-950/20 p-3 text-sm text-red-400">
+					{deleteViewError}
+				</div>
+			{/if}
 			<Dialog.Description class="mt-2 text-zinc-400">
 				Are you sure you want to delete the view <span class="font-bold text-white">{viewName}</span>? This action will remove all configured services for this view and cannot be undone.
 			</Dialog.Description>

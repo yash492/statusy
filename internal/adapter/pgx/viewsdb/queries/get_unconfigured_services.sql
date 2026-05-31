@@ -15,6 +15,7 @@ WHERE
   AND (
     @search::TEXT = ''
     OR name ILIKE '%' || @search || '%'
+    OR slug ILIKE '%' || @search || '%'
   )
 ORDER BY
   name ASC

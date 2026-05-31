@@ -2,371 +2,118 @@
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import { onMount } from 'svelte';
+	import * as Select from '$lib/components/ui/select';
 
-	// Predefined pool of all possible services that can be added (excluding Stripe)
-	const ALL_AVAILABLE_SERVICES = [
-		{
-			id: 2,
-			name: 'OpenAI',
-			slug: 'openai',
-			provider: 'Incident.io',
-			status: 'degraded',
-			components: ['API Core', 'API Gateway', 'ChatGPT Web', 'ChatGPT Mobile'],
-			componentGroups: [
-				{ name: 'API', components: ['API Core', 'API Gateway'] },
-				{ name: 'ChatGPT', components: ['ChatGPT Web', 'ChatGPT Mobile'] }
-			],
-			lastChecked: '5 mins ago',
-			lastIncident: 'Degraded performance in ChatGPT response times',
-			history: [
-				...Array(10).fill('operational'),
-				'degraded',
-				'operational',
-				'operational',
-				'degraded',
-				'degraded'
-			]
-		},
-		{
-			id: 3,
-			name: 'Plivo',
-			slug: 'plivo',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['SMS API', 'SMS Gateway', 'Voice API', 'Voice Portal'],
-			componentGroups: [
-				{ name: 'SMS', components: ['SMS API', 'SMS Gateway'] },
-				{ name: 'Voice', components: ['Voice API', 'Voice Portal'] }
-			],
-			lastChecked: '1 min ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 4,
-			name: 'Twilio',
-			slug: 'twilio',
-			provider: 'Atlassian Statuspage',
-			status: 'major_outage',
-			components: ['WhatsApp Messaging', 'Console UI', 'Console API'],
-			componentGroups: [
-				{ name: 'Messaging', components: ['WhatsApp Messaging'] },
-				{ name: 'Console', components: ['Console UI', 'Console API'] }
-			],
-			lastChecked: '30s ago',
-			lastIncident: 'Major Outage on SMS delivery in EU regions',
-			history: [...Array(12).fill('operational'), 'operational', 'operational', 'major_outage']
-		},
-		{
-			id: 5,
-			name: 'GitHub',
-			slug: 'github',
-			provider: 'Atlassian Statuspage',
-			status: 'degraded',
-			components: ['Git Operations', 'GitHub Actions', 'Codespaces'],
-			componentGroups: [
-				{ name: 'Core', components: ['Git Operations'] },
-				{ name: 'Developer Tools', components: ['GitHub Actions', 'Codespaces'] }
-			],
-			lastChecked: '1 min ago',
-			lastIncident: 'Degraded performance on GitHub Actions runs',
-			history: [
-				...Array(11).fill('operational'),
-				'degraded',
-				'operational',
-				'operational',
-				'degraded'
-			]
-		},
-		{
-			id: 6,
-			name: 'Cloudflare',
-			slug: 'cloudflare',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['DNS Resolvers', 'CDN Edge', 'Workers API', 'Workers KV'],
-			componentGroups: [
-				{ name: 'Network', components: ['DNS Resolvers', 'CDN Edge'] },
-				{ name: 'Compute', components: ['Workers API', 'Workers KV'] }
-			],
-			lastChecked: '2 mins ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 7,
-			name: 'DigitalOcean',
-			slug: 'digitalocean',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['Droplets', 'App Platform', 'Volumes'],
-			componentGroups: [
-				{ name: 'Compute', components: ['Droplets', 'App Platform'] },
-				{ name: 'Storage', components: ['Volumes'] }
-			],
-			lastChecked: '4 mins ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 8,
-			name: 'Datadog',
-			slug: 'datadog',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['APM Tracing', 'Log Ingestion', 'Synthetics Tests'],
-			componentGroups: [
-				{ name: 'Observability', components: ['APM Tracing', 'Log Ingestion'] },
-				{ name: 'Testing', components: ['Synthetics Tests'] }
-			],
-			lastChecked: '1 min ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 9,
-			name: 'SolarWinds Observability',
-			slug: 'solarwindsobservability',
-			provider: 'Atlassian Statuspage',
-			status: 'major_outage',
-			components: ['Alerting', 'Ingest Pipeline'],
-			componentGroups: [
-				{ name: 'Alerting', components: ['Alerting'] },
-				{ name: 'Pipeline', components: ['Ingest Pipeline'] }
-			],
-			lastChecked: '1 min ago',
-			lastIncident: 'Ingest latency spike and processing delays',
-			history: [...Array(13).fill('operational'), 'degraded', 'major_outage']
-		},
-		{
-			id: 10,
-			name: 'Cursor',
-			slug: 'cursor',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['Copilot API', 'Backend Sync'],
-			componentGroups: [
-				{ name: 'Copilot', components: ['Copilot API'] },
-				{ name: 'Sync', components: ['Backend Sync'] }
-			],
-			lastChecked: '3 mins ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 11,
-			name: 'CircleCI',
-			slug: 'circleci',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['Build Runners', 'API'],
-			componentGroups: [
-				{ name: 'Build', components: ['Build Runners'] },
-				{ name: 'API', components: ['API'] }
-			],
-			lastChecked: '5 mins ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 12,
-			name: 'Claude',
-			slug: 'claude',
-			provider: 'Atlassian Statuspage',
-			status: 'degraded',
-			components: ['Claude API', 'Claude.ai Web App'],
-			componentGroups: [
-				{ name: 'API', components: ['Claude API'] },
-				{ name: 'Chat', components: ['Claude.ai Web App'] }
-			],
-			lastChecked: '2 mins ago',
-			lastIncident: 'Claude API rate limits returning elevated 5xx errors',
-			history: [...Array(14).fill('operational'), 'degraded']
-		},
-		{
-			id: 13,
-			name: 'New Relic',
-			slug: 'newrelic',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['Metrics Ingestion', 'User Interface'],
-			componentGroups: [
-				{ name: 'Ingestion', components: ['Metrics Ingestion'] },
-				{ name: 'UI', components: ['User Interface'] }
-			],
-			lastChecked: '4 mins ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 14,
-			name: 'HashiCorp',
-			slug: 'hashicorp',
-			provider: 'Incident.io',
-			status: 'operational',
-			components: ['HCP Portal', 'Vault Secrets'],
-			componentGroups: [
-				{ name: 'Platform', components: ['HCP Portal'] },
-				{ name: 'Secrets', components: ['Vault Secrets'] }
-			],
-			lastChecked: '3 mins ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 15,
-			name: 'Slack',
-			slug: 'slack',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['Messaging API', 'Huddle Calls', 'File Uploads'],
-			componentGroups: [
-				{ name: 'Messaging', components: ['Messaging API'] },
-				{ name: 'Media', components: ['Huddle Calls', 'File Uploads'] }
-			],
-			lastChecked: '1 min ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		},
-		{
-			id: 16,
-			name: 'Sentry',
-			slug: 'sentry',
-			provider: 'Atlassian Statuspage',
-			status: 'operational',
-			components: ['Sentry.io Cloud', 'Ingestion Pipeline', 'Web Frontend'],
-			componentGroups: [
-				{ name: 'Sentry Platform', components: ['Sentry.io Cloud', 'Web Frontend'] },
-				{ name: 'Data Ingestion', components: ['Ingestion Pipeline'] }
-			],
-			lastChecked: '2 mins ago',
-			lastIncident: null,
-			history: Array(15).fill('operational')
-		}
-	];
+	let { mode, slug, serviceSlug }: { mode: 'add' | 'edit'; slug: string; serviceSlug?: string } =
+		$props();
 
-	function getDefaultServicesForSlug(vSlug: string): any[] {
-		if (vSlug === 'payment-gateways' || vSlug === 'payments') {
-			return ALL_AVAILABLE_SERVICES.filter((s) => [2, 3, 4].includes(s.id));
-		} else if (vSlug === 'core-infrastructure' || vSlug === 'infra') {
-			return ALL_AVAILABLE_SERVICES.filter((s) => [5, 6, 7, 8, 9].includes(s.id));
-		} else if (vSlug === 'developer-tools' || vSlug === 'dev-tools') {
-			return ALL_AVAILABLE_SERVICES.filter((s) => [10, 11, 12, 13, 14, 15, 16].includes(s.id));
-		}
-		return [];
+	// Mock available services for select dropdown
+	let availableServices = $state([
+		{ id: 1, name: 'Stripe', slug: 'stripe' },
+		{ id: 2, name: 'GitHub', slug: 'github' },
+		{ id: 3, name: 'Cloudflare', slug: 'cloudflare' },
+		{ id: 4, name: 'PostgreSQL', slug: 'postgresql' }
+	]);
+
+	let selectedServiceIdStr = $state('');
+	let selectedServiceId = $derived(selectedServiceIdStr ? Number(selectedServiceIdStr) : null);
+	let selectOpen = $state(false);
+	let serviceSearchQuery = $state('');
+	let componentMode = $state<'all' | 'custom'>('all');
+	let errorMessage = $state<string | null>(null);
+
+	// Mock component structure for the selected service
+	let configuringService = $state({
+		service_name: 'Stripe',
+		grouped_components: [
+			{
+				id: 10,
+				name: 'API',
+				components: [
+					{ id: 101, name: 'v3 API' },
+					{ id: 102, name: 'Checkout' }
+				]
+			},
+			{
+				id: 11,
+				name: 'Dashboard',
+				components: [
+					{ id: 103, name: 'Billing Panel' },
+					{ id: 104, name: 'Developer Logs' }
+				]
+			}
+		],
+		ungrouped_components: [
+			{ id: 105, name: 'Webhooks' },
+			{ id: 106, name: 'Support Portal' }
+		]
+	});
+
+	let selectedComponentIds = $state<number[]>([101, 102, 103, 104, 105, 106]);
+	let selectedComponentGroupIds = $state<number[]>([10, 11]);
+
+	let activeService = $state({
+		name: 'Stripe'
+	});
+
+	const selectedServiceLabel = $derived.by(() => {
+		if (mode === 'edit') return activeService.name;
+		const id = Number(selectedServiceIdStr);
+		const service = availableServices.find((s) => s.id === id);
+		return service ? service.name : '';
+	});
+
+	function autofocus(node: HTMLElement) {
+		requestAnimationFrame(() => {
+			node.focus();
+		});
 	}
 
-	let { mode, slug, serviceSlug }: { mode: 'add' | 'edit'; slug: string; serviceSlug?: string } = $props();
+	function selectAll() {
+		selectedComponentGroupIds = configuringService.grouped_components.map((g) => g.id);
+		const ids = configuringService.grouped_components.flatMap((g) => g.components.map((c) => c.id));
+		ids.push(...configuringService.ungrouped_components.map((c) => c.id));
+		selectedComponentIds = ids;
+	}
 
-	let localServices = $state<any[]>([]);
-	let selectedServiceId = $state<number | null>(null);
-	let selectedComponents = $state<string[]>([]);
-	let componentMode = $state<'all' | 'custom'>('all');
-
-	// Active and original states for Edit mode
-	let activeService = $state<any | null>(null);
-	let originalService = $state<any | null>(null);
-
-	// Predefined pool of services not currently in the view (for Add mode)
-	const availableServicesToSelect = $derived(
-		ALL_AVAILABLE_SERVICES.filter((s) => !localServices.some((ls) => ls.slug === s.slug))
-	);
-
-	// Reactively derived service config based on current state
-	const configuringService = $derived(
-		mode === 'edit'
-			? originalService
-			: ALL_AVAILABLE_SERVICES.find((s) => s.id === selectedServiceId)
-	);
-
-	onMount(() => {
-		const stored = localStorage.getItem(`statusy_view_${slug}`);
-		if (stored) {
-			localServices = JSON.parse(stored);
+	function toggleComponent(componentId: number, groupId?: number) {
+		if (selectedComponentIds.includes(componentId)) {
+			selectedComponentIds = selectedComponentIds.filter((id) => id !== componentId);
+			if (groupId) {
+				selectedComponentGroupIds = selectedComponentGroupIds.filter((id) => id !== groupId);
+			}
 		} else {
-			localServices = getDefaultServicesForSlug(slug || '');
-		}
-
-		if (mode === 'edit' && serviceSlug) {
-			activeService = localServices.find((s) => s.slug === serviceSlug) || null;
-			if (activeService) {
-				selectedServiceId = activeService.id;
-				originalService = ALL_AVAILABLE_SERVICES.find((s) => s.slug === serviceSlug) || activeService;
-				selectedComponents = [...activeService.components];
-
-				const hasAll = originalService.components.every((c: string) =>
-					selectedComponents.includes(c)
-				);
-				if (hasAll && selectedComponents.length === originalService.components.length) {
-					componentMode = 'all';
-				} else {
-					componentMode = 'custom';
+			selectedComponentIds = [...selectedComponentIds, componentId];
+			if (groupId) {
+				const group = configuringService.grouped_components.find((g) => g.id === groupId);
+				if (group) {
+					const allChecked = group.components.every((c) => selectedComponentIds.includes(c.id));
+					if (allChecked) {
+						selectedComponentGroupIds = [...selectedComponentGroupIds, groupId];
+					}
 				}
 			}
 		}
-	});
-
-	function handleServiceSelectionChange(e: Event) {
-		const target = e.target as HTMLSelectElement;
-		const id = Number(target.value);
-		selectedServiceId = id;
-		componentMode = 'all';
-		const service = ALL_AVAILABLE_SERVICES.find((s) => s.id === id);
-		if (service) {
-			selectedComponents = [...service.components];
-		} else {
-			selectedComponents = [];
-		}
 	}
 
-	function toggleComponent(component: string) {
-		if (selectedComponents.includes(component)) {
-			selectedComponents = selectedComponents.filter((c) => c !== component);
-		} else {
-			selectedComponents = [...selectedComponents, component];
-		}
-	}
-
-	function toggleGroup(group: { name: string; components: string[] }) {
-		const allChecked = group.components.every((c: string) => selectedComponents.includes(c));
+	function toggleGroup(group: any) {
+		const allChecked = group.components.every((c: any) => selectedComponentIds.includes(c.id));
 		if (allChecked) {
-			selectedComponents = selectedComponents.filter((c: string) => !group.components.includes(c));
+			selectedComponentGroupIds = selectedComponentGroupIds.filter((id) => id !== group.id);
+			selectedComponentIds = selectedComponentIds.filter(
+				(id) => !group.components.some((c: any) => c.id === id)
+			);
 		} else {
-			const toAdd = group.components.filter((c: string) => !selectedComponents.includes(c));
-			selectedComponents = [...selectedComponents, ...toAdd];
+			selectedComponentGroupIds = [...selectedComponentGroupIds, group.id];
+			const newIds = group.components
+				.map((c: any) => c.id)
+				.filter((id: number) => !selectedComponentIds.includes(id));
+			selectedComponentIds = [...selectedComponentIds, ...newIds];
 		}
-	}
-
-	function selectAll(currentService: any) {
-		selectedComponents = [...currentService.components];
 	}
 
 	function saveService() {
-		if (mode === 'add') {
-			const serviceTemplate = ALL_AVAILABLE_SERVICES.find((s) => s.id === selectedServiceId);
-			if (serviceTemplate) {
-				const newService = {
-					...serviceTemplate,
-					components: [...selectedComponents]
-				};
-				const updated = [...localServices, newService];
-				localStorage.setItem(`statusy_view_${slug}`, JSON.stringify(updated));
-				void goto(`/views/${slug}`);
-			}
-		} else if (mode === 'edit' && serviceSlug) {
-			localServices = localServices.map((s) => {
-				if (s.slug === serviceSlug) {
-					return {
-						...s,
-						components: [...selectedComponents]
-					};
-				}
-				return s;
-			});
-			localStorage.setItem(`statusy_view_${slug}`, JSON.stringify(localServices));
-			void goto(`/views/${slug}`);
-		}
+		void goto(`/views/${slug}`);
 	}
 
 	function handleCancel() {
@@ -393,41 +140,58 @@
 
 	<!-- Form Card (Borderless & Background Merged) -->
 	<div class="max-w-xl">
+		{#if errorMessage}
+			<div class="mb-4 rounded-lg border border-red-500/20 bg-red-950/20 p-3 text-sm text-red-400">
+				{errorMessage}
+			</div>
+		{/if}
+
 		{#if mode === 'add' || activeService}
 			<div class="grid gap-6">
 				<!-- Service Name Input/Dropdown Selector -->
 				<div class="grid gap-2">
-					<Label for="service-select" class="text-sm font-semibold text-zinc-300">Service Name</Label>
+					<Label for="service-select" class="text-sm font-semibold text-zinc-300"
+						>Service Name</Label
+					>
 					{#if mode === 'add'}
-						<div class="relative">
-							<select
+						<Select.Root type="single" bind:value={selectedServiceIdStr} bind:open={selectOpen}>
+							<Select.Trigger
 								id="service-select"
-								value={selectedServiceId || ''}
-								onchange={handleServiceSelectionChange}
-								class="w-full cursor-pointer appearance-none rounded-lg bg-zinc-900/50 px-3 py-3 text-sm text-white outline-none focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700"
+								class="flex h-12 w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-white placeholder-zinc-500 transition-colors outline-none hover:bg-zinc-900/80 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700"
 							>
-								<option value="" disabled selected class="text-zinc-500">
-									Select a service to add...
-								</option>
-								{#each availableServicesToSelect as service}
-									<option value={service.id} class="bg-zinc-950 text-white">
-										{service.name}
-									</option>
-								{/each}
-							</select>
-							<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="2"
-									stroke="currentColor"
-									class="size-4"
-								>
-									<path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-								</svg>
-							</div>
-						</div>
+								{selectedServiceLabel || 'Select a service to add...'}
+							</Select.Trigger>
+							<Select.Content class="border border-zinc-800 bg-zinc-950 p-2 text-white">
+								<div class="px-2 py-1.5">
+									<input
+										type="text"
+										placeholder="Search service..."
+										use:autofocus
+										bind:value={serviceSearchQuery}
+										class="w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-xs text-white placeholder-zinc-500 outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700"
+										onkeydown={(e) => {
+											if (e.key === 'Escape' || e.key === 'Tab') return;
+											e.stopPropagation();
+										}}
+									/>
+								</div>
+								<div class="my-1 h-px bg-zinc-800/60"></div>
+								<div class="max-h-[200px] overflow-y-auto">
+									{#if availableServices.length === 0}
+										<div class="px-4 py-3 text-xs text-zinc-500">No services found.</div>
+									{/if}
+									{#each availableServices as service}
+										<Select.Item
+											value={String(service.id)}
+											label={service.name}
+											class="cursor-pointer px-4 py-2.5 text-zinc-300 focus:bg-zinc-900 focus:text-white"
+										>
+											{service.name}
+										</Select.Item>
+									{/each}
+								</div>
+							</Select.Content>
+						</Select.Root>
 					{:else if activeService}
 						<div class="rounded-lg bg-zinc-900/50 px-4 py-3 text-sm font-medium text-zinc-200">
 							{activeService.name}
@@ -441,7 +205,9 @@
 						<Label class="text-sm font-semibold text-zinc-300">Monitored Components</Label>
 
 						<!-- Custom Radio Buttons and Component checklist in border container -->
-						<div class="flex flex-col gap-4 rounded-lg border border-zinc-800/40 bg-zinc-900/20 p-4">
+						<div
+							class="flex flex-col gap-4 rounded-lg border border-zinc-800/40 bg-zinc-900/20 p-4"
+						>
 							<label class="group flex cursor-pointer items-start gap-3">
 								<input
 									type="radio"
@@ -450,7 +216,7 @@
 									checked={componentMode === 'all'}
 									onchange={() => {
 										componentMode = 'all';
-										selectAll(configuringService);
+										selectAll();
 									}}
 									class="sr-only"
 								/>
@@ -465,7 +231,9 @@
 									{/if}
 								</div>
 								<div class="flex flex-col">
-									<span class="text-sm font-medium text-zinc-200 transition-colors group-hover:text-white">
+									<span
+										class="text-sm font-medium text-zinc-200 transition-colors group-hover:text-white"
+									>
 										Monitor all components
 									</span>
 									<span class="mt-0.5 text-xs text-zinc-500">
@@ -496,7 +264,9 @@
 									{/if}
 								</div>
 								<div class="flex flex-col">
-									<span class="text-sm font-medium text-zinc-200 transition-colors group-hover:text-white">
+									<span
+										class="text-sm font-medium text-zinc-200 transition-colors group-hover:text-white"
+									>
 										Customize component selection
 									</span>
 									<span class="mt-0.5 text-xs text-zinc-500">
@@ -507,12 +277,12 @@
 
 							{#if componentMode === 'custom'}
 								<div class="ml-7 grid max-h-72 grid-cols-1 gap-3 overflow-y-auto pr-1">
-									{#each configuringService.componentGroups as group}
-										{@const groupChecked = group.components.every((c: string) =>
-											selectedComponents.includes(c)
+									{#each configuringService.grouped_components as group}
+										{@const groupChecked = group.components.every((c) =>
+											selectedComponentIds.includes(c.id)
 										)}
 										{@const groupSomeChecked =
-											group.components.some((c: string) => selectedComponents.includes(c)) &&
+											group.components.some((c) => selectedComponentIds.includes(c.id)) &&
 											!groupChecked}
 
 										<div class="py-2">
@@ -554,10 +324,10 @@
 											<!-- Child Components -->
 											<div class="mt-2 ml-7 grid gap-2 pl-3">
 												{#each group.components as component}
-													{@const componentChecked = selectedComponents.includes(component)}
+													{@const componentChecked = selectedComponentIds.includes(component.id)}
 													<button
 														type="button"
-														onclick={() => toggleComponent(component)}
+														onclick={() => toggleComponent(component.id, group.id)}
 														class="flex cursor-pointer items-center gap-3 text-left transition-all hover:text-zinc-200 {componentChecked
 															? 'text-zinc-300'
 															: 'text-zinc-500'}"
@@ -584,12 +354,54 @@
 																</svg>
 															{/if}
 														</div>
-														<span class="text-xs font-medium">{component}</span>
+														<span class="text-xs font-medium">{component.name}</span>
 													</button>
 												{/each}
 											</div>
 										</div>
 									{/each}
+
+									{#if configuringService.ungrouped_components.length > 0}
+										<div class="py-2">
+											<span class="text-sm font-bold text-zinc-200">General Components</span>
+											<div class="mt-2 ml-7 grid gap-2 pl-3">
+												{#each configuringService.ungrouped_components as component}
+													{@const componentChecked = selectedComponentIds.includes(component.id)}
+													<button
+														type="button"
+														onclick={() => toggleComponent(component.id)}
+														class="flex cursor-pointer items-center gap-3 text-left transition-all hover:text-zinc-200 {componentChecked
+															? 'text-zinc-300'
+															: 'text-zinc-500'}"
+													>
+														<div
+															class="flex size-3.5 shrink-0 items-center justify-center rounded transition-all {componentChecked
+																? 'bg-emerald-500/80 text-zinc-950'
+																: 'bg-zinc-900'}"
+														>
+															{#if componentChecked}
+																<svg
+																	xmlns="http://www.w3.org/2000/svg"
+																	fill="none"
+																	viewBox="0 0 24 24"
+																	stroke-width="3.5"
+																	stroke="currentColor"
+																	class="size-2"
+																>
+																	<path
+																		stroke-linecap="round"
+																		stroke-linejoin="round"
+																		d="m4.5 12.75 6 6 9-13.5"
+																	/>
+																</svg>
+															{/if}
+														</div>
+														<span class="text-xs font-medium">{component.name}</span>
+													</button>
+												{/each}
+											</div>
+										</div>
+									{/if}
 								</div>
 							{/if}
 						</div>
@@ -608,7 +420,8 @@
 				</Button>
 				<Button
 					class="cursor-pointer px-6"
-					disabled={(mode === 'add' && !selectedServiceId) || selectedComponents.length === 0}
+					disabled={(mode === 'add' && !selectedServiceId) ||
+						(componentMode === 'custom' && selectedComponentIds.length === 0)}
 					onclick={saveService}
 				>
 					{mode === 'add' ? 'Add Service' : 'Save Changes'}
