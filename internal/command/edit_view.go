@@ -9,9 +9,8 @@ import (
 )
 
 type EditViewParams struct {
-	CurrentSlug string
+	PublicID    string
 	Name        string
-	Slug        string
 	Description string
 	IsDefault   bool
 }
@@ -29,7 +28,7 @@ func NewEditViewCmd(lg *slog.Logger, viewsRepo views.Repository) EditViewCmd {
 }
 
 func (c EditViewCmd) Execute(ctx context.Context, params EditViewParams) (views.View, error) {
-	view, err := c.viewsRepo.GetBySlug(ctx, params.CurrentSlug)
+	view, err := c.viewsRepo.GetByPublicID(ctx, params.PublicID)
 	if err != nil {
 		return views.View{}, err
 	}
@@ -48,7 +47,6 @@ func (c EditViewCmd) Execute(ctx context.Context, params EditViewParams) (views.
 	}
 
 	view.Name = params.Name
-	view.Slug = params.Slug
 	view.Description = params.Description
 	view.IsDefault = params.IsDefault
 

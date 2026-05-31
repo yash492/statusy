@@ -32,7 +32,6 @@ func (c GetOrCreateDefaultViewCmd) Execute(ctx context.Context) (views.View, err
 		// No default view exists — seed one.
 		view, err = c.viewsRepo.Save(ctx, views.View{
 			Name:        "Default View",
-			Slug:        "default-view",
 			Description: "Default monitoring dashboard",
 			IsDefault:   true,
 			Services:    []views.ViewServiceStatus{},

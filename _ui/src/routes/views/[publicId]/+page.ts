@@ -13,7 +13,7 @@ export interface ServiceInfo {
 }
 
 export interface ViewData {
-	slug: string;
+	public_id: string;
 	name: string;
 	description: string;
 	services: ServiceInfo[];
@@ -22,13 +22,13 @@ export interface ViewData {
 
 
 export const load: PageLoad = async ({ params }) => {
-	const slug = params.slug;
+	const publicId = params.publicId;
 
 	return {
 		view: {
 			id: 1,
 			name: 'Default View',
-			slug: slug || 'default-view',
+			public_id: publicId || 'default-view',
 			description: 'Default status page aggregator view',
 			is_default: true,
 			services: [

@@ -1,14 +1,14 @@
 INSERT INTO
   views (
     name,
-    slug,
+    public_id,
     description,
     is_default
   )
 VALUES
   (
     @name,
-    @slug,
+    @public_id,
     @description,
     @is_default
   )

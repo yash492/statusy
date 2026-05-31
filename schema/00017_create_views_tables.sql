@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS views (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    slug TEXT NOT NULL UNIQUE,
+    public_id TEXT NOT NULL UNIQUE,
     description TEXT NOT NULL DEFAULT '',
     is_default BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

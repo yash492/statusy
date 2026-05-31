@@ -1,7 +1,7 @@
 SELECT
   id,
   name,
-  slug,
+  public_id,
   description,
   is_default,
   created_at,
@@ -9,6 +9,6 @@ SELECT
 FROM
   views
 WHERE
-  slug = @slug
+  public_id = @public_id
   AND deleted_at IS NULL
 LIMIT 1;

@@ -1,7 +1,7 @@
 SELECT
   id,
   name,
-  slug,
+  public_id,
   description,
   is_default,
   created_at,

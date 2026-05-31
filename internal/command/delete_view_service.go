@@ -22,17 +22,17 @@ func NewDeleteViewServiceCmd(logger *slog.Logger, viewsRepo views.Repository) De
 }
 
 type DeleteViewServiceParams struct {
-	ViewSlug  string
-	ServiceID int
+	ViewPublicID string
+	ServiceID    int
 }
 
 func (c DeleteViewServiceCmd) Execute(ctx context.Context, params DeleteViewServiceParams) error {
-	slug := strings.TrimSpace(params.ViewSlug)
-	if slug == "" {
-		return apperrors.InvalidInputError("slug cannot be empty", nil)
+	publicID := strings.TrimSpace(params.ViewPublicID)
+	if publicID == "" {
+		return apperrors.InvalidInputError("public_id cannot be empty", nil)
 	}
 
-	view, err := c.viewsRepo.GetBySlug(ctx, slug)
+	view, err := c.viewsRepo.GetByPublicID(ctx, publicID)
 	if err != nil {
 		return err
 	}

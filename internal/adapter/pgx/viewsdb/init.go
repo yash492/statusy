@@ -32,7 +32,7 @@ func NewPostgresViewsRepository(
 type viewDto struct {
 	ID          uint       `db:"id"`
 	Name        string     `db:"name"`
-	Slug        string     `db:"slug"`
+	PublicID    string     `db:"public_id"`
 	Description string     `db:"description"`
 	IsDefault   bool       `db:"is_default"`
 	CreatedAt   time.Time  `db:"created_at"`

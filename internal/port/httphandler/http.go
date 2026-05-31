@@ -183,7 +183,7 @@ func (h Handler) GetDefaultView(ctx context.Context, request api.GetDefaultViewR
 	return api.GetDefaultView200JSONResponse{
 		Id:          int(view.ID),
 		Name:        view.Name,
-		Slug:        view.Slug,
+		PublicId:    view.PublicID,
 		Description: view.Description,
 		IsDefault:   view.IsDefault,
 		Services:    services,
@@ -207,7 +207,7 @@ func (h Handler) StatuspageBySlug(ctx context.Context, request api.StatuspageByS
 	}, nil
 }
 
-// (GET /views/{viewSlug}/unconfigured-services)
+// (GET /views/{public_id}/unconfigured-services)
 func (h Handler) GetUnconfiguredServices(ctx context.Context, request api.GetUnconfiguredServicesRequestObject) (api.GetUnconfiguredServicesResponseObject, error) {
 	search := ""
 	if request.Params.Search != nil {
@@ -215,8 +215,8 @@ func (h Handler) GetUnconfiguredServices(ctx context.Context, request api.GetUnc
 	}
 
 	result, err := h.GetUnconfiguredServicesCmd.Execute(ctx, command.GetUnconfiguredServicesParams{
-		ViewSlug: request.ViewSlug,
-		Search:   search,
+		ViewPublicID: request.PublicId,
+		Search:       search,
 	})
 	if err != nil {
 		return nil, err
@@ -280,7 +280,7 @@ func (h Handler) GetServiceComponents(ctx context.Context, request api.GetServic
 	}, nil
 }
 
-// (POST /views/{viewSlug}/services)
+// (POST /views/{public_id}/services)
 func (h Handler) AddViewService(ctx context.Context, request api.AddViewServiceRequestObject) (api.AddViewServiceResponseObject, error) {
 	componentIDs := []int{}
 	if request.Body.ComponentIds != nil {
@@ -293,7 +293,7 @@ func (h Handler) AddViewService(ctx context.Context, request api.AddViewServiceR
 	}
 
 	result, err := h.AddViewServiceCmd.Execute(ctx, command.AddViewServiceParams{
-		ViewSlug:             request.ViewSlug,
+		ViewPublicID:         request.PublicId,
 		ServiceID:            request.Body.ServiceId,
 		IncludeAllComponents: request.Body.IncludeAllComponents,
 		ComponentIDs:         componentIDs,
@@ -310,7 +310,7 @@ func (h Handler) AddViewService(ctx context.Context, request api.AddViewServiceR
 	}, nil
 }
 
-// (PUT /views/{viewSlug}/services/{serviceId})
+// (PUT /views/{public_id}/services/{serviceId})
 func (h Handler) EditViewService(ctx context.Context, request api.EditViewServiceRequestObject) (api.EditViewServiceResponseObject, error) {
 	componentIDs := []int{}
 	if request.Body.ComponentIds != nil {
@@ -323,7 +323,7 @@ func (h Handler) EditViewService(ctx context.Context, request api.EditViewServic
 	}
 
 	result, err := h.EditViewServiceCmd.Execute(ctx, command.EditViewServiceParams{
-		ViewSlug:             request.ViewSlug,
+		ViewPublicID:         request.PublicId,
 		ServiceID:            request.ServiceId,
 		IncludeAllComponents: request.Body.IncludeAllComponents,
 		ComponentIDs:         componentIDs,
@@ -340,11 +340,11 @@ func (h Handler) EditViewService(ctx context.Context, request api.EditViewServic
 	}, nil
 }
 
-// (DELETE /views/{viewSlug}/services/{serviceId})
+// (DELETE /views/{public_id}/services/{serviceId})
 func (h Handler) DeleteViewService(ctx context.Context, request api.DeleteViewServiceRequestObject) (api.DeleteViewServiceResponseObject, error) {
 	err := h.DeleteViewServiceCmd.Execute(ctx, command.DeleteViewServiceParams{
-		ViewSlug:  request.ViewSlug,
-		ServiceID: request.ServiceId,
+		ViewPublicID: request.PublicId,
+		ServiceID:    request.ServiceId,
 	})
 	if err != nil {
 		return nil, err
@@ -353,12 +353,11 @@ func (h Handler) DeleteViewService(ctx context.Context, request api.DeleteViewSe
 	return api.DeleteViewService204Response{}, nil
 }
 
-// (PUT /views/{viewSlug})
+// (PUT /views/{public_id})
 func (h Handler) EditView(ctx context.Context, request api.EditViewRequestObject) (api.EditViewResponseObject, error) {
 	result, err := h.EditViewCmd.Execute(ctx, command.EditViewParams{
-		CurrentSlug: request.ViewSlug,
+		PublicID:    request.PublicId,
 		Name:        request.Body.Name,
-		Slug:        request.Body.Slug,
 		Description: request.Body.Description,
 		IsDefault:   request.Body.IsDefault,
 	})
@@ -381,17 +380,17 @@ func (h Handler) EditView(ctx context.Context, request api.EditViewRequestObject
 	return api.EditView200JSONResponse{
 		Id:          int(result.ID),
 		Name:        result.Name,
-		Slug:        result.Slug,
+		PublicId:    result.PublicID,
 		Description: result.Description,
 		IsDefault:   result.IsDefault,
 		Services:    services,
 	}, nil
 }
 
-// (DELETE /views/{viewSlug})
+// (DELETE /views/{public_id})
 func (h Handler) DeleteView(ctx context.Context, request api.DeleteViewRequestObject) (api.DeleteViewResponseObject, error) {
 	err := h.DeleteViewCmd.Execute(ctx, command.DeleteViewParams{
-		Slug: request.ViewSlug,
+		PublicID: request.PublicId,
 	})
 	if err != nil {
 		return nil, err

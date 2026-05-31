@@ -9,7 +9,7 @@ import (
 )
 
 type DeleteViewParams struct {
-	Slug string
+	PublicID string
 }
 
 type DeleteViewCmd struct {
@@ -25,7 +25,7 @@ func NewDeleteViewCmd(lg *slog.Logger, viewsRepo views.Repository) DeleteViewCmd
 }
 
 func (c DeleteViewCmd) Execute(ctx context.Context, params DeleteViewParams) error {
-	view, err := c.viewsRepo.GetBySlug(ctx, params.Slug)
+	view, err := c.viewsRepo.GetByPublicID(ctx, params.PublicID)
 	if err != nil {
 		return err
 	}

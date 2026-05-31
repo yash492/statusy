@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { ServiceForm } from '$lib/derivedcomponents';
 
-	const slug = $derived(page.params.slug ?? '');
+	const publicId = $derived(page.params.publicId ?? '');
 </script>
 
-<ServiceForm mode="add" {slug} />
+<ServiceForm mode="add" {publicId} />

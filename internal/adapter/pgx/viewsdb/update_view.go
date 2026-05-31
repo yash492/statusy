@@ -37,7 +37,6 @@ func (r *PostgresViewsRepository) UpdateView(ctx context.Context, view views.Vie
 	rows, err := tx.Query(ctx, updateViewQuery, pgx.NamedArgs{
 		"id":          view.ID,
 		"name":        view.Name,
-		"slug":        view.Slug,
 		"description": view.Description,
 		"is_default":  view.IsDefault,
 	})
@@ -66,7 +65,7 @@ func (r *PostgresViewsRepository) UpdateView(ctx context.Context, view views.Vie
 	return views.View{
 		ID:          dto.ID,
 		Name:        dto.Name,
-		Slug:        dto.Slug,
+		PublicID:    dto.PublicID,
 		Description: dto.Description,
 		IsDefault:   dto.IsDefault,
 		Services:    servicesList,

@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/yash492/statusy/internal/common/apperrors"
+	"github.com/yash492/statusy/internal/common/snowflake"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/views"
 )
@@ -21,8 +22,8 @@ var getViewServicesQuery string
 //go:embed queries/insert_views.sql
 var insertViewQuery string
 
-//go:embed queries/get_view_by_slug.sql
-var getViewBySlugQuery string
+//go:embed queries/get_view_by_public_id.sql
+var getViewByPublicIDQuery string
 
 //go:embed queries/get_unconfigured_services.sql
 var getUnconfiguredServicesQuery string
@@ -52,7 +53,7 @@ func (r *PostgresViewsRepository) GetDefault(ctx context.Context) (views.View, e
 	return views.View{
 		ID:          dto.ID,
 		Name:        dto.Name,
-		Slug:        dto.Slug,
+		PublicID:    dto.PublicID,
 		Description: dto.Description,
 		IsDefault:   dto.IsDefault,
 		Services:    services,
@@ -62,28 +63,32 @@ func (r *PostgresViewsRepository) GetDefault(ctx context.Context) (views.View, e
 }
 
 func (r *PostgresViewsRepository) Save(ctx context.Context, view views.View) (views.View, error) {
+	if view.PublicID == "" {
+		view.PublicID = snowflake.Generate()
+	}
+
 	rows, err := r.writeDB.Query(ctx, insertViewQuery, pgx.NamedArgs{
-		"name":        view.Name,
-		"slug":        view.Slug,
+		"name":      view.Name,
+		"public_id": view.PublicID,
 		"description": view.Description,
 		"is_default":  view.IsDefault,
 	})
 	if err != nil {
-		r.lg.ErrorContext(ctx, "error inserting view", slog.String("slug", view.Slug), slog.Any("err", err))
+		r.lg.ErrorContext(ctx, "error inserting view", slog.String("public_id", view.PublicID), slog.Any("err", err))
 		return views.View{}, apperrors.InternalError("failed to insert view", err)
 	}
 	defer rows.Close()
 
 	dto, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[viewDto])
 	if err != nil {
-		r.lg.ErrorContext(ctx, "error collecting inserted view row", slog.String("slug", view.Slug), slog.Any("err", err))
+		r.lg.ErrorContext(ctx, "error collecting inserted view row", slog.String("public_id", view.PublicID), slog.Any("err", err))
 		return views.View{}, apperrors.InternalError("failed to collect inserted view row", err)
 	}
 
 	return views.View{
 		ID:          dto.ID,
 		Name:        dto.Name,
-		Slug:        dto.Slug,
+		PublicID:    dto.PublicID,
 		Description: dto.Description,
 		IsDefault:   dto.IsDefault,
 		Services:    []views.ViewServiceStatus{},
@@ -120,11 +125,11 @@ func (r *PostgresViewsRepository) GetServicesByViewID(ctx context.Context, viewI
 	return result, nil
 }
 
-func (r *PostgresViewsRepository) GetBySlug(ctx context.Context, slug string) (views.View, error) {
-	rows, err := r.readDB.Query(ctx, getViewBySlugQuery, pgx.NamedArgs{"slug": slug})
+func (r *PostgresViewsRepository) GetByPublicID(ctx context.Context, publicID string) (views.View, error) {
+	rows, err := r.readDB.Query(ctx, getViewByPublicIDQuery, pgx.NamedArgs{"public_id": publicID})
 	if err != nil {
-		r.lg.ErrorContext(ctx, "error querying view by slug", slog.String("slug", slug), slog.Any("err", err))
-		return views.View{}, apperrors.InternalError("failed to query view by slug", err)
+		r.lg.ErrorContext(ctx, "error querying view by public_id", slog.String("public_id", publicID), slog.Any("err", err))
+		return views.View{}, apperrors.InternalError("failed to query view by public_id", err)
 	}
 	defer rows.Close()
 
@@ -133,8 +138,8 @@ func (r *PostgresViewsRepository) GetBySlug(ctx context.Context, slug string) (v
 		if errors.Is(err, pgx.ErrNoRows) {
 			return views.View{}, apperrors.NotFoundError("view not found", err)
 		}
-		r.lg.ErrorContext(ctx, "error collecting view row by slug", slog.String("slug", slug), slog.Any("err", err))
-		return views.View{}, apperrors.InternalError("failed to collect view row by slug", err)
+		r.lg.ErrorContext(ctx, "error collecting view row by public_id", slog.String("public_id", publicID), slog.Any("err", err))
+		return views.View{}, apperrors.InternalError("failed to collect view row by public_id", err)
 	}
 
 	servicesList, err := r.GetServicesByViewID(ctx, dto.ID)
@@ -145,7 +150,7 @@ func (r *PostgresViewsRepository) GetBySlug(ctx context.Context, slug string) (v
 	return views.View{
 		ID:          dto.ID,
 		Name:        dto.Name,
-		Slug:        dto.Slug,
+		PublicID:    dto.PublicID,
 		Description: dto.Description,
 		IsDefault:   dto.IsDefault,
 		Services:    servicesList,

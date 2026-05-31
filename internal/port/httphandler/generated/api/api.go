@@ -75,9 +75,6 @@ type EditViewRequest struct {
 
 	// Name Display name of the view
 	Name string `json:"name"`
-
-	// Slug URL-friendly slug for the view
-	Slug string `json:"slug"`
 }
 
 // EditViewServiceRequest defines model for EditViewServiceRequest.
@@ -204,11 +201,11 @@ type View struct {
 	// Name Display name of the view
 	Name string `json:"name"`
 
+	// PublicId Unique public identifier (Snowflake ID) for the view
+	PublicId string `json:"public_id"`
+
 	// Services Configuration of services in this view
 	Services []ViewServiceStatus `json:"services"`
-
-	// Slug URL-friendly slug for the view
-	Slug string `json:"slug"`
 }
 
 // ViewServiceResponse defines model for ViewServiceResponse.
@@ -310,23 +307,23 @@ type ServerInterface interface {
 	// (POST /api/views/default)
 	GetDefaultView(w http.ResponseWriter, r *http.Request)
 
-	// (DELETE /api/views/{viewSlug})
-	DeleteView(w http.ResponseWriter, r *http.Request, viewSlug string)
+	// (DELETE /api/views/{publicId})
+	DeleteView(w http.ResponseWriter, r *http.Request, publicId string)
 
-	// (PUT /api/views/{viewSlug})
-	EditView(w http.ResponseWriter, r *http.Request, viewSlug string)
+	// (PUT /api/views/{publicId})
+	EditView(w http.ResponseWriter, r *http.Request, publicId string)
 
-	// (POST /api/views/{viewSlug}/services)
-	AddViewService(w http.ResponseWriter, r *http.Request, viewSlug string)
+	// (POST /api/views/{publicId}/services)
+	AddViewService(w http.ResponseWriter, r *http.Request, publicId string)
 
-	// (DELETE /api/views/{viewSlug}/services/{serviceId})
-	DeleteViewService(w http.ResponseWriter, r *http.Request, viewSlug string, serviceId int)
+	// (DELETE /api/views/{publicId}/services/{serviceId})
+	DeleteViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int)
 
-	// (PUT /api/views/{viewSlug}/services/{serviceId})
-	EditViewService(w http.ResponseWriter, r *http.Request, viewSlug string, serviceId int)
+	// (PUT /api/views/{publicId}/services/{serviceId})
+	EditViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int)
 
-	// (GET /api/views/{viewSlug}/unconfigured-services)
-	GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string, params GetUnconfiguredServicesParams)
+	// (GET /api/views/{publicId}/unconfigured-services)
+	GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, publicId string, params GetUnconfiguredServicesParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -373,33 +370,33 @@ func (_ Unimplemented) GetDefaultView(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (DELETE /api/views/{viewSlug})
-func (_ Unimplemented) DeleteView(w http.ResponseWriter, r *http.Request, viewSlug string) {
+// (DELETE /api/views/{publicId})
+func (_ Unimplemented) DeleteView(w http.ResponseWriter, r *http.Request, publicId string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (PUT /api/views/{viewSlug})
-func (_ Unimplemented) EditView(w http.ResponseWriter, r *http.Request, viewSlug string) {
+// (PUT /api/views/{publicId})
+func (_ Unimplemented) EditView(w http.ResponseWriter, r *http.Request, publicId string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (POST /api/views/{viewSlug}/services)
-func (_ Unimplemented) AddViewService(w http.ResponseWriter, r *http.Request, viewSlug string) {
+// (POST /api/views/{publicId}/services)
+func (_ Unimplemented) AddViewService(w http.ResponseWriter, r *http.Request, publicId string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (DELETE /api/views/{viewSlug}/services/{serviceId})
-func (_ Unimplemented) DeleteViewService(w http.ResponseWriter, r *http.Request, viewSlug string, serviceId int) {
+// (DELETE /api/views/{publicId}/services/{serviceId})
+func (_ Unimplemented) DeleteViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (PUT /api/views/{viewSlug}/services/{serviceId})
-func (_ Unimplemented) EditViewService(w http.ResponseWriter, r *http.Request, viewSlug string, serviceId int) {
+// (PUT /api/views/{publicId}/services/{serviceId})
+func (_ Unimplemented) EditViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /api/views/{viewSlug}/unconfigured-services)
-func (_ Unimplemented) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string, params GetUnconfiguredServicesParams) {
+// (GET /api/views/{publicId}/unconfigured-services)
+func (_ Unimplemented) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, publicId string, params GetUnconfiguredServicesParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -646,17 +643,17 @@ func (siw *ServerInterfaceWrapper) DeleteView(w http.ResponseWriter, r *http.Req
 
 	var err error
 
-	// ------------- Path parameter "viewSlug" -------------
-	var viewSlug string
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteView(w, r, viewSlug)
+		siw.Handler.DeleteView(w, r, publicId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -671,17 +668,17 @@ func (siw *ServerInterfaceWrapper) EditView(w http.ResponseWriter, r *http.Reque
 
 	var err error
 
-	// ------------- Path parameter "viewSlug" -------------
-	var viewSlug string
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.EditView(w, r, viewSlug)
+		siw.Handler.EditView(w, r, publicId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -696,17 +693,17 @@ func (siw *ServerInterfaceWrapper) AddViewService(w http.ResponseWriter, r *http
 
 	var err error
 
-	// ------------- Path parameter "viewSlug" -------------
-	var viewSlug string
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.AddViewService(w, r, viewSlug)
+		siw.Handler.AddViewService(w, r, publicId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -721,12 +718,12 @@ func (siw *ServerInterfaceWrapper) DeleteViewService(w http.ResponseWriter, r *h
 
 	var err error
 
-	// ------------- Path parameter "viewSlug" -------------
-	var viewSlug string
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
 		return
 	}
 
@@ -740,7 +737,7 @@ func (siw *ServerInterfaceWrapper) DeleteViewService(w http.ResponseWriter, r *h
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteViewService(w, r, viewSlug, serviceId)
+		siw.Handler.DeleteViewService(w, r, publicId, serviceId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -755,12 +752,12 @@ func (siw *ServerInterfaceWrapper) EditViewService(w http.ResponseWriter, r *htt
 
 	var err error
 
-	// ------------- Path parameter "viewSlug" -------------
-	var viewSlug string
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
 		return
 	}
 
@@ -774,7 +771,7 @@ func (siw *ServerInterfaceWrapper) EditViewService(w http.ResponseWriter, r *htt
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.EditViewService(w, r, viewSlug, serviceId)
+		siw.Handler.EditViewService(w, r, publicId, serviceId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -789,12 +786,12 @@ func (siw *ServerInterfaceWrapper) GetUnconfiguredServices(w http.ResponseWriter
 
 	var err error
 
-	// ------------- Path parameter "viewSlug" -------------
-	var viewSlug string
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "viewSlug", chi.URLParam(r, "viewSlug"), &viewSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "viewSlug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
 		return
 	}
 
@@ -810,7 +807,7 @@ func (siw *ServerInterfaceWrapper) GetUnconfiguredServices(w http.ResponseWriter
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetUnconfiguredServices(w, r, viewSlug, params)
+		siw.Handler.GetUnconfiguredServices(w, r, publicId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -958,22 +955,22 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/api/views/default", wrapper.GetDefaultView)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/api/views/{viewSlug}", wrapper.DeleteView)
+		r.Delete(options.BaseURL+"/api/views/{publicId}", wrapper.DeleteView)
 	})
 	r.Group(func(r chi.Router) {
-		r.Put(options.BaseURL+"/api/views/{viewSlug}", wrapper.EditView)
+		r.Put(options.BaseURL+"/api/views/{publicId}", wrapper.EditView)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/api/views/{viewSlug}/services", wrapper.AddViewService)
+		r.Post(options.BaseURL+"/api/views/{publicId}/services", wrapper.AddViewService)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/api/views/{viewSlug}/services/{serviceId}", wrapper.DeleteViewService)
+		r.Delete(options.BaseURL+"/api/views/{publicId}/services/{serviceId}", wrapper.DeleteViewService)
 	})
 	r.Group(func(r chi.Router) {
-		r.Put(options.BaseURL+"/api/views/{viewSlug}/services/{serviceId}", wrapper.EditViewService)
+		r.Put(options.BaseURL+"/api/views/{publicId}/services/{serviceId}", wrapper.EditViewService)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/views/{viewSlug}/unconfigured-services", wrapper.GetUnconfiguredServices)
+		r.Get(options.BaseURL+"/api/views/{publicId}/unconfigured-services", wrapper.GetUnconfiguredServices)
 	})
 
 	return r
@@ -1617,7 +1614,7 @@ func (response GetDefaultView500JSONResponse) VisitGetDefaultViewResponse(w http
 }
 
 type DeleteViewRequestObject struct {
-	ViewSlug string `json:"viewSlug"`
+	PublicId string `json:"publicId"`
 }
 
 type DeleteViewResponseObject interface {
@@ -1689,7 +1686,7 @@ func (response DeleteView500JSONResponse) VisitDeleteViewResponse(w http.Respons
 }
 
 type EditViewRequestObject struct {
-	ViewSlug string `json:"viewSlug"`
+	PublicId string `json:"publicId"`
 	Body     *EditViewJSONRequestBody
 }
 
@@ -1768,7 +1765,7 @@ func (response EditView500JSONResponse) VisitEditViewResponse(w http.ResponseWri
 }
 
 type AddViewServiceRequestObject struct {
-	ViewSlug string `json:"viewSlug"`
+	PublicId string `json:"publicId"`
 	Body     *AddViewServiceJSONRequestBody
 }
 
@@ -1847,7 +1844,7 @@ func (response AddViewService500JSONResponse) VisitAddViewServiceResponse(w http
 }
 
 type DeleteViewServiceRequestObject struct {
-	ViewSlug  string `json:"viewSlug"`
+	PublicId  string `json:"publicId"`
 	ServiceId int    `json:"serviceId"`
 }
 
@@ -1920,7 +1917,7 @@ func (response DeleteViewService500JSONResponse) VisitDeleteViewServiceResponse(
 }
 
 type EditViewServiceRequestObject struct {
-	ViewSlug  string `json:"viewSlug"`
+	PublicId  string `json:"publicId"`
 	ServiceId int    `json:"serviceId"`
 	Body      *EditViewServiceJSONRequestBody
 }
@@ -2000,7 +1997,7 @@ func (response EditViewService500JSONResponse) VisitEditViewServiceResponse(w ht
 }
 
 type GetUnconfiguredServicesRequestObject struct {
-	ViewSlug string `json:"viewSlug"`
+	PublicId string `json:"publicId"`
 	Params   GetUnconfiguredServicesParams
 }
 
@@ -2105,22 +2102,22 @@ type StrictServerInterface interface {
 	// (POST /api/views/default)
 	GetDefaultView(ctx context.Context, request GetDefaultViewRequestObject) (GetDefaultViewResponseObject, error)
 
-	// (DELETE /api/views/{viewSlug})
+	// (DELETE /api/views/{publicId})
 	DeleteView(ctx context.Context, request DeleteViewRequestObject) (DeleteViewResponseObject, error)
 
-	// (PUT /api/views/{viewSlug})
+	// (PUT /api/views/{publicId})
 	EditView(ctx context.Context, request EditViewRequestObject) (EditViewResponseObject, error)
 
-	// (POST /api/views/{viewSlug}/services)
+	// (POST /api/views/{publicId}/services)
 	AddViewService(ctx context.Context, request AddViewServiceRequestObject) (AddViewServiceResponseObject, error)
 
-	// (DELETE /api/views/{viewSlug}/services/{serviceId})
+	// (DELETE /api/views/{publicId}/services/{serviceId})
 	DeleteViewService(ctx context.Context, request DeleteViewServiceRequestObject) (DeleteViewServiceResponseObject, error)
 
-	// (PUT /api/views/{viewSlug}/services/{serviceId})
+	// (PUT /api/views/{publicId}/services/{serviceId})
 	EditViewService(ctx context.Context, request EditViewServiceRequestObject) (EditViewServiceResponseObject, error)
 
-	// (GET /api/views/{viewSlug}/unconfigured-services)
+	// (GET /api/views/{publicId}/unconfigured-services)
 	GetUnconfiguredServices(ctx context.Context, request GetUnconfiguredServicesRequestObject) (GetUnconfiguredServicesResponseObject, error)
 }
 
@@ -2362,10 +2359,10 @@ func (sh *strictHandler) GetDefaultView(w http.ResponseWriter, r *http.Request) 
 }
 
 // DeleteView operation middleware
-func (sh *strictHandler) DeleteView(w http.ResponseWriter, r *http.Request, viewSlug string) {
+func (sh *strictHandler) DeleteView(w http.ResponseWriter, r *http.Request, publicId string) {
 	var request DeleteViewRequestObject
 
-	request.ViewSlug = viewSlug
+	request.PublicId = publicId
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteView(ctx, request.(DeleteViewRequestObject))
@@ -2388,10 +2385,10 @@ func (sh *strictHandler) DeleteView(w http.ResponseWriter, r *http.Request, view
 }
 
 // EditView operation middleware
-func (sh *strictHandler) EditView(w http.ResponseWriter, r *http.Request, viewSlug string) {
+func (sh *strictHandler) EditView(w http.ResponseWriter, r *http.Request, publicId string) {
 	var request EditViewRequestObject
 
-	request.ViewSlug = viewSlug
+	request.PublicId = publicId
 
 	var body EditViewJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -2421,10 +2418,10 @@ func (sh *strictHandler) EditView(w http.ResponseWriter, r *http.Request, viewSl
 }
 
 // AddViewService operation middleware
-func (sh *strictHandler) AddViewService(w http.ResponseWriter, r *http.Request, viewSlug string) {
+func (sh *strictHandler) AddViewService(w http.ResponseWriter, r *http.Request, publicId string) {
 	var request AddViewServiceRequestObject
 
-	request.ViewSlug = viewSlug
+	request.PublicId = publicId
 
 	var body AddViewServiceJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -2454,10 +2451,10 @@ func (sh *strictHandler) AddViewService(w http.ResponseWriter, r *http.Request, 
 }
 
 // DeleteViewService operation middleware
-func (sh *strictHandler) DeleteViewService(w http.ResponseWriter, r *http.Request, viewSlug string, serviceId int) {
+func (sh *strictHandler) DeleteViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
 	var request DeleteViewServiceRequestObject
 
-	request.ViewSlug = viewSlug
+	request.PublicId = publicId
 	request.ServiceId = serviceId
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
@@ -2481,10 +2478,10 @@ func (sh *strictHandler) DeleteViewService(w http.ResponseWriter, r *http.Reques
 }
 
 // EditViewService operation middleware
-func (sh *strictHandler) EditViewService(w http.ResponseWriter, r *http.Request, viewSlug string, serviceId int) {
+func (sh *strictHandler) EditViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
 	var request EditViewServiceRequestObject
 
-	request.ViewSlug = viewSlug
+	request.PublicId = publicId
 	request.ServiceId = serviceId
 
 	var body EditViewServiceJSONRequestBody
@@ -2515,10 +2512,10 @@ func (sh *strictHandler) EditViewService(w http.ResponseWriter, r *http.Request,
 }
 
 // GetUnconfiguredServices operation middleware
-func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, viewSlug string, params GetUnconfiguredServicesParams) {
+func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, publicId string, params GetUnconfiguredServicesParams) {
 	var request GetUnconfiguredServicesRequestObject
 
-	request.ViewSlug = viewSlug
+	request.PublicId = publicId
 	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
@@ -2544,45 +2541,45 @@ func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"7vPu/wEAAP///GQjEKZbAAA=",
+	"H4sIAAAAAAAC/+xc3W/buhX/VwhtwG0xJQ62Dtg87CFtui5ANwxxc/dwURiMeGTzTiJVftj1Av/vF6RE",
+	"ibIo2W6S5qN6aiNK5/v8eM4R5dso4XnBGTAlo+ltJJMl5Nj+95yQnymsZyBWNIEr+KJBKrNQCF6AUBTs",
+	"bfXz84XguphTYi8TkImghaKcRdPoI5UK8RTJAhKa0gTVTyH7FLq8kEhxRFmSaQLoFV0wLoAgmrprc5xl",
+	"80ZYRCVSQsPrKI6ogtwyVZsComlEmYIFiGgbuytYCLwxfzfSHivn95IwTKwr6n+XoJYgfJlwliGPP0+R",
+	"WgKSpQOjmtUN5xlgZphVa3NKugw+LQFdXuxQMewwIeYfc3VFYd0QrrXaxpGAL5oKINH0F59Lr36fayr8",
+	"5ldIlJHunVvuRl1I4GtGv2hAlABTNKUgUMqFFbPmE5A1jhjOoUvtgsoiwxtkVp0RAnSkEpQtDJlC8BUl",
+	"IILG/E+1eFJH1mFiOvI7FrWWtHK3+Q5a8YPJtIEEHsgHL6rWVC0pQ2pJZZm7fnj/XkAaTaPfTZoHJhWk",
+	"TBpvhqL+2/xZS3AvXt2l9iC+7WNyoIfjaE/SvCdUGdzuBeyW8B37NH8587RzvLEJlXMCKdaZGgAnEyUG",
+	"B5eAqpt36HlgdLjHwiLtWLAynk+tJfSQ8cZN78Vuert5dvh29F4ILq5AFpxJCMUECYSvfQiZNQ8VQumU",
+	"g5R4EaDwT51jdiIAE3yTAQJL0N29LwmsUA3xkFqXLLGS3XWTpY5OCI3d4lyLLFxqXF99dM7DidI4Q1Jh",
+	"pSUq8CJEPADOiQCsgMxxAJE+0RykwnmB1ktgLYHRGktUPYtuNnbN0YziKOUiNxQjghWcKJpDSIhS2C7f",
+	"d1oIw6NSptKwZv2KshVIRRdYUbaIG7uSGOWcUcWFvS5A8mwF5HWIt6Iqg5DKKgPEBZI6z7HY7DI/bA8q",
+	"idcK7rgybP1QmM2SJRCdAfkXNnHBMEsCSQSMyLD/loCAEWTsXye5I4nyhiaClTEsZej607uD3XePof40",
+	"wtGZZu6Z5qjk67dtT/gL1e85u3yk707H3OvkXr9bfRfEdRodkZ7lhvmutfm2c9MWLUDmRzUMZakj69Rp",
+	"NubjmoayeQmUDvtaWNe4Xl4Es9U9Hi4+fQJVPdmNvoqCzPRimIK9I0BBs2NMW9/tlz13NW/XskM9fMto",
+	"OxaIQ3HSo2MwEG2sF1UpdJeCxKsf7tghBil5ERD0/PXVx5NUUGAk21jXDwvmhUMIpa84V4hwk/Y+Wg+S",
+	"GmgpK1cZVsNOcNVhAA+ov3RQuNWlZiiPW34fouJFiKHDFTaluy4r2D2jqEbmFsc2mWGLhAqZgHWCUH24",
+	"qYLl0qOZrUeZI21oOusHnEccBQ49k8snONaIo0LfZDSZDyhY3uHr+WrG+DrN8P/Mzve6R+3OJhYqojhL",
+	"6UIL7HzgbkVuCljRPCisveFKGY97N57WIKw2xMBcx1OmLwjr8U5fL398LJ24TT7HRWGM2tMFHzXmCM02",
+	"qKzrCSzAjUHI/Yz398/yW/v/sQP9rvfvb4sfUOFBDV+mAfTnf4almlNvyNJmeZ4ouvK6Em8VvYK8UBtU",
+	"pimiKWKcQbANOaKW2TXT8XXMAZR6OrLzxULAwna27abMWfaVLkzXRPiavf6WgqbulNpWPyJKtzZcUm53",
+	"xbK5qzb/TRRHKxCyVOXs9Oz0zOjKC2C4oNE0+pO9FEcFVkur/AQXdOLQaHJb/W+W6cV20g7DBQRC4wOo",
+	"3UjEjPgdFfacYLLIgvQlKZ/ttnRGNIFzUCBkNP3lgF6FmutGH2fpaeRpEfn+UEJDXL1A9kqK2nefzc0l",
+	"4FqV/3h2Vo5NTT1htcdFkdHE6jD5VZblQENvsLbpqGr92FVPlBN9tMQSSZ0kAATIqXHjm3sUpz0p7hHF",
+	"2BEESrjOCGJcIc0ICKmMi5UnKtFQzrtXOKMEyQ1T+Gsl8pvHERkzI29K25ICsaMSLRKoxPvr9xXPWSzh",
+	"LM1oUr2sLF+/eaOgFhSCsLL++Xt6f1aa0U7yzfo2rpCiLqb7McFOAQwo4BWmmX0j4G2Clcbc3o0zJAGL",
+	"ZIlSmik7PGxjhKE183jugYdZSUyByE1AlkTb3G/cXiMcgMDXIrMvRlKcSagA5YsGsfERxRCOHhI8Duu5",
+	"2h1Suyod4WSEk2cLJ5Pb5g9bfgzWHM29JqGrRG5DR5MqbzdVJTCIHd0SPjjACpUbLcGfTsXhYcWIDSM2",
+	"vCBsmKQA5BQrng+ixLniOTK3uk6klcmdbsTc/g+wg4rnjhTGNH/4mmd/Q8kSCwnq71qlJ39pu22XxYgR",
+	"I0a8NIwQcnh4cTWbHYEQV1K+EIAQUo74MOLDj4wPrZfDg9PN+k6HEu4Y6hBcuDfJbzcz/w3k0wOOuHNa",
+	"3LRVTOc31WuMevCvC4KVncIcMjMxwsxLMqHBiff6ZleAf5e8eeo4ogKEU/5g1pL+H4YZf5/uqzmfMELo",
+	"CKEvCkLdoYuT3QMkg3AaPli5pozwtTygEAsdPHn+KBu2ygi53wK54QNQI/yO8Pvc4HdFYS0n3nGvgsse",
+	"aOWiOpO/e+Cr08ZelOs/l8sPlo+W/ph0Y9I9z6S7Lc/yXZJtmW8ZqNABJnsd4XCylatVou092WJIuIOS",
+	"9mOAQAnihLrjbOhN8LidAEQlYhxV9jfxLoGR6jQblc61MbrRyvpuCdhkC8rxBt0A0hJSnZ2iMZPHTH7E",
+	"TI6jQge2yfeEqipVf5KIgMI0k52kdZ9YP37KWuO/5WRzf5bc+fZ+2z6xaKTajiXBCCQjkAyXBBP/c4Rw",
+	"TX5OSHP61f4qTYkWVvHm68PE/3qhg0Xtnzh6iYgU/hGnR8Cl3U8uRpgaYerFwFR9tH9PO3MFOV+Bh1up",
+	"4Pn+7uYp4FO899vq/k8FDmM1NMYcG6oRYH7YhqrKop9kX12DKOsDkZ0ftPqxIOThGryxnhrhboS7e6+n",
+	"NHO4BuTE7wGH33i7D9KNkxoCA6j4AdS1x2rmOD0pdOz53MopO35qNSLZiGSPjWTVjyyE8eIclWGO7GkU",
+	"9+07F9UP70yjpVKFnE6qY0CbU1wU0fbz9rcAAAD//1MUNH6VWwAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

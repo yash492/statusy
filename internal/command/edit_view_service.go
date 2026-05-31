@@ -22,7 +22,7 @@ func NewEditViewServiceCmd(logger *slog.Logger, viewsRepo views.Repository) Edit
 }
 
 type EditViewServiceParams struct {
-	ViewSlug             string
+	ViewPublicID         string
 	ServiceID            int
 	IncludeAllComponents bool
 	ComponentIDs         []int
@@ -30,12 +30,12 @@ type EditViewServiceParams struct {
 }
 
 func (c EditViewServiceCmd) Execute(ctx context.Context, params EditViewServiceParams) (views.ViewService, error) {
-	slug := strings.TrimSpace(params.ViewSlug)
-	if slug == "" {
-		return views.ViewService{}, apperrors.InvalidInputError("slug cannot be empty", nil)
+	publicID := strings.TrimSpace(params.ViewPublicID)
+	if publicID == "" {
+		return views.ViewService{}, apperrors.InvalidInputError("public_id cannot be empty", nil)
 	}
 
-	view, err := c.viewsRepo.GetBySlug(ctx, slug)
+	view, err := c.viewsRepo.GetByPublicID(ctx, publicID)
 	if err != nil {
 		return views.ViewService{}, err
 	}

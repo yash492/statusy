@@ -5,7 +5,7 @@ import "time"
 type View struct {
 	ID          uint
 	Name        string
-	Slug        string
+	PublicID    string
 	Description string
 	IsDefault   bool
 	Services    []ViewServiceStatus

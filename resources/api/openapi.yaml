@@ -365,15 +365,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/views/{viewSlug}:
+  /api/views/{publicId}:
     put:
       operationId: editView
       description: Edit a view's details
       parameters:
-        - name: viewSlug
+        - name: publicId
           in: path
           required: true
-          description: The view slug
+          description: The view public ID
           schema:
             type: string
       responses:
@@ -417,10 +417,10 @@ paths:
       operationId: deleteView
       description: Delete a view
       parameters:
-        - name: viewSlug
+        - name: publicId
           in: path
           required: true
-          description: The view slug
+          description: The view public ID
           schema:
             type: string
       responses:
@@ -450,15 +450,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/views/{viewSlug}/services:
+  /api/views/{publicId}/services:
     post:
       operationId: addViewService
       description: Add a service to a view with component configuration
       parameters:
-        - name: viewSlug
+        - name: publicId
           in: path
           required: true
-          description: The view slug
+          description: The view public ID
           schema:
             type: string
       responses:
@@ -498,15 +498,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AddViewServiceRequest'
-  /api/views/{viewSlug}/services/{serviceId}:
+  /api/views/{publicId}/services/{serviceId}:
     put:
       operationId: editViewService
       description: Edit a service's component configuration in a view
       parameters:
-        - name: viewSlug
+        - name: publicId
           in: path
           required: true
-          description: The view slug
+          description: The view public ID
           schema:
             type: string
         - name: serviceId
@@ -556,10 +556,10 @@ paths:
       operationId: deleteViewService
       description: Remove a service from a view
       parameters:
-        - name: viewSlug
+        - name: publicId
           in: path
           required: true
-          description: The view slug
+          description: The view public ID
           schema:
             type: string
         - name: serviceId
@@ -595,15 +595,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/views/{viewSlug}/unconfigured-services:
+  /api/views/{publicId}/unconfigured-services:
     get:
       operationId: getUnconfiguredServices
       description: Get all services not configured in a view
       parameters:
-        - name: viewSlug
+        - name: publicId
           in: path
           required: true
-          description: The view slug
+          description: The view public ID
           schema:
             type: string
         - name: search
@@ -712,16 +712,12 @@ components:
       type: object
       required:
         - name
-        - slug
         - description
         - is_default
       properties:
         name:
           type: string
           description: Display name of the view
-        slug:
-          type: string
-          description: URL-friendly slug for the view
         description:
           type: string
           description: Description of the view
@@ -910,7 +906,7 @@ components:
       required:
         - id
         - name
-        - slug
+        - public_id
         - description
         - is_default
         - services
@@ -921,9 +917,9 @@ components:
         name:
           type: string
           description: Display name of the view
-        slug:
+        public_id:
           type: string
-          description: URL-friendly slug for the view
+          description: Unique public identifier (Snowflake ID) for the view
         description:
           type: string
           description: Description of the view

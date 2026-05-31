@@ -2,7 +2,6 @@ import KyClient from '$lib/api/ky/ky';
 
 export interface EditViewRequest {
 	name: string;
-	slug: string;
 	description: string;
 	is_default: boolean;
 }
@@ -19,7 +18,7 @@ export interface ViewServiceStatus {
 export interface View {
 	id: number;
 	name: string;
-	slug: string;
+	public_id: string;
 	description: string;
 	is_default: boolean;
 	services: ViewServiceStatus[];
@@ -47,35 +46,35 @@ export interface ViewServiceResponse {
 export class ViewsApi {
 	private readonly basePath = 'views';
 
-	edit(slug: string, body: EditViewRequest) {
-		return KyClient.put(`${this.basePath}/${encodeURIComponent(slug)}`, {
+	edit(publicId: string, body: EditViewRequest) {
+		return KyClient.put(`${this.basePath}/${encodeURIComponent(publicId)}`, {
 			json: body
 		}).json<View>();
 	}
 
-	delete(slug: string) {
-		return KyClient.delete(`${this.basePath}/${encodeURIComponent(slug)}`);
+	delete(publicId: string) {
+		return KyClient.delete(`${this.basePath}/${encodeURIComponent(publicId)}`);
 	}
 
-	getUnconfiguredServices(viewSlug: string, search?: string) {
-		return KyClient.get(`${this.basePath}/${encodeURIComponent(viewSlug)}/unconfigured-services`, {
+	getUnconfiguredServices(viewPublicId: string, search?: string) {
+		return KyClient.get(`${this.basePath}/${encodeURIComponent(viewPublicId)}/unconfigured-services`, {
 			searchParams: search ? { search } : undefined
 		}).json<{ id: number; name: string; slug: string; url: string }[]>();
 	}
 
-	addViewService(viewSlug: string, body: AddViewServiceRequest) {
-		return KyClient.post(`${this.basePath}/${encodeURIComponent(viewSlug)}/services`, {
+	addViewService(viewPublicId: string, body: AddViewServiceRequest) {
+		return KyClient.post(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services`, {
 			json: body
 		}).json<ViewServiceResponse>();
 	}
 
-	editViewService(viewSlug: string, serviceId: number, body: EditViewServiceRequest) {
-		return KyClient.put(`${this.basePath}/${encodeURIComponent(viewSlug)}/services/${serviceId}`, {
+	editViewService(viewPublicId: string, serviceId: number, body: EditViewServiceRequest) {
+		return KyClient.put(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services/${serviceId}`, {
 			json: body
 		}).json<ViewServiceResponse>();
 	}
 
-	deleteViewService(viewSlug: string, serviceId: number) {
-		return KyClient.delete(`${this.basePath}/${encodeURIComponent(viewSlug)}/services/${serviceId}`);
+	deleteViewService(viewPublicId: string, serviceId: number) {
+		return KyClient.delete(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services/${serviceId}`);
 	}
 }

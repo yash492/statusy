@@ -31,8 +31,8 @@ model View {
   @doc("Display name of the view")
   name: string;
 
-  @doc("URL-friendly slug for the view")
-  slug: string;
+  @doc("Unique public identifier (Snowflake ID) for the view")
+  public_id: string;
 
   @doc("Description of the view")
   description: string;
@@ -93,11 +93,11 @@ model ServiceComponents {
 
 @doc("Get all services not configured in a view")
 @get
-@route("/views/{viewSlug}/unconfigured-services")
+@route("/views/{publicId}/unconfigured-services")
 op getUnconfiguredServices(
-  @doc("The view slug")
+  @doc("The view public ID")
   @path
-  viewSlug: string,
+  publicId: string,
 
   @doc("Search term to filter services by name or slug")
   @query
@@ -151,11 +151,11 @@ model ViewServiceResponse {
 
 @doc("Add a service to a view with component configuration")
 @post
-@route("/views/{viewSlug}/services")
+@route("/views/{publicId}/services")
 op addViewService(
-  @doc("The view slug")
+  @doc("The view public ID")
   @path
-  viewSlug: string,
+  publicId: string,
 
   @body
   body: AddViewServiceRequest,
@@ -163,11 +163,11 @@ op addViewService(
 
 @doc("Edit a service's component configuration in a view")
 @put
-@route("/views/{viewSlug}/services/{serviceId}")
+@route("/views/{publicId}/services/{serviceId}")
 op editViewService(
-  @doc("The view slug")
+  @doc("The view public ID")
   @path
-  viewSlug: string,
+  publicId: string,
 
   @doc("The service ID")
   @path
@@ -179,11 +179,11 @@ op editViewService(
 
 @doc("Remove a service from a view")
 @delete
-@route("/views/{viewSlug}/services/{serviceId}")
+@route("/views/{publicId}/services/{serviceId}")
 op deleteViewService(
-  @doc("The view slug")
+  @doc("The view public ID")
   @path
-  viewSlug: string,
+  publicId: string,
 
   @doc("The service ID")
   @path
@@ -194,9 +194,6 @@ model EditViewRequest {
   @doc("Display name of the view")
   name: string;
 
-  @doc("URL-friendly slug for the view")
-  slug: string;
-
   @doc("Description of the view")
   description: string;
 
@@ -206,11 +203,11 @@ model EditViewRequest {
 
 @doc("Edit a view's details")
 @put
-@route("/views/{viewSlug}")
+@route("/views/{publicId}")
 op editView(
-  @doc("The view slug")
+  @doc("The view public ID")
   @path
-  viewSlug: string,
+  publicId: string,
 
   @body
   body: EditViewRequest,
@@ -218,9 +215,9 @@ op editView(
 
 @doc("Delete a view")
 @delete
-@route("/views/{viewSlug}")
+@route("/views/{publicId}")
 op deleteView(
-  @doc("The view slug")
+  @doc("The view public ID")
   @path
-  viewSlug: string,
+  publicId: string,
 ): void | StandardErrors;

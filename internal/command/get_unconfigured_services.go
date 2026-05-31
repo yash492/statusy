@@ -23,17 +23,17 @@ func NewGetUnconfiguredServicesCmd(logger *slog.Logger, viewsRepo views.Reposito
 }
 
 type GetUnconfiguredServicesParams struct {
-	ViewSlug string
-	Search   string
+	ViewPublicID string
+	Search       string
 }
 
 func (c GetUnconfiguredServicesCmd) Execute(ctx context.Context, params GetUnconfiguredServicesParams) ([]services.ServiceResult, error) {
-	slug := strings.TrimSpace(params.ViewSlug)
-	if slug == "" {
-		return nil, apperrors.InvalidInputError("slug cannot be empty", nil)
+	publicID := strings.TrimSpace(params.ViewPublicID)
+	if publicID == "" {
+		return nil, apperrors.InvalidInputError("public_id cannot be empty", nil)
 	}
 
-	view, err := c.viewsRepo.GetBySlug(ctx, slug)
+	view, err := c.viewsRepo.GetByPublicID(ctx, publicID)
 	if err != nil {
 		return nil, err
 	}

@@ -21,43 +21,43 @@
 	const viewsApi = new ViewsApi();
 
 	// View Settings and Meta State
-	let viewName = $state(data.view.name);
-	let viewDescription = $state(data.view.description);
+	let viewName = $state('');
+	let viewDescription = $state('');
 	let isDefaultView = $state(false);
 
 	// Local reactive services state synced with localStorage
 	let localServices = $state<any[]>([]);
 
 	onMount(() => {
-		const stored = localStorage.getItem(`statusy_view_${data.view.slug}`);
+		const stored = localStorage.getItem(`statusy_view_${data.view.public_id}`);
 		if (stored) {
 			localServices = JSON.parse(stored);
 		} else {
 			localServices = [...data.view.services];
-			localStorage.setItem(`statusy_view_${data.view.slug}`, JSON.stringify(localServices));
+			localStorage.setItem(`statusy_view_${data.view.public_id}`, JSON.stringify(localServices));
 		}
 
-		const storedMeta = localStorage.getItem(`statusy_view_meta_${data.view.slug}`);
+		const storedMeta = localStorage.getItem(`statusy_view_meta_${data.view.public_id}`);
 		if (storedMeta) {
 			const meta = JSON.parse(storedMeta);
 			viewName = meta.name;
 			viewDescription = meta.description;
 		}
 
-		const defaultSlug = localStorage.getItem('statusy_default_view_slug');
-		isDefaultView = (defaultSlug === data.view.slug);
+		const defaultPublicId = localStorage.getItem('statusy_default_view_public_id');
+		isDefaultView = (defaultPublicId === data.view.public_id);
 	});
 
 	$effect(() => {
-		const stored = localStorage.getItem(`statusy_view_${data.view.slug}`);
+		const stored = localStorage.getItem(`statusy_view_${data.view.public_id}`);
 		if (stored) {
 			localServices = JSON.parse(stored);
 		} else {
 			localServices = [...data.view.services];
-			localStorage.setItem(`statusy_view_${data.view.slug}`, JSON.stringify(localServices));
+			localStorage.setItem(`statusy_view_${data.view.public_id}`, JSON.stringify(localServices));
 		}
 
-		const storedMeta = localStorage.getItem(`statusy_view_meta_${data.view.slug}`);
+		const storedMeta = localStorage.getItem(`statusy_view_meta_${data.view.public_id}`);
 		if (storedMeta) {
 			const meta = JSON.parse(storedMeta);
 			viewName = meta.name;
@@ -67,8 +67,8 @@
 			viewDescription = data.view.description;
 		}
 
-		const defaultSlug = localStorage.getItem('statusy_default_view_slug');
-		isDefaultView = (defaultSlug === data.view.slug);
+		const defaultPublicId = localStorage.getItem('statusy_default_view_public_id');
+		isDefaultView = (defaultPublicId === data.view.public_id);
 	});
 
 	// Compute metrics dynamically from localState
@@ -115,10 +115,10 @@
 	async function confirmRemove() {
 		if (serviceToDelete) {
 			try {
-				await viewsApi.deleteViewService(data.view.slug, serviceToDelete.id);
+				await viewsApi.deleteViewService(data.view.public_id, serviceToDelete.id);
 				const updated = localServices.filter((s) => s.id !== serviceToDelete.id);
 				localServices = updated;
-				localStorage.setItem(`statusy_view_${data.view.slug}`, JSON.stringify(updated));
+				localStorage.setItem(`statusy_view_${data.view.public_id}`, JSON.stringify(updated));
 				isDeleteConfirmOpen = false;
 				serviceToDelete = null;
 			} catch (err: any) {
@@ -134,17 +134,16 @@
 	}
 
 	function navigateToAdd() {
-		void goto(`/views/${data.view.slug}/add-service`);
+		void goto(`/views/${data.view.public_id}/add-service`);
 	}
 
 	function navigateToEdit(serviceSlug: string) {
-		void goto(`/views/${data.view.slug}/edit-service/${serviceSlug}`);
+		void goto(`/views/${data.view.public_id}/edit-service/${serviceSlug}`);
 	}
 
 	// Edit View Dialog State
 	let isEditViewOpen = $state(false);
 	let editViewName = $state('');
-	let editViewSlug = $state('');
 	let editViewDescription = $state('');
 	let editViewIsDefault = $state(false);
 	let editViewError = $state<string | null>(null);
@@ -152,7 +151,6 @@
 
 	function openEditViewDialog() {
 		editViewName = viewName;
-		editViewSlug = data.view.slug;
 		editViewDescription = viewDescription;
 		editViewIsDefault = isDefaultView;
 		editViewError = null;
@@ -162,50 +160,31 @@
 	async function saveViewMeta() {
 		editViewError = null;
 		try {
-			await viewsApi.edit(data.view.slug, {
+			await viewsApi.edit(data.view.public_id, {
 				name: editViewName,
-				slug: editViewSlug,
 				description: editViewDescription,
 				is_default: editViewIsDefault
 			});
 
-			// If slug changed, update localStorage keys
-			if (editViewSlug !== data.view.slug) {
-				const services = localStorage.getItem(`statusy_view_${data.view.slug}`);
-				if (services) {
-					localStorage.setItem(`statusy_view_${editViewSlug}`, services);
-					localStorage.removeItem(`statusy_view_${data.view.slug}`);
-				}
-				localStorage.setItem(`statusy_view_meta_${editViewSlug}`, JSON.stringify({
-					name: editViewName,
-					description: editViewDescription
-				}));
-				localStorage.removeItem(`statusy_view_meta_${data.view.slug}`);
-			} else {
-				localStorage.setItem(`statusy_view_meta_${data.view.slug}`, JSON.stringify({
-					name: editViewName,
-					description: editViewDescription
-				}));
-			}
+			localStorage.setItem(`statusy_view_meta_${data.view.public_id}`, JSON.stringify({
+				name: editViewName,
+				description: editViewDescription
+			}));
 
 			viewName = editViewName;
 			viewDescription = editViewDescription;
 
 			if (editViewIsDefault) {
-				localStorage.setItem('statusy_default_view_slug', editViewSlug);
+				localStorage.setItem('statusy_default_view_public_id', data.view.public_id);
 				isDefaultView = true;
 			} else {
-				if (localStorage.getItem('statusy_default_view_slug') === data.view.slug) {
-					localStorage.removeItem('statusy_default_view_slug');
+				if (localStorage.getItem('statusy_default_view_public_id') === data.view.public_id) {
+					localStorage.removeItem('statusy_default_view_public_id');
 				}
 				isDefaultView = false;
 			}
 
 			isEditViewOpen = false;
-
-			if (editViewSlug !== data.view.slug) {
-				void goto(`/views/${editViewSlug}`);
-			}
 		} catch (err: any) {
 			if (err.response) {
 				editViewError = await err.response.text();
@@ -227,12 +206,12 @@
 	async function confirmDeleteView() {
 		deleteViewError = null;
 		try {
-			await viewsApi.delete(data.view.slug);
+			await viewsApi.delete(data.view.public_id);
 
-			localStorage.removeItem(`statusy_view_${data.view.slug}`);
-			localStorage.removeItem(`statusy_view_meta_${data.view.slug}`);
-			if (localStorage.getItem('statusy_default_view_slug') === data.view.slug) {
-				localStorage.removeItem('statusy_default_view_slug');
+			localStorage.removeItem(`statusy_view_${data.view.public_id}`);
+			localStorage.removeItem(`statusy_view_meta_${data.view.public_id}`);
+			if (localStorage.getItem('statusy_default_view_public_id') === data.view.public_id) {
+				localStorage.removeItem('statusy_default_view_public_id');
 			}
 			isDeleteViewOpen = false;
 			void goto('/');
@@ -564,15 +543,6 @@
 					id="view-name"
 					bind:value={editViewName}
 					placeholder="Payment Gateways"
-					class="border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700"
-				/>
-			</div>
-			<div class="grid gap-2">
-				<Label for="view-slug" class="text-sm font-semibold text-zinc-300">Slug</Label>
-				<Input
-					id="view-slug"
-					bind:value={editViewSlug}
-					placeholder="payment-gateways"
 					class="border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700"
 				/>
 			</div>
