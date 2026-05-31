@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 )
@@ -46,13 +47,13 @@ func (r *PostgresScheduledMaintenanceUpdatesRepository) SaveAll(ctx context.Cont
 		preparedQuery := batchInserts.Queue(insertScheduledMaintenanceUpdatesQuery, queryArgs)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			update, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[scheduledMaintenanceUpdateDto])
+			updateRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[scheduledMaintenanceUpdateDto])
 			if err != nil {
 				r.lg.ErrorContext(ctx, "error collecting scheduled maintenance update from batch", slog.Any("err", err))
-				return err
+				return apperrors.InternalError("failed to collect scheduled maintenance update from batch", err)
 			}
 
-			updatesResponse = append(updatesResponse, *update)
+			updatesResponse = append(updatesResponse, updateRow)
 			return nil
 		})
 	}
@@ -60,7 +61,7 @@ func (r *PostgresScheduledMaintenanceUpdatesRepository) SaveAll(ctx context.Cont
 	err := r.writeDB.SendBatch(ctx, batchInserts).Close()
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error while bulk inserting scheduled maintenance updates", slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to bulk insert scheduled maintenance updates", err)
 	}
 
 	result := lo.Map(updatesResponse, func(item scheduledMaintenanceUpdateDto, _ int) scheduledmaintenance.ScheduledMaintenanceUpdateResult {

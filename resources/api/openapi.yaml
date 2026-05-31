@@ -25,6 +25,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Statuspage'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/statuspages/{statuspageSlug}:
     get:
       operationId: statuspageBySlug
@@ -43,6 +49,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Statuspage'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/statuspages/{statuspageSlug}/feed.atom:
     get:
       operationId: getAtomFeed
@@ -61,6 +73,12 @@ paths:
             application/atom+xml; charset=utf-8:
               schema:
                 type: string
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/statuspages/{statuspageSlug}/feed.rss:
     get:
       operationId: getRssFeed
@@ -79,6 +97,12 @@ paths:
             application/rss+xml; charset=utf-8:
               schema:
                 type: string
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/statuspages/{statuspageSlug}/incidents:
     get:
       operationId: incidentByStatuspage
@@ -111,6 +135,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatuspageIncidents'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/statuspages/{statuspageSlug}/schedule-maintenances:
     get:
       operationId: scheduledMaintenanceByStatuspage
@@ -143,6 +173,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatuspageScheduledMaintenances'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     ErrorResponse:
@@ -182,18 +218,6 @@ components:
           type: string
           format: date-time
           description: Timestamp when the incident was created by the provider
-    NotFoundError:
-      type: object
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: string
-          description: Error code identifier
-        message:
-          type: string
-          description: Human-readable error message
     PaginationQuery:
       type: object
       properties:

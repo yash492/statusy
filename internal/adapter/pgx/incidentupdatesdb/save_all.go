@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/incidents"
 )
@@ -46,13 +47,13 @@ func (r *PostgresIncidentUpdatesRepository) SaveAll(ctx context.Context, params 
 		preparedQuery := batchInserts.Queue(insertIncidentUpdatesQuery, queryArgs)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			update, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[incidentUpdateDto])
+			updateRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[incidentUpdateDto])
 			if err != nil {
 				r.lg.ErrorContext(ctx, "error collecting incident update from batch", slog.Any("err", err))
-				return err
+				return apperrors.InternalError("failed to collect incident update from batch", err)
 			}
 
-			updatesResponse = append(updatesResponse, *update)
+			updatesResponse = append(updatesResponse, updateRow)
 			return nil
 		})
 	}
@@ -60,7 +61,7 @@ func (r *PostgresIncidentUpdatesRepository) SaveAll(ctx context.Context, params 
 	err := r.writeDB.SendBatch(ctx, batchInserts).Close()
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error while bulk inserting incident updates", slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to bulk insert incident updates", err)
 	}
 
 	result := lo.Map(updatesResponse, func(item incidentUpdateDto, _ int) incidents.IncidentUpdateResult {
