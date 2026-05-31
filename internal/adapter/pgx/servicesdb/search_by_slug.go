@@ -27,9 +27,7 @@ func (s *PostgresServiceRepository) SearchByName(ctx context.Context, name strin
 
 	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByName[serviceDto])
 	if err != nil {
-		if s.lg != nil {
-			s.lg.ErrorContext(ctx, "error collecting service rows", slog.Any("err", err))
-		}
+		s.lg.ErrorContext(ctx, "error collecting service rows", slog.Any("err", err))
 		return nil, apperrors.InternalError("failed to collect service rows", err)
 	}
 

@@ -41,9 +41,7 @@ func (c *PostgresIncidentRepository) GetByService(ctx context.Context, params in
 
 	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[incidentByServiceDto])
 	if err != nil {
-		if c.lg != nil {
-			c.lg.ErrorContext(ctx, "error collecting incidents by service rows", slog.Any("service_id", params.ServiceID), slog.Any("err", err))
-		}
+		c.lg.ErrorContext(ctx, "error collecting incidents by service rows", slog.Any("service_id", params.ServiceID), slog.Any("err", err))
 		return nil, apperrors.InternalError("failed to collect incidents by service rows", err)
 	}
 
