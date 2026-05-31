@@ -25,9 +25,6 @@ model ViewServiceStatus {
 }
 
 model View {
-  @doc("Unique identifier for the view")
-  id: integer;
-
   @doc("Display name of the view")
   name: string;
 

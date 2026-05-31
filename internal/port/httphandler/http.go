@@ -181,7 +181,6 @@ func (h Handler) GetDefaultView(ctx context.Context, request api.GetDefaultViewR
 	}
 
 	return api.GetDefaultView200JSONResponse{
-		Id:          int(view.ID),
 		Name:        view.Name,
 		PublicId:    view.PublicID,
 		Description: view.Description,
@@ -378,7 +377,6 @@ func (h Handler) EditView(ctx context.Context, request api.EditViewRequestObject
 	}
 
 	return api.EditView200JSONResponse{
-		Id:          int(result.ID),
 		Name:        result.Name,
 		PublicId:    result.PublicID,
 		Description: result.Description,

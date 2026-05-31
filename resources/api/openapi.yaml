@@ -904,16 +904,12 @@ components:
     View:
       type: object
       required:
-        - id
         - name
         - public_id
         - description
         - is_default
         - services
       properties:
-        id:
-          type: integer
-          description: Unique identifier for the view
         name:
           type: string
           description: Display name of the view
