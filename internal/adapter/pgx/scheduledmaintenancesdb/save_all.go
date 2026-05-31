@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 )
@@ -64,13 +65,13 @@ func (c *PostgresScheduledMaintenanceRepository) SaveAll(ctx context.Context, pa
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			scheduledMaintenance, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[scheduledMaintenanceDto])
+			scheduledMaintenanceRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[scheduledMaintenanceDto])
 			if err != nil {
-				c.lg.ErrorContext(ctx, "error collecting scheduled maintenance %v from %v from batch", param.ProviderID, param.ServiceID, slog.Any("err", err))
-				return err
+				c.lg.ErrorContext(ctx, "error collecting scheduled maintenance from batch", slog.String("provider_id", param.ProviderID), slog.Uint64("service_id", uint64(param.ServiceID)), slog.Any("err", err))
+				return apperrors.InternalError("failed to collect scheduled maintenance from batch", err)
 			}
 
-			scheduledMaintenanceResponse = append(scheduledMaintenanceResponse, *scheduledMaintenance)
+			scheduledMaintenanceResponse = append(scheduledMaintenanceResponse, scheduledMaintenanceRow)
 			return nil
 		})
 
@@ -79,7 +80,7 @@ func (c *PostgresScheduledMaintenanceRepository) SaveAll(ctx context.Context, pa
 	err := c.writeDB.SendBatch(ctx, batchInserts).Close()
 	if err != nil {
 		c.lg.ErrorContext(ctx, "error while bulk inserting scheduled maintenances", slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to bulk insert scheduled maintenances", err)
 	}
 
 	response := lo.Map(scheduledMaintenanceResponse, func(item scheduledMaintenanceDto, _ int) scheduledmaintenance.ScheduledMaintenanceResult {

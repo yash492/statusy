@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/incidents"
 )
 
@@ -34,16 +35,14 @@ func (c *PostgresIncidentRepository) GetByService(ctx context.Context, params in
 	if err != nil {
 		c.lg.ErrorContext(ctx, "error querying incidents by service", slog.Any("service_id", params.ServiceID), slog.Any("err", err))
 
-		return nil, err
+		return nil, apperrors.InternalError("failed to query incidents by service", err)
 	}
 	defer rows.Close()
 
 	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[incidentByServiceDto])
 	if err != nil {
-		if c.lg != nil {
-			c.lg.ErrorContext(ctx, "error collecting incidents by service rows", slog.Any("service_id", params.ServiceID), slog.Any("err", err))
-		}
-		return nil, err
+		c.lg.ErrorContext(ctx, "error collecting incidents by service rows", slog.Any("service_id", params.ServiceID), slog.Any("err", err))
+		return nil, apperrors.InternalError("failed to collect incidents by service rows", err)
 	}
 
 	results := make([]incidents.IncidentByServiceResult, 0, len(dtos))

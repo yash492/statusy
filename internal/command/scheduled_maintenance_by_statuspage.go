@@ -2,12 +2,12 @@ package command
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 	"github.com/yash492/statusy/internal/domain/services"
 )
@@ -58,17 +58,11 @@ type ScheduledMaintenanceByStatuspageResult struct {
 func (c ScheduledMaintenanceByStatuspageCmd) Execute(ctx context.Context, params ScheduledMaintenanceByStatuspageParams) (ScheduledMaintenanceByStatuspageResult, error) {
 	slug := strings.TrimSpace(params.StatuspageSlug)
 	if slug == "" {
-		return ScheduledMaintenanceByStatuspageResult{}, ErrStatuspageNotFound
+		return ScheduledMaintenanceByStatuspageResult{}, apperrors.InvalidInputError("slug cannot be empty", fmt.Errorf("slug cannot be empty"))
 	}
 
 	service, err := c.ServicesRepo.GetBySlug(ctx, slug)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			c.logger.WarnContext(ctx, "statuspage not found", slog.String("slug", slug))
-			return ScheduledMaintenanceByStatuspageResult{}, ErrStatuspageNotFound
-		}
-
-		c.logger.ErrorContext(ctx, "failed to fetch statuspage service", slog.String("slug", slug), slog.Any("err", err))
 		return ScheduledMaintenanceByStatuspageResult{}, err
 	}
 
@@ -92,7 +86,6 @@ func (c ScheduledMaintenanceByStatuspageCmd) Execute(ctx context.Context, params
 		Offset:    offset,
 	})
 	if err != nil {
-		c.logger.ErrorContext(ctx, "failed to fetch scheduled maintenances by statuspage", slog.String("slug", slug), slog.Any("service_id", service.ID), slog.Any("err", err))
 		return ScheduledMaintenanceByStatuspageResult{}, err
 	}
 

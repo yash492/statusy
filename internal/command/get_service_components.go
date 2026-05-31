@@ -2,11 +2,10 @@ package command
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/services"
 )
@@ -60,16 +59,11 @@ type ComponentResult struct {
 func (c GetServiceComponentsCmd) Execute(ctx context.Context, params GetServiceComponentsParams) (GetServiceComponentsResult, error) {
 	slug := strings.TrimSpace(params.ServiceSlug)
 	if slug == "" {
-		return GetServiceComponentsResult{}, ErrStatuspageNotFound
+		return GetServiceComponentsResult{}, apperrors.InvalidInputError("slug cannot be empty", nil)
 	}
 
 	service, err := c.servicesRepo.GetBySlug(ctx, slug)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			c.logger.WarnContext(ctx, "service not found by slug", slog.String("slug", slug))
-			return GetServiceComponentsResult{}, ErrStatuspageNotFound
-		}
-		c.logger.ErrorContext(ctx, "failed to fetch service", slog.String("slug", slug), slog.Any("err", err))
 		return GetServiceComponentsResult{}, err
 	}
 

@@ -2,6 +2,7 @@ package applications
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -19,6 +20,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/viewsdb"
 	"github.com/yash492/statusy/internal/command"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/port/httphandler"
 	"github.com/yash492/statusy/internal/port/httphandler/generated/api"
 )
@@ -99,7 +101,42 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 }
 
 func (s ServerApplication) Start(ctx context.Context, addr string) error {
-	serverInterface := api.NewStrictHandler(s.HttpHandler, nil)
+	options := api.StrictHTTPServerOptions{
+		RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+				Code:    string(apperrors.TypeInvalidInput),
+				Message: err.Error(),
+			})
+		},
+		ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			if appErr, isError := errors.AsType[*apperrors.AppError](err); isError {
+				s.lg.ErrorContext(r.Context(), "request failed",
+					slog.String("type", string(appErr.Type)),
+					slog.Any("err", err),
+				)
+
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(appErr.StatusCode)
+				_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+					Code:    string(appErr.Type),
+					Message: appErr.Message,
+				})
+				return
+			}
+
+			// Unhandled error — safe 500
+			s.lg.ErrorContext(r.Context(), "unhandled error", slog.Any("err", err))
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+				Code:    string(apperrors.TypeInternal),
+				Message: "internal server error",
+			})
+		},
+	}
+	serverInterface := api.NewStrictHandlerWithOptions(s.HttpHandler, nil, options)
 
 	r := chi.NewRouter()
 	r.Use(

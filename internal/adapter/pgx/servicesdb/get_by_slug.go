@@ -3,9 +3,11 @@ package servicesdb
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/services"
 )
 
@@ -16,14 +18,17 @@ func (s *PostgresServiceRepository) GetBySlug(ctx context.Context, slug string) 
 	rows, err := s.readDB.Query(ctx, getBySlugQuery, pgx.NamedArgs{"slug": slug})
 	if err != nil {
 		s.lg.ErrorContext(ctx, "error querying service by slug", slog.String("slug", slug), slog.Any("err", err))
-		return services.ServiceResult{}, err
+		return services.ServiceResult{}, apperrors.InternalError("failed to query service by slug", err)
 	}
 	defer rows.Close()
 
 	item, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[serviceDto])
 	if err != nil {
 		s.lg.ErrorContext(ctx, "error collecting service by slug rows", slog.String("slug", slug), slog.Any("err", err))
-		return services.ServiceResult{}, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return services.ServiceResult{}, apperrors.NotFoundError("statuspage not found", err)
+		}
+		return services.ServiceResult{}, apperrors.InternalError("failed to collect service by slug", err)
 	}
 
 	return services.ServiceResult{

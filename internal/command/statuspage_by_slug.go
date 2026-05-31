@@ -2,11 +2,10 @@ package command
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/services"
 )
 
@@ -39,17 +38,11 @@ type StatuspageBySlugResult struct {
 func (c StatuspageBySlugCmd) Execute(ctx context.Context, params StatuspageBySlugParams) (StatuspageBySlugResult, error) {
 	slug := strings.TrimSpace(params.Slug)
 	if slug == "" {
-		return StatuspageBySlugResult{}, ErrStatuspageNotFound
+		return StatuspageBySlugResult{}, apperrors.InvalidInputError("slug cannot be empty", nil)
 	}
 
 	service, err := c.servicesRepo.GetBySlug(ctx, slug)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			c.logger.WarnContext(ctx, "statuspage not found", slog.String("slug", slug))
-			return StatuspageBySlugResult{}, ErrStatuspageNotFound
-		}
-
-		c.logger.ErrorContext(ctx, "failed to fetch statuspage by slug", slog.String("slug", slug), slog.Any("err", err))
 		return StatuspageBySlugResult{}, err
 	}
 
