@@ -65,13 +65,13 @@ func (c *PostgresScheduledMaintenanceRepository) SaveAll(ctx context.Context, pa
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			scheduledMaintenanceRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[scheduledMaintenanceDto])
+			scheduledMaintenanceRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[scheduledMaintenanceDto])
 			if err != nil {
 				c.lg.ErrorContext(ctx, "error collecting scheduled maintenance from batch", slog.String("provider_id", param.ProviderID), slog.Uint64("service_id", uint64(param.ServiceID)), slog.Any("err", err))
 				return apperrors.InternalError("failed to collect scheduled maintenance from batch", err)
 			}
 
-			scheduledMaintenanceResponse = append(scheduledMaintenanceResponse, *scheduledMaintenanceRow)
+			scheduledMaintenanceResponse = append(scheduledMaintenanceResponse, scheduledMaintenanceRow)
 			return nil
 		})
 

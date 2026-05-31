@@ -47,13 +47,13 @@ func (r *PostgresIncidentUpdatesRepository) SaveAll(ctx context.Context, params 
 		preparedQuery := batchInserts.Queue(insertIncidentUpdatesQuery, queryArgs)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			updateRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[incidentUpdateDto])
+			updateRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[incidentUpdateDto])
 			if err != nil {
 				r.lg.ErrorContext(ctx, "error collecting incident update from batch", slog.Any("err", err))
 				return apperrors.InternalError("failed to collect incident update from batch", err)
 			}
 
-			updatesResponse = append(updatesResponse, *updateRow)
+			updatesResponse = append(updatesResponse, updateRow)
 			return nil
 		})
 	}

@@ -61,13 +61,13 @@ func (c *PostgresIncidentRepository) SaveAll(ctx context.Context, params []incid
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			incidentRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[incidentDto])
+			incidentRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[incidentDto])
 			if err != nil {
 				c.lg.ErrorContext(ctx, "error collecting incident from batch", slog.String("provider_id", param.ProviderID), slog.Uint64("service_id", uint64(param.ServiceID)), slog.Any("err", err))
 				return apperrors.InternalError("failed to collect incident from batch", err)
 			}
 
-			incidentResponse = append(incidentResponse, *incidentRow)
+			incidentResponse = append(incidentResponse, incidentRow)
 			return nil
 		})
 

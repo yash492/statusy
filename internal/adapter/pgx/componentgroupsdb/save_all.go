@@ -44,13 +44,13 @@ func (c *PostgresComponentGroupsRepository) SaveAll(ctx context.Context, params 
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			componentGroupRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[componentGroupDto])
+			componentGroupRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[componentGroupDto])
 			if err != nil {
 				c.lg.ErrorContext(ctx, "error collecting component group from batch", slog.String("name", component.Name), slog.Any("err", err))
 				return apperrors.InternalError("failed to collect component group from batch", err)
 			}
 
-			componentgroupResponse = append(componentgroupResponse, *componentGroupRow)
+			componentgroupResponse = append(componentgroupResponse, componentGroupRow)
 			return nil
 		})
 

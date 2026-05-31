@@ -39,13 +39,13 @@ func (r *PostgresIncidentComponentsRepository) SaveAll(ctx context.Context, para
 		preparedQuery := batchInserts.Queue(insertIncidentComponentsQuery, queryArgs)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			componentRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[incidentComponentDto])
+			componentRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[incidentComponentDto])
 			if err != nil {
 				r.lg.ErrorContext(ctx, "error collecting incident component from batch", slog.Any("err", err))
 				return apperrors.InternalError("failed to collect incident component from batch", err)
 			}
 
-			componentsResponse = append(componentsResponse, *componentRow)
+			componentsResponse = append(componentsResponse, componentRow)
 			return nil
 		})
 	}

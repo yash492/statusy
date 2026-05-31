@@ -39,13 +39,13 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			serviceRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[serviceDto])
+			serviceRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[serviceDto])
 			if err != nil {
 				s.lg.ErrorContext(ctx, "error collecting service from batch", slog.String("slug", service.Slug), slog.Any("err", err))
 				return apperrors.InternalError("failed to collect service from batch", err)
 			}
 
-			servicesResponse = append(servicesResponse, *serviceRow)
+			servicesResponse = append(servicesResponse, serviceRow)
 			return nil
 		})
 
