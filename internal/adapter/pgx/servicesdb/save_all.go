@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/services"
 )
 
@@ -40,8 +41,8 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 		preparedQuery.Query(func(rows pgx.Rows) error {
 			serviceRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[serviceDto])
 			if err != nil {
-				s.lg.ErrorContext(ctx, "error collecting service %s from batch", service.Slug, slog.Any("err", err))
-				return err
+				s.lg.ErrorContext(ctx, "error collecting service from batch", slog.String("slug", service.Slug), slog.Any("err", err))
+				return apperrors.InternalError("failed to collect service from batch", err)
 			}
 
 			servicesResponse = append(servicesResponse, *serviceRow)
@@ -53,7 +54,7 @@ func (s *PostgresServiceRepository) SaveAll(ctx context.Context, servicesYaml []
 	err := s.writeDB.SendBatch(ctx, batchInserts).Close()
 	if err != nil {
 		s.lg.ErrorContext(ctx, "error while bulk inserting services", slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to bulk insert services", err)
 	}
 
 	result := lo.Map(servicesResponse, func(item serviceDto, _ int) services.ServiceResult {

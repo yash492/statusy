@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 )
 
@@ -36,16 +37,14 @@ func (c *PostgresScheduledMaintenanceRepository) GetByService(ctx context.Contex
 	if err != nil {
 		c.lg.ErrorContext(ctx, "error querying scheduled maintenances by service", slog.Any("service_id", params.ServiceID), slog.Any("err", err))
 
-		return nil, err
+		return nil, apperrors.InternalError("failed to query scheduled maintenances by service", err)
 	}
 	defer rows.Close()
 
 	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[scheduledMaintenanceByServiceDto])
 	if err != nil {
-		if c.lg != nil {
-			c.lg.ErrorContext(ctx, "error collecting scheduled maintenances by service rows", slog.Any("service_id", params.ServiceID), slog.Any("err", err))
-		}
-		return nil, err
+		c.lg.ErrorContext(ctx, "error collecting scheduled maintenances by service rows", slog.Any("service_id", params.ServiceID), slog.Any("err", err))
+		return nil, apperrors.InternalError("failed to collect scheduled maintenances by service rows", err)
 	}
 
 	results := make([]scheduledmaintenance.ScheduledMaintenanceByServiceResult, 0, len(dtos))

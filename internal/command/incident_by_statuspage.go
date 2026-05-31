@@ -2,17 +2,15 @@ package command
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/incidents"
 	"github.com/yash492/statusy/internal/domain/services"
 )
-
-var ErrStatuspageNotFound = errors.New("statuspage not found")
 
 type IncidentByStatuspageCmd struct {
 	logger        *slog.Logger
@@ -58,17 +56,11 @@ type IncidentByStatuspageResult struct {
 func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByStatuspageParams) (IncidentByStatuspageResult, error) {
 	slug := strings.TrimSpace(params.StatuspageSlug)
 	if slug == "" {
-		return IncidentByStatuspageResult{}, ErrStatuspageNotFound
+		return IncidentByStatuspageResult{}, apperrors.InvalidInputError("slug cannot be empty", fmt.Errorf("slug cannot be empty"))
 	}
 
 	service, err := c.ServicesRepo.GetBySlug(ctx, slug)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			c.logger.WarnContext(ctx, "statuspage not found", slog.String("slug", slug))
-			return IncidentByStatuspageResult{}, ErrStatuspageNotFound
-		}
-
-		c.logger.ErrorContext(ctx, "failed to fetch statuspage service", slog.String("slug", slug), slog.Any("err", err))
 		return IncidentByStatuspageResult{}, err
 	}
 
@@ -92,7 +84,6 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 		Offset:    offset,
 	})
 	if err != nil {
-		c.logger.ErrorContext(ctx, "failed to fetch incidents by statuspage", slog.String("slug", slug), slog.Any("service_id", service.ID), slog.Any("err", err))
 		return IncidentByStatuspageResult{}, err
 	}
 

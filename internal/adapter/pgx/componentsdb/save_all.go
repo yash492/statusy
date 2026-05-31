@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/components"
 )
@@ -50,13 +51,13 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []comp
 		)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			component, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[componentDto])
+			componentRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[componentDto])
 			if err != nil {
-				c.lg.ErrorContext(ctx, "error collecting component %s for service %s from batch", component.ProviderID, component.ServiceID, slog.Any("err", err))
-				return err
+				c.lg.ErrorContext(ctx, "error collecting component from batch", slog.String("provider_id", component.ProviderID), slog.Uint64("service_id", uint64(component.ServiceID)), slog.Any("err", err))
+				return apperrors.InternalError("failed to collect component from batch", err)
 			}
 
-			componentsResponse = append(componentsResponse, *component)
+			componentsResponse = append(componentsResponse, *componentRow)
 			return nil
 		})
 
@@ -65,7 +66,7 @@ func (c *PostgresComponentRepository) SaveAll(ctx context.Context, params []comp
 	err := c.writeDB.SendBatch(ctx, batchInserts).Close()
 	if err != nil {
 		c.lg.ErrorContext(ctx, "error while bulk inserting services", slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to bulk insert components", err)
 	}
 
 	response := lo.Map(componentsResponse, func(item componentDto, _ int) components.ComponentResult {

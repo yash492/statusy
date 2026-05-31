@@ -23,6 +23,15 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
+// ErrorResponse defines model for ErrorResponse.
+type ErrorResponse struct {
+	// Code Error code identifier
+	Code string `json:"code"`
+
+	// Message Human-readable error message
+	Message string `json:"message"`
+}
+
 // Incident defines model for Incident.
 type Incident struct {
 	// Id Unique identifier for the incident
@@ -530,6 +539,23 @@ func (response ListStatuspages200JSONResponse) VisitListStatuspagesResponse(w ht
 	return err
 }
 
+type ListStatuspagesdefaultJSONResponse struct {
+	Body       ErrorResponse
+	StatusCode int
+}
+
+func (response ListStatuspagesdefaultJSONResponse) VisitListStatuspagesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type StatuspageBySlugRequestObject struct {
 	StatuspageSlug string `json:"statuspageSlug"`
 }
@@ -548,6 +574,23 @@ func (response StatuspageBySlug200JSONResponse) VisitStatuspageBySlugResponse(w 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type StatuspageBySlugdefaultJSONResponse struct {
+	Body       ErrorResponse
+	StatusCode int
+}
+
+func (response StatuspageBySlugdefaultJSONResponse) VisitStatuspageBySlugResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -580,6 +623,23 @@ func (response GetAtomFeed200ApplicationatomXmlCharsetUtf8Response) VisitGetAtom
 	return err
 }
 
+type GetAtomFeeddefaultJSONResponse struct {
+	Body       ErrorResponse
+	StatusCode int
+}
+
+func (response GetAtomFeeddefaultJSONResponse) VisitGetAtomFeedResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetRssFeedRequestObject struct {
 	StatuspageSlug string `json:"statuspageSlug"`
 }
@@ -608,6 +668,23 @@ func (response GetRssFeed200ApplicationrssXmlCharsetUtf8Response) VisitGetRssFee
 	return err
 }
 
+type GetRssFeeddefaultJSONResponse struct {
+	Body       ErrorResponse
+	StatusCode int
+}
+
+func (response GetRssFeeddefaultJSONResponse) VisitGetRssFeedResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type IncidentByStatuspageRequestObject struct {
 	StatuspageSlug string `json:"statuspageSlug"`
 	Params         IncidentByStatuspageParams
@@ -631,6 +708,23 @@ func (response IncidentByStatuspage200JSONResponse) VisitIncidentByStatuspageRes
 	return err
 }
 
+type IncidentByStatuspagedefaultJSONResponse struct {
+	Body       ErrorResponse
+	StatusCode int
+}
+
+func (response IncidentByStatuspagedefaultJSONResponse) VisitIncidentByStatuspageResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type ScheduledMaintenanceByStatuspageRequestObject struct {
 	StatuspageSlug string `json:"statuspageSlug"`
 	Params         ScheduledMaintenanceByStatuspageParams
@@ -650,6 +744,23 @@ func (response ScheduledMaintenanceByStatuspage200JSONResponse) VisitScheduledMa
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ScheduledMaintenanceByStatuspagedefaultJSONResponse struct {
+	Body       ErrorResponse
+	StatusCode int
+}
+
+func (response ScheduledMaintenanceByStatuspagedefaultJSONResponse) VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -866,25 +977,26 @@ func (sh *strictHandler) ScheduledMaintenanceByStatuspage(w http.ResponseWriter,
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xX32/bNhD+VwhuDxum2MH2MmjYQ9phRYFsGOLmqQgMWjxJLCSSIU92tcD/+0DqhyWZ",
-	"Fuxt2dKiL61j0t93/L473vGJJqrUSoJES+MnapMcSuY/vpWJ4CDRfdZGaTAowK8I7v7lYBMjNAolaUzv",
-	"pXisgPhfiFSAIakyBHMgosOJKNYaaEyFRMjA0H1Eu8V1ZYpj0Hc5kPu7W6JSj8QSrFhBLDKsLNEsC4Fb",
-	"NEJmDlsbtRUczDoxwBD4mmGAQpRgkZWa7HKQo4DJjlnS/pZsar/WYdKIpsqUDpFyhnCFooRQEE2wx7yv",
-	"K2McR3uY9oQ99TdCbsGiyBgKmUUHXXlESiUFKuO/N2BVsQX+bYgbBRYQOjIWQJQhtipLZuop+THUPqIG",
-	"HithgNP4vfO/A+8POLEyrP5Dj6w2HyBBF+QqyYFXBfDfmMsLyWQCxykHktuwfzkQkJw4/buD2A6SlAdM",
-	"AlsnrJDk/t3rs+37F1P9ZaRjJ816IM1FxXda2xPpb/C0c375Qu8WX2rvqPZO2zq0IOrL6ILy9BTurv2n",
-	"fWBwbQfrQ7IyINgvwuqC1cSt9jkSQhrYXlRZILC726vUCJC8qInbMh/YAS5YHHdKIeHKqT0sklmokJP+",
-	"0G3IDdW8CV1TtgE3hksCofQfvjaQ0ph+tTz0+WXb5Jd9h9/3nMwYVh9qp/N9DmWQIQ5HISvWiaqawWFq",
-	"81SDPuYR4xhmXpFQ/wioE6yQ86UKdqn/TbYTh7lIw72fvlLl6ZrLqlW1phHdgrFNpl8vrhfXLkSlQTIt",
-	"aEx/8F9FVDPMvXJLpsXywO2/yyBw598Ki4QVBWFbJgq2KUYlY8lOYE6U3+16DTCT5CQVBfoW5/xkbu0t",
-	"b7FWA04Xj2ElIBhL4/dT6lUDhmBKgqoFHbNvumvGkLYg4aMuFAcap6yw4ASjMX2swNRd7ca0ibK9hEs2",
-	"sK8v/Adnn9VK2kab76+v3X+Jct55mZjWhUj84ZYfrAv4aYB3XoqOE2qUmM7s4+7rUgoskpxZYqskAeDA",
-	"F273PjrydPl0+GNVVNn+pMlvoGutfkTf1J2aY/8O8b6qV82GWQOPO0vw0vUWucwcODQKnA5rCU0Fz+nc",
-	"uYY9h0HLFIAvGKpy1qobVCVxW31DZBM5x569AXTbfwXgn4FdTprvPpbFTyTJmbGAP1eYXv04dnBK8WxG",
-	"GWtnfbpbrS6w6c7az8QlY+2LMGk0X510yTW3fmdnlYZEpCKZ9awbxl7Vq2ETf3nuRdMo/nC3vKzKTTvs",
-	"9w+pSrvnmT2zj7pg1g1MqJkOZqFpAL833CrtGIkG0x3+bGor/oR54v+mGRxG/OfJ4254vJoOwrM5HX6X",
-	"74TkamfPuJJCA/Snn+phVb7k/d/J+/BD7vIacK8wMNtwGt2QhpB4J2+yzEDGUJn28R3THFHbeNmWUL1g",
-	"WtP9w/6vAAAA//+cBhmZKBcAAA==",
+	"H4sIAAAAAAAC/+xYTW/jNhD9KwTbQ4sqdtBeChc9ZLftdoG0KOzNaREYtDiSuJBIhhw5UQP/94LUt02r",
+	"dj93k9wSkX4zfPOeZqhHGqtCKwkSLV08UhtnUDD/54/GKLMEq5W04B5oozQYFOCXY8X9Uw42NkKjUJIu",
+	"6h8Rt0YEB4kiEWBoRLHSQBfUohEypbuIFmAtSwMIP5cFkxcGGGebHAh4wHb3AdAuogbuSmGA08X7Oqke",
+	"/LbbrzYfIEYX+K2MfWaHJxL8MJsbKe7K4VlIogzBDIhocboYQiKkYFyQdnFdmvwQ9F0G5GZ5TVTikViM",
+	"JcuJRYalJZqlIfCeOW3UVnAw69gAQ+BrhoEQogCLrNDkPgM5SpjcM0ua35JN5ddaTBrRRJnCIVLOEC5Q",
+	"FBBKok72MO7r0hgXozlMc8Iu9BdCbsGiSBkKmUY9rzwihZIClfHPDViVb4F/GYqNAnMIHRlzIMoQWxYF",
+	"M9V+8D8Vj+C0Be8OuFfKMPshma3iDHiZA/+FOV1IJuOAiUByG65fBgQkJ47/9iC2hSRFj0lg64gVkty8",
+	"e31y+f5BqX8ccmypWQ+oOct8x7k9In+Dxyvnl8+s3ezFewfeO17WYQmizkZn2NOH0E0H+jt9YPDaDvpD",
+	"siJA2A/C6pxVxK12GgkhDcqel2kgseX1RWIESJ5XxG2ZTqyHC5pjqRQSrhzbQ5NMQoUq6Q/dpFyHmi5C",
+	"25RtoBrDJYFQ+D8+N5DQBf1s3o8v82Z2mXcdftfFZMawqvdOW/cplIFCHI5Clq9jVdaDw36Z9znoch5F",
+	"HMNMMxLqHwF2gg45napgl/rfaDtymLM43PnpK1E+XP2yalitaES3YGyt9MvZ5ezSpag0SKYFXdBv/KOI",
+	"aoaZZ27OtJj3sf2zFALv/GthkbA8J2zLRO7n1oFlLLkXmBHld7teA8zEGUlEjr7FuXoyt/aWN1irQUyX",
+	"j2EFIBhLF+/3Q69qMARTEFQN6Dj6pn3NGNIYEh507sf3hOUWHGF0Qe9KMFXr3QWts2xewgUblK8z/q0r",
+	"X30/8Nx8fXlZ3wxc7TxNTOtcxP5w8w/WJfw4wDtNomNBjYTpin3YfZ2kwCLJmCW2jGMADnxG/d6ElTme",
+	"leRUbuMrUiCdK0lKCQ8aYjfd1HeZlrKZ+8EuOlDZ/LH/Z5WX6e6o7N5A2+z9pWFTtfUdK6pn8FW1qjdM",
+	"Suqw1wXbgBeN88pAM6PE6dDdaEr4N7V0qoSeh2TmCQCfMVTFpHiuUBXEbfVDA9sr8FhFbwDd9p8A+BMQ",
+	"kKPmq4ci/47EGTMW8PsSk4tvx3XcD/GMpGOsnVTOcrU6QzhLa5+Iboy1L7IJymY0px/VjRuSup2teDTE",
+	"IhHxpIraof5VtRoOgx+fnqL9LH5zvVmWxaa5NHYX8lK7a749cR5zyaxrmNBQNpip9xP4tY6tkjYi0WDa",
+	"w58c2orfYTrwf9PC+6vic3FWey262L/iTbos/MXpXkiu7u0Jr+3Q1fDTN1+YlRcn/hUnhj9RPAVX7iJq",
+	"wWzDwr4iNQXEa+sqTQ2kDJVpPnQtaIao7WLemLqaMa3p7nb3RwAAAP//DK6M5GsbAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

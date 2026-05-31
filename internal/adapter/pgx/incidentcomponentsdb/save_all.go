@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/incidents"
 )
@@ -38,13 +39,13 @@ func (r *PostgresIncidentComponentsRepository) SaveAll(ctx context.Context, para
 		preparedQuery := batchInserts.Queue(insertIncidentComponentsQuery, queryArgs)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			component, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[incidentComponentDto])
+			componentRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[incidentComponentDto])
 			if err != nil {
 				r.lg.ErrorContext(ctx, "error collecting incident component from batch", slog.Any("err", err))
-				return err
+				return apperrors.InternalError("failed to collect incident component from batch", err)
 			}
 
-			componentsResponse = append(componentsResponse, *component)
+			componentsResponse = append(componentsResponse, *componentRow)
 			return nil
 		})
 	}
@@ -52,7 +53,7 @@ func (r *PostgresIncidentComponentsRepository) SaveAll(ctx context.Context, para
 	err := r.writeDB.SendBatch(ctx, batchInserts).Close()
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error while bulk inserting incident components", slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to bulk insert incident components", err)
 	}
 
 	result := lo.Map(componentsResponse, func(item incidentComponentDto, _ int) incidents.IncidentComponentResult {

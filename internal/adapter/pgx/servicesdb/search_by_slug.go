@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/services"
 )
 
@@ -20,7 +21,7 @@ func (s *PostgresServiceRepository) SearchByName(ctx context.Context, name strin
 	rows, err := s.readDB.Query(ctx, searchBySlugServiceQuery, args)
 	if err != nil {
 		s.lg.ErrorContext(ctx, "error querying services", slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to query services by name", err)
 	}
 	defer rows.Close()
 
@@ -29,7 +30,7 @@ func (s *PostgresServiceRepository) SearchByName(ctx context.Context, name strin
 		if s.lg != nil {
 			s.lg.ErrorContext(ctx, "error collecting service rows", slog.Any("err", err))
 		}
-		return nil, err
+		return nil, apperrors.InternalError("failed to collect service rows", err)
 	}
 
 	results := make([]services.ServiceResult, 0, len(dtos))

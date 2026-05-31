@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/samber/lo"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/common/nullable"
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
 )
@@ -38,13 +39,13 @@ func (r *PostgresScheduleMaintenanceComponentsRepository) SaveAll(ctx context.Co
 		preparedQuery := batchInserts.Queue(insertScheduleMaintenanceComponentsQuery, queryArgs)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			component, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[scheduleMaintenanceComponentDto])
+			componentRow, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[scheduleMaintenanceComponentDto])
 			if err != nil {
 				r.lg.ErrorContext(ctx, "error collecting schedule maintenance component from batch", slog.Any("err", err))
-				return err
+				return apperrors.InternalError("failed to collect schedule maintenance component from batch", err)
 			}
 
-			componentsResponse = append(componentsResponse, *component)
+			componentsResponse = append(componentsResponse, *componentRow)
 			return nil
 		})
 	}
@@ -52,7 +53,7 @@ func (r *PostgresScheduleMaintenanceComponentsRepository) SaveAll(ctx context.Co
 	err := r.writeDB.SendBatch(ctx, batchInserts).Close()
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error while bulk inserting schedule maintenance components", slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to bulk insert schedule maintenance components", err)
 	}
 
 	result := lo.Map(componentsResponse, func(item scheduleMaintenanceComponentDto, _ int) scheduledmaintenance.ScheduledMaintenanceComponentResult {
