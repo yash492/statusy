@@ -2,14 +2,11 @@ package command
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/views"
 )
-
-var ErrCannotChangeDefaultStatusOfOnlyView = errors.New("cannot change default status of the only view")
 
 type EditViewParams struct {
 	CurrentSlug string
@@ -34,10 +31,6 @@ func NewEditViewCmd(lg *slog.Logger, viewsRepo views.Repository) EditViewCmd {
 func (c EditViewCmd) Execute(ctx context.Context, params EditViewParams) (views.View, error) {
 	view, err := c.viewsRepo.GetBySlug(ctx, params.CurrentSlug)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return views.View{}, ErrViewNotFound
-		}
-		c.lg.ErrorContext(ctx, "error fetching view for edit", slog.String("slug", params.CurrentSlug), slog.Any("err", err))
 		return views.View{}, err
 	}
 
@@ -50,7 +43,7 @@ func (c EditViewCmd) Execute(ctx context.Context, params EditViewParams) (views.
 			return views.View{}, err
 		}
 		if count <= 1 {
-			return views.View{}, ErrCannotChangeDefaultStatusOfOnlyView
+			return views.View{}, apperrors.ConflictError("cannot change default status of the only view", nil)
 		}
 	}
 
@@ -61,7 +54,6 @@ func (c EditViewCmd) Execute(ctx context.Context, params EditViewParams) (views.
 
 	updatedView, err := c.viewsRepo.UpdateView(ctx, view)
 	if err != nil {
-		c.lg.ErrorContext(ctx, "error updating view", slog.Uint64("id", uint64(view.ID)), slog.Any("err", err))
 		return views.View{}, err
 	}
 

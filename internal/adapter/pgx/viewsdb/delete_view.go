@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 )
 
 //go:embed queries/soft_delete_view_service_components_by_view_id.sql
@@ -24,7 +25,7 @@ func (r *PostgresViewsRepository) DeleteView(ctx context.Context, viewID uint) e
 	tx, err := r.writeDB.Begin(ctx)
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error starting transaction for delete view", slog.Any("err", err))
-		return err
+		return apperrors.InternalError("failed to start delete view transaction", err)
 	}
 	defer tx.Rollback(ctx)
 
@@ -34,7 +35,7 @@ func (r *PostgresViewsRepository) DeleteView(ctx context.Context, viewID uint) e
 	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error soft-deleting view service components for view", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
-		return err
+		return apperrors.InternalError("failed to soft-delete view service components", err)
 	}
 
 	// Soft-delete view service component groups
@@ -43,7 +44,7 @@ func (r *PostgresViewsRepository) DeleteView(ctx context.Context, viewID uint) e
 	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error soft-deleting view service component groups for view", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
-		return err
+		return apperrors.InternalError("failed to soft-delete view service component groups", err)
 	}
 
 	// Soft-delete view services
@@ -52,7 +53,7 @@ func (r *PostgresViewsRepository) DeleteView(ctx context.Context, viewID uint) e
 	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error soft-deleting view services for view", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
-		return err
+		return apperrors.InternalError("failed to soft-delete view services", err)
 	}
 
 	// Soft-delete view
@@ -61,12 +62,12 @@ func (r *PostgresViewsRepository) DeleteView(ctx context.Context, viewID uint) e
 	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error soft-deleting view", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
-		return err
+		return apperrors.InternalError("failed to soft-delete view", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
 		r.lg.ErrorContext(ctx, "error committing delete view transaction", slog.Any("err", err))
-		return err
+		return apperrors.InternalError("failed to commit delete view transaction", err)
 	}
 
 	return nil

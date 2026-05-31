@@ -21,5 +21,3 @@ type Repository interface {
 	DeleteView(ctx context.Context, viewID uint) error
 	CountViews(ctx context.Context) (int, error)
 }
-
-

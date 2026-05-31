@@ -39,4 +39,3 @@ type componentDto struct {
 	UpdatedAt        time.Time          `db:"updated_at"`
 	DeletedAt        pgtype.Timestamptz `db:"deleted_at"`
 }
-

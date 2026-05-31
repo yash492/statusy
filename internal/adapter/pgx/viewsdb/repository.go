@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/views"
 )
@@ -30,17 +31,17 @@ func (r *PostgresViewsRepository) GetDefault(ctx context.Context) (views.View, e
 	rows, err := r.readDB.Query(ctx, getDefaultViewQuery)
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error querying default view", slog.Any("err", err))
-		return views.View{}, err
+		return views.View{}, apperrors.InternalError("failed to query default view", err)
 	}
 	defer rows.Close()
 
 	dto, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[viewDto])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return views.View{}, pgx.ErrNoRows
+			return views.View{}, apperrors.NotFoundError("default view not found", err)
 		}
 		r.lg.ErrorContext(ctx, "error collecting default view row", slog.Any("err", err))
-		return views.View{}, err
+		return views.View{}, apperrors.InternalError("failed to collect default view row", err)
 	}
 
 	services, err := r.GetServicesByViewID(ctx, dto.ID)
@@ -69,14 +70,14 @@ func (r *PostgresViewsRepository) Save(ctx context.Context, view views.View) (vi
 	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error inserting view", slog.String("slug", view.Slug), slog.Any("err", err))
-		return views.View{}, err
+		return views.View{}, apperrors.InternalError("failed to insert view", err)
 	}
 	defer rows.Close()
 
 	dto, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[viewDto])
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error collecting inserted view row", slog.String("slug", view.Slug), slog.Any("err", err))
-		return views.View{}, err
+		return views.View{}, apperrors.InternalError("failed to collect inserted view row", err)
 	}
 
 	return views.View{
@@ -95,14 +96,14 @@ func (r *PostgresViewsRepository) GetServicesByViewID(ctx context.Context, viewI
 	rows, err := r.readDB.Query(ctx, getViewServicesQuery, pgx.NamedArgs{"view_id": viewID})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error querying view services", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to query view services", err)
 	}
 	defer rows.Close()
 
 	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[viewServiceDto])
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error collecting view services rows", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to collect view services rows", err)
 	}
 
 	result := make([]views.ViewServiceStatus, len(dtos))
@@ -123,17 +124,17 @@ func (r *PostgresViewsRepository) GetBySlug(ctx context.Context, slug string) (v
 	rows, err := r.readDB.Query(ctx, getViewBySlugQuery, pgx.NamedArgs{"slug": slug})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error querying view by slug", slog.String("slug", slug), slog.Any("err", err))
-		return views.View{}, err
+		return views.View{}, apperrors.InternalError("failed to query view by slug", err)
 	}
 	defer rows.Close()
 
 	dto, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[viewDto])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return views.View{}, pgx.ErrNoRows
+			return views.View{}, apperrors.NotFoundError("view not found", err)
 		}
 		r.lg.ErrorContext(ctx, "error collecting view row by slug", slog.String("slug", slug), slog.Any("err", err))
-		return views.View{}, err
+		return views.View{}, apperrors.InternalError("failed to collect view row by slug", err)
 	}
 
 	servicesList, err := r.GetServicesByViewID(ctx, dto.ID)
@@ -160,16 +161,15 @@ func (r *PostgresViewsRepository) GetUnconfiguredServices(ctx context.Context, v
 	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error querying unconfigured services", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to query unconfigured services", err)
 	}
 	defer rows.Close()
 
 	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[services.ServiceResult])
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error collecting unconfigured services rows", slog.Uint64("view_id", uint64(viewID)), slog.Any("err", err))
-		return nil, err
+		return nil, apperrors.InternalError("failed to collect unconfigured services rows", err)
 	}
 
 	return dtos, nil
 }
-

@@ -17,13 +17,13 @@ type Handler struct {
 	IncidentByStatuspageCmd             command.IncidentByStatuspageCmd
 	ScheduledMaintenanceByStatuspageCmd command.ScheduledMaintenanceByStatuspageCmd
 	GetOrCreateDefaultViewCmd           command.GetOrCreateDefaultViewCmd
-	GetUnconfiguredServicesCmd           command.GetUnconfiguredServicesCmd
-	GetServiceComponentsCmd              command.GetServiceComponentsCmd
-	AddViewServiceCmd                    command.AddViewServiceCmd
-	EditViewServiceCmd                   command.EditViewServiceCmd
-	DeleteViewServiceCmd                 command.DeleteViewServiceCmd
-	EditViewCmd                          command.EditViewCmd
-	DeleteViewCmd                        command.DeleteViewCmd
+	GetUnconfiguredServicesCmd          command.GetUnconfiguredServicesCmd
+	GetServiceComponentsCmd             command.GetServiceComponentsCmd
+	AddViewServiceCmd                   command.AddViewServiceCmd
+	EditViewServiceCmd                  command.EditViewServiceCmd
+	DeleteViewServiceCmd                command.DeleteViewServiceCmd
+	EditViewCmd                         command.EditViewCmd
+	DeleteViewCmd                       command.DeleteViewCmd
 }
 
 // (GET /statuspages)
@@ -399,5 +399,3 @@ func (h Handler) DeleteView(ctx context.Context, request api.DeleteViewRequestOb
 
 	return api.DeleteView204Response{}, nil
 }
-
-

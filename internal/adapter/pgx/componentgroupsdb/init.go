@@ -38,4 +38,3 @@ type componentGroupDto struct {
 	UpdatedAt  time.Time        `db:"updated_at"`
 	DeletedAt  pgtype.Timestamp `db:"deleted_at"`
 }
-

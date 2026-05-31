@@ -15,8 +15,6 @@ import (
 //go:embed queries/insert_component_groups.sql
 var insertComponentgroupQuery string
 
-
-
 func (c *PostgresComponentGroupsRepository) SaveAll(ctx context.Context, params []components.GroupParams) ([]components.ComponentGroupResult, error) {
 	batchInserts := &pgx.Batch{}
 	componentgroupResponse := []componentGroupDto{}

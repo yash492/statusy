@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/views"
 )
 
@@ -24,8 +24,7 @@ func NewGetOrCreateDefaultViewCmd(lg *slog.Logger, viewsRepo views.Repository) G
 func (c GetOrCreateDefaultViewCmd) Execute(ctx context.Context) (views.View, error) {
 	view, err := c.viewsRepo.GetDefault(ctx)
 	if err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			c.lg.ErrorContext(ctx, "error fetching default view", slog.Any("err", err))
+		if appErr, ok := errors.AsType[*apperrors.AppError](err); !ok || appErr.Type != apperrors.TypeNotFound {
 			return views.View{}, err
 		}
 
@@ -38,7 +37,6 @@ func (c GetOrCreateDefaultViewCmd) Execute(ctx context.Context) (views.View, err
 			Services:    []views.ViewServiceStatus{},
 		})
 		if err != nil {
-			c.lg.ErrorContext(ctx, "error seeding default view", slog.Any("err", err))
 			return views.View{}, err
 		}
 	}

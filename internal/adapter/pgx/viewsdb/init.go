@@ -30,13 +30,13 @@ func NewPostgresViewsRepository(
 
 // viewDto maps a row from the views table.
 type viewDto struct {
-	ID          uint      `db:"id"`
-	Name        string    `db:"name"`
-	Slug        string    `db:"slug"`
-	Description string    `db:"description"`
-	IsDefault   bool      `db:"is_default"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID          uint       `db:"id"`
+	Name        string     `db:"name"`
+	Slug        string     `db:"slug"`
+	Description string     `db:"description"`
+	IsDefault   bool       `db:"is_default"`
+	CreatedAt   time.Time  `db:"created_at"`
+	UpdatedAt   time.Time  `db:"updated_at"`
 	DeletedAt   *time.Time `db:"deleted_at"`
 }
 
