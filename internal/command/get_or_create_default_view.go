@@ -24,7 +24,8 @@ func NewGetOrCreateDefaultViewCmd(lg *slog.Logger, viewsRepo views.Repository) G
 func (c GetOrCreateDefaultViewCmd) Execute(ctx context.Context) (views.View, error) {
 	view, err := c.viewsRepo.GetDefault(ctx)
 	if err != nil {
-		if appErr, ok := errors.AsType[*apperrors.AppError](err); !ok || appErr.Type != apperrors.TypeNotFound {
+		appErr, ok := errors.AsType[*apperrors.AppError](err)
+		if !ok || appErr.Type != apperrors.TypeNotFound {
 			return views.View{}, err
 		}
 
