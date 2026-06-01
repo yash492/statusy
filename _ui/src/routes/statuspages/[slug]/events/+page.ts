@@ -1,5 +1,5 @@
 import { StatuspageApi } from '$lib/api/statuspage/statuspage';
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
@@ -48,15 +48,17 @@ export async function load({ params, url }) {
 	}
 
 	const statuspageApi = new StatuspageApi();
-	let resp;
-	if (type === 'scheduled-maintenances') {
-		resp = await statuspageApi.scheduledMaintenances(params.slug, page, pageSize);
-	} else {
-		resp = await statuspageApi.incidents(params.slug, page, pageSize);
+	const [data, errorRes] =
+		type === 'scheduled-maintenances'
+			? await statuspageApi.scheduledMaintenances(params.slug, page, pageSize)
+			: await statuspageApi.incidents(params.slug, page, pageSize);
+
+	if (errorRes || !data) {
+		error(500, errorRes?.message || 'Failed to load status page events');
 	}
 
 	return {
-		resp,
+		resp: data,
 		page,
 		pageSize,
 		type

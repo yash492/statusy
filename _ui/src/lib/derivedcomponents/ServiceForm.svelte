@@ -4,8 +4,11 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 
-	let { mode, publicId, serviceSlug }: { mode: 'add' | 'edit'; publicId: string; serviceSlug?: string } =
-		$props();
+	let {
+		mode,
+		publicId,
+		serviceSlug
+	}: { mode: 'add' | 'edit'; publicId: string; serviceSlug?: string } = $props();
 
 	// Mock available services for select dropdown
 	let availableServices = $state([

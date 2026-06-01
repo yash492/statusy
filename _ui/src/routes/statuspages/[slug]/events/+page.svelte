@@ -167,7 +167,27 @@
 										RSS
 									</Tabs.Trigger>
 									<Tabs.Trigger class="cursor-pointer gap-1.5" value="slack">
-										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><rect width="3" height="8" x="13" y="2" rx="1.5"/><path d="M19 8.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/><rect width="3" height="8" x="8" y="14" rx="1.5"/><path d="M5 15.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0z"/><rect width="8" height="3" x="2" y="8" rx="1.5"/><path d="M8.5 5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/><rect width="8" height="3" x="14" y="13" rx="1.5"/><path d="M15.5 19a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="16"
+											height="16"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											class="size-4"
+											><rect width="3" height="8" x="13" y="2" rx="1.5" /><path
+												d="M19 8.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"
+											/><rect width="3" height="8" x="8" y="14" rx="1.5" /><path
+												d="M5 15.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0z"
+											/><rect width="8" height="3" x="2" y="8" rx="1.5" /><path
+												d="M8.5 5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"
+											/><rect width="8" height="3" x="14" y="13" rx="1.5" /><path
+												d="M15.5 19a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"
+											/></svg
+										>
 										Slack
 									</Tabs.Trigger>
 								</Tabs.List>

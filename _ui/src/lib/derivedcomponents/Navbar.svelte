@@ -142,12 +142,18 @@
 			errorMessage = null;
 
 			try {
-				const pages = await statuspageApi.list(normalizedQuery);
+				const [data, error] = await statuspageApi.list(normalizedQuery);
 				if (requestId !== latestRequestId) {
 					return;
 				}
-				results = pages;
-				activeIndex = pages.length === 0 ? 0 : Math.min(activeIndex, pages.length - 1);
+				if (error || !data) {
+					results = [];
+					errorMessage = error?.message || 'Could not load status pages.';
+					hasSearchResponse = false;
+					return;
+				}
+				results = data;
+				activeIndex = data.length === 0 ? 0 : Math.min(activeIndex, data.length - 1);
 				hasSearchResponse = true;
 			} catch {
 				if (requestId !== latestRequestId) {

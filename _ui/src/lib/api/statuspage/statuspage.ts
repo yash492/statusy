@@ -1,4 +1,4 @@
-import KyClient from '$lib/api/ky/ky';
+import { ApiClient } from '$lib/api/ky/ky';
 
 export interface Statuspage {
 	id: number;
@@ -62,34 +62,40 @@ export class StatuspageApi {
 	private readonly basePath = 'statuspages';
 
 	list(search?: string) {
-		return KyClient.get(this.basePath, {
+		return ApiClient.get<Statuspage[]>(this.basePath, {
 			searchParams: search ? { search } : undefined
-		}).json<Statuspage[]>();
+		});
 	}
 
 	bySlug(slug: string) {
-		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}`).json<Statuspage>();
+		return ApiClient.get<Statuspage>(`${this.basePath}/${encodeURIComponent(slug)}`);
 	}
 
 	incidents(slug: string, pageNumber = 1, pageSize = 10) {
-		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}/incidents`, {
-			searchParams: {
-				page_number: pageNumber,
-				page_size: pageSize
+		return ApiClient.get<StatuspageIncidents>(
+			`${this.basePath}/${encodeURIComponent(slug)}/incidents`,
+			{
+				searchParams: {
+					page_number: pageNumber,
+					page_size: pageSize
+				}
 			}
-		}).json<StatuspageIncidents>();
+		);
 	}
 
 	scheduledMaintenances(slug: string, pageNumber = 1, pageSize = 10) {
-		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}/schedule-maintenances`, {
-			searchParams: {
-				page_number: pageNumber,
-				page_size: pageSize
+		return ApiClient.get<StatuspageScheduledMaintenances>(
+			`${this.basePath}/${encodeURIComponent(slug)}/schedule-maintenances`,
+			{
+				searchParams: {
+					page_number: pageNumber,
+					page_size: pageSize
+				}
 			}
-		}).json<StatuspageScheduledMaintenances>();
+		);
 	}
 
 	getComponents(serviceSlug: string) {
-		return KyClient.get(`services/${encodeURIComponent(serviceSlug)}/components`).json<ServiceComponents>();
+		return ApiClient.get<ServiceComponents>(`services/${encodeURIComponent(serviceSlug)}/components`);
 	}
 }
