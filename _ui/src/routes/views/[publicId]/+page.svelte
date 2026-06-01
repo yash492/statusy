@@ -12,6 +12,7 @@
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -78,20 +79,15 @@
 
 	async function confirmRemove() {
 		if (serviceToDelete) {
-			try {
-				await viewsApi.deleteViewService(data.view.public_id, serviceToDelete.id);
-				localServices = localServices.filter((s) => s.id !== serviceToDelete.id);
-				isDeleteConfirmOpen = false;
-				serviceToDelete = null;
-			} catch (err: any) {
-				let msg = 'Failed to remove service';
-				if (err.response) {
-					msg = await err.response.text();
-				} else {
-					msg = err.message || msg;
-				}
-				alert(msg);
+			const [, err] = await viewsApi.deleteViewService(data.view.public_id, serviceToDelete.id);
+			if (err) {
+				toast.error(err.message || 'Failed to remove service');
+				return;
 			}
+			toast.success(`Successfully removed ${serviceToDelete.name}`);
+			localServices = localServices.filter((s) => s.id !== serviceToDelete.id);
+			isDeleteConfirmOpen = false;
+			serviceToDelete = null;
 		}
 	}
 
@@ -108,62 +104,51 @@
 	let editViewName = $state('');
 	let editViewDescription = $state('');
 	let editViewIsDefault = $state(false);
-	let editViewError = $state<string | null>(null);
 
 	function openEditViewDialog() {
 		editViewName = viewName;
 		editViewDescription = viewDescription;
 		editViewIsDefault = isDefaultView;
-		editViewError = null;
 		isEditViewOpen = true;
 	}
 
 	async function saveViewMeta() {
-		editViewError = null;
-		try {
-			await viewsApi.edit(data.view.public_id, {
-				name: editViewName,
-				description: editViewDescription,
-				is_default: editViewIsDefault
-			});
+		const [, err] = await viewsApi.edit(data.view.public_id, {
+			name: editViewName,
+			description: editViewDescription,
+			is_default: editViewIsDefault
+		});
 
-			viewName = editViewName;
-			viewDescription = editViewDescription;
-			isDefaultView = editViewIsDefault;
-
-			isEditViewOpen = false;
-		} catch (err: any) {
-			if (err.response) {
-				editViewError = await err.response.text();
-			} else {
-				editViewError = err.message || 'Failed to update view details';
-			}
+		if (err) {
+			toast.error(err.message || 'Failed to update view details');
+			return;
 		}
+
+		toast.success('View details updated successfully');
+		viewName = editViewName;
+		viewDescription = editViewDescription;
+		isDefaultView = editViewIsDefault;
+		isEditViewOpen = false;
 	}
 
 	// Delete View Dialog State
 	let isDeleteViewOpen = $state(false);
-	let deleteViewError = $state<string | null>(null);
 
 	function openDeleteViewDialog() {
-		deleteViewError = null;
 		isDeleteViewOpen = true;
 	}
 
 	async function confirmDeleteView() {
-		deleteViewError = null;
-		try {
-			await viewsApi.delete(data.view.public_id);
+		const [, err] = await viewsApi.delete(data.view.public_id);
 
-			isDeleteViewOpen = false;
-			void goto('/');
-		} catch (err: any) {
-			if (err.response) {
-				deleteViewError = await err.response.text();
-			} else {
-				deleteViewError = err.message || 'Failed to delete view';
-			}
+		if (err) {
+			toast.error(err.message || 'Failed to delete view');
+			return;
 		}
+
+		toast.success('View deleted successfully');
+		isDeleteViewOpen = false;
+		void goto('/');
 	}
 </script>
 
@@ -475,12 +460,6 @@
 		</Dialog.Header>
 
 		<div class="grid gap-4 py-4">
-			{#if editViewError}
-				<div class="rounded-lg border border-red-500/20 bg-red-950/20 p-3 text-sm text-red-400">
-					{editViewError}
-				</div>
-			{/if}
-
 			<div class="grid gap-2">
 				<Label for="view-name" class="text-sm font-semibold text-zinc-300">Name</Label>
 				<Input
@@ -546,13 +525,6 @@
 				<AlertTriangle class="size-5 text-red-500" />
 				Delete View?
 			</Dialog.Title>
-			{#if deleteViewError}
-				<div
-					class="mt-2 rounded-lg border border-red-500/20 bg-red-950/20 p-3 text-sm text-red-400"
-				>
-					{deleteViewError}
-				</div>
-			{/if}
 			<Dialog.Description class="mt-2 text-zinc-400">
 				Are you sure you want to delete the view <span class="font-bold text-white">{viewName}</span
 				>? This action will remove all configured services for this view and cannot be undone.

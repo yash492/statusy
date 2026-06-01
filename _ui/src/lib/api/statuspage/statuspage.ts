@@ -96,6 +96,8 @@ export class StatuspageApi {
 	}
 
 	getComponents(serviceSlug: string) {
-		return ApiClient.get<ServiceComponents>(`services/${encodeURIComponent(serviceSlug)}/components`);
+		return ApiClient.get<ServiceComponents>(
+			`services/${encodeURIComponent(serviceSlug)}/components`
+		);
 	}
 }

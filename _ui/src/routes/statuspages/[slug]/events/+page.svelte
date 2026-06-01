@@ -12,6 +12,7 @@
 	import ClipboardIcon from '@lucide/svelte/icons/clipboard';
 	import RssIcon from '@lucide/svelte/icons/rss';
 	import type { PaginationState } from '@tanstack/table-core';
+	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -22,7 +23,6 @@
 	let isSubscribeDialogOpen = $state(false);
 	let subscribeTab = $state<SubscribeTab>('rss');
 	let copiedKey = $state<CopyKey | null>(null);
-	let copyError = $state<string | null>(null);
 	let copyResetTimer: ReturnType<typeof setTimeout> | null = null;
 
 	const PAGE_SIZE = 10;
@@ -102,7 +102,6 @@
 		if (!open) {
 			subscribeTab = 'rss';
 			copiedKey = null;
-			copyError = null;
 			if (copyResetTimer) {
 				clearTimeout(copyResetTimer);
 				copyResetTimer = null;
@@ -112,9 +111,9 @@
 
 	async function copyText(value: string, key: CopyKey) {
 		try {
-			copyError = null;
 			await navigator.clipboard.writeText(value);
 			copiedKey = key;
+			toast.success('Copied feed snippet to clipboard');
 
 			if (copyResetTimer) {
 				clearTimeout(copyResetTimer);
@@ -125,7 +124,7 @@
 				copyResetTimer = null;
 			}, 1800);
 		} catch {
-			copyError = 'Could not copy. Please copy manually.';
+			toast.error('Could not copy. Please copy manually.');
 		}
 	}
 </script>
@@ -282,10 +281,6 @@
 									</div>
 								</Tabs.Content>
 							</Tabs.Root>
-
-							{#if copyError}
-								<p class="text-sm text-destructive">{copyError}</p>
-							{/if}
 						</div>
 					</Dialog.Content>
 				</Dialog.Root>

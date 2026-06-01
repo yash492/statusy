@@ -2,6 +2,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 
 	import Navbar from '$lib/derivedcomponents/Navbar.svelte';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
 	import './layout.css';
 	let { children } = $props();
@@ -9,6 +10,7 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <ModeWatcher />
+<Toaster />
 
 <Navbar />
 <main class="mb-10">
