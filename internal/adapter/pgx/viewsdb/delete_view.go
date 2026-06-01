@@ -9,11 +9,11 @@ import (
 	"github.com/yash492/statusy/internal/common/apperrors"
 )
 
-//go:embed queries/soft_delete_view_service_components_by_view_id.sql
-var softDeleteViewServiceComponentsByViewIDQuery string
+//go:embed queries/hard_delete_view_service_components_by_view_id.sql
+var hardDeleteViewServiceComponentsByViewIDQuery string
 
-//go:embed queries/soft_delete_view_service_component_groups_by_view_id.sql
-var softDeleteViewServiceComponentGroupsByViewIDQuery string
+//go:embed queries/hard_delete_view_service_component_groups_by_view_id.sql
+var hardDeleteViewServiceComponentGroupsByViewIDQuery string
 
 //go:embed queries/soft_delete_view_services_by_view_id.sql
 var softDeleteViewServicesByViewIDQuery string
@@ -29,8 +29,7 @@ func (r *PostgresViewsRepository) DeleteView(ctx context.Context, viewID uint) e
 	}
 	defer tx.Rollback(ctx)
 
-	// Soft-delete view service components
-	_, err = tx.Exec(ctx, softDeleteViewServiceComponentsByViewIDQuery, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, hardDeleteViewServiceComponentsByViewIDQuery, pgx.NamedArgs{
 		"view_id": viewID,
 	})
 	if err != nil {
@@ -38,8 +37,7 @@ func (r *PostgresViewsRepository) DeleteView(ctx context.Context, viewID uint) e
 		return apperrors.InternalError("failed to soft-delete view service components", err)
 	}
 
-	// Soft-delete view service component groups
-	_, err = tx.Exec(ctx, softDeleteViewServiceComponentGroupsByViewIDQuery, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, hardDeleteViewServiceComponentGroupsByViewIDQuery, pgx.NamedArgs{
 		"view_id": viewID,
 	})
 	if err != nil {

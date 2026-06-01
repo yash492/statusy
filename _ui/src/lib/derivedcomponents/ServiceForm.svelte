@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { ViewsApi } from '$lib/api/views/views';
 	import { StatuspageApi } from '$lib/api/statuspage/statuspage';
+	import { ViewsApi } from '$lib/api/views/views';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import Check from '@lucide/svelte/icons/check';
@@ -103,10 +103,7 @@
 			return;
 		}
 		if (res) {
-			componentMode = res.include_all_components ? 'all' : 'custom';
-			if (res.include_all_components) {
-				selectAll();
-			} else {
+			if (!res.include_all_components) {
 				selectedComponentIds = res.component_ids ?? [];
 				selectedComponentGroupIds = res.component_group_ids ?? [];
 			}
@@ -144,7 +141,6 @@
 						grouped_components: res.grouped_components,
 						ungrouped_components: res.ungrouped_components
 					};
-					selectAll();
 				}
 			});
 		} else {
@@ -160,14 +156,6 @@
 			return [];
 		}
 		return res ?? [];
-	}
-
-	function selectAll() {
-		if (!configuringService) return;
-		selectedComponentGroupIds = configuringService.grouped_components.map((g) => g.id);
-		const ids = configuringService.grouped_components.flatMap((g) => g.components.map((c) => c.id));
-		ids.push(...configuringService.ungrouped_components.map((c) => c.id));
-		selectedComponentIds = ids;
 	}
 
 	function toggleComponent(componentId: number, groupId?: number) {
@@ -304,9 +292,7 @@
 			<div class="grid gap-6">
 				<!-- Service Name Input/Dropdown Selector -->
 				<div class="grid gap-2">
-					<Label for="service-search" class="text-lg font-bold text-zinc-200"
-						>Service Name</Label
-					>
+					<Label for="service-search" class="text-lg font-bold text-zinc-200">Service Name</Label>
 					{#if mode === 'add'}
 						<div id="service-search-container" class="svelte-select-container relative">
 							<Select
@@ -346,9 +332,7 @@
 						<Label class="text-lg font-bold text-zinc-200">Monitored Components</Label>
 
 						<!-- Custom Radio Buttons and Component checklist in borderless container -->
-						<div
-							class="flex flex-col gap-4 rounded-lg bg-zinc-900/20 p-4"
-						>
+						<div class="flex flex-col gap-4 rounded-lg bg-zinc-900/20 p-4">
 							<label class="group flex cursor-pointer items-start gap-3">
 								<input
 									type="radio"
@@ -357,7 +341,6 @@
 									checked={componentMode === 'all'}
 									onchange={() => {
 										componentMode = 'all';
-										selectAll();
 									}}
 									class="sr-only"
 								/>
@@ -429,7 +412,7 @@
 											type="text"
 											bind:value={componentSearchQuery}
 											placeholder="Filter components by name..."
-											class="w-full rounded-lg border border-zinc-800 bg-zinc-950/40 py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-zinc-700"
+											class="w-full rounded-lg border border-zinc-800 bg-zinc-950/40 py-2.5 pr-4 pl-10 text-sm text-white placeholder-zinc-500 transition-colors outline-none focus:border-zinc-700"
 										/>
 									</div>
 
@@ -550,7 +533,7 @@
 						(componentMode === 'custom' && selectedComponentIds.length === 0)}
 					onclick={saveService}
 				>
-					{saving ? 'Saving...' : (mode === 'add' ? 'Add Service' : 'Save Changes')}
+					{saving ? 'Saving...' : mode === 'add' ? 'Add Service' : 'Save Changes'}
 				</Button>
 			</div>
 		{:else}

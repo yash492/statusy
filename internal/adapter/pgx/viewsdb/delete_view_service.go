@@ -10,11 +10,6 @@ import (
 	"github.com/yash492/statusy/internal/common/apperrors"
 )
 
-//go:embed queries/soft_delete_view_service_components.sql
-var softDeleteViewServiceComponentsQuery string
-
-//go:embed queries/soft_delete_view_service_component_groups.sql
-var softDeleteViewServiceComponentGroupsQuery string
 
 //go:embed queries/soft_delete_view_service.sql
 var softDeleteViewServiceQuery string
@@ -48,7 +43,7 @@ func (r *PostgresViewsRepository) DeleteViewService(ctx context.Context, viewID 
 	}
 
 	// Soft-delete component rows
-	_, err = tx.Exec(ctx, softDeleteViewServiceComponentsQuery, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, hardDeleteViewServiceComponentsQuery, pgx.NamedArgs{
 		"view_service_id": dto.ID,
 	})
 	if err != nil {
@@ -57,7 +52,7 @@ func (r *PostgresViewsRepository) DeleteViewService(ctx context.Context, viewID 
 	}
 
 	// Soft-delete component group rows
-	_, err = tx.Exec(ctx, softDeleteViewServiceComponentGroupsQuery, pgx.NamedArgs{
+	_, err = tx.Exec(ctx, hardDeleteViewServiceComponentGroupsQuery, pgx.NamedArgs{
 		"view_service_id": dto.ID,
 	})
 	if err != nil {
