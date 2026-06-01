@@ -18,7 +18,6 @@
 
 	let { data }: { data: PageData } = $props();
 
-	const view = $derived(data.view);
 	const viewsApi = new ViewsApi();
 
 	// View Settings and Meta State
