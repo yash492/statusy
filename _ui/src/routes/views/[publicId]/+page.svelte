@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { ViewsApi } from '$lib/api/views/views';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -86,9 +86,9 @@
 				return;
 			}
 			toast.success(`Successfully removed ${serviceToDelete.name}`);
-			localServices = localServices.filter((s) => s.id !== serviceToDelete.id);
 			isDeleteConfirmOpen = false;
 			serviceToDelete = null;
+			await invalidateAll();
 		}
 	}
 
@@ -126,10 +126,8 @@
 		}
 
 		toast.success('View details updated successfully');
-		viewName = editViewName;
-		viewDescription = editViewDescription;
-		isDefaultView = editViewIsDefault;
 		isEditViewOpen = false;
+		await invalidateAll();
 	}
 
 	// Delete View Dialog State
@@ -149,7 +147,8 @@
 
 		toast.success('View deleted successfully');
 		isDeleteViewOpen = false;
-		void goto('/');
+		await goto('/');
+		await invalidateAll();
 	}
 </script>
 
@@ -472,7 +471,7 @@
 				<input
 					type="checkbox"
 					bind:checked={editViewIsDefault}
-					class="size-4 rounded border-zinc-800 bg-zinc-900 text-white accent-emerald-500 transition-colors focus:ring-0"
+					class="size-4 rounded border-zinc-800 bg-zinc-900 text-white accent-zinc-300 transition-colors focus:ring-0"
 				/>
 				<span class="text-sm text-zinc-300">Make this the default view</span>
 			</label>

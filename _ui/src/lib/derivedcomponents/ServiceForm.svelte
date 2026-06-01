@@ -1,10 +1,13 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { StatuspageApi } from '$lib/api/statuspage/statuspage';
 	import { ViewsApi } from '$lib/api/views/views';
+	import * as Accordion from '$lib/components/ui/accordion';
+	import { ControlledCheckbox } from '$lib/components/ui/checkbox';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import Check from '@lucide/svelte/icons/check';
 	import Search from '@lucide/svelte/icons/search';
 	import Select from 'svelte-select';
@@ -36,6 +39,20 @@
 	let selectedServiceIdStr = $state('');
 	let selectedServiceId = $derived(selectedServiceIdStr ? Number(selectedServiceIdStr) : null);
 	let componentMode = $state<'all' | 'custom'>('all');
+	const componentModeOptions = [
+		{
+			value: 'all' as const,
+			id: 'mode-all',
+			label: 'Monitor all components',
+			description: 'Automatically monitor all current and future components for this service'
+		},
+		{
+			value: 'custom' as const,
+			id: 'mode-custom',
+			label: 'Customize component selection',
+			description: 'Select specific component groups or individual components to monitor'
+		}
+	];
 	let errorMessage = $state<string | null>(null);
 	let saving = $state(false);
 
@@ -103,6 +120,7 @@
 			return;
 		}
 		if (res) {
+			componentMode = res.include_all_components ? 'all' : 'custom';
 			if (!res.include_all_components) {
 				selectedComponentIds = res.component_ids ?? [];
 				selectedComponentGroupIds = res.component_group_ids ?? [];
@@ -160,41 +178,68 @@
 
 	function toggleComponent(componentId: number, groupId?: number) {
 		if (!configuringService) return;
-		if (selectedComponentIds.includes(componentId)) {
-			selectedComponentIds = selectedComponentIds.filter((id) => id !== componentId);
-			if (groupId) {
-				selectedComponentGroupIds = selectedComponentGroupIds.filter((id) => id !== groupId);
-			}
-		} else {
-			selectedComponentIds = [...selectedComponentIds, componentId];
-			if (groupId) {
-				const group = configuringService.grouped_components.find((g) => g.id === groupId);
-				if (group) {
-					const allChecked = group.components.every((c) => selectedComponentIds.includes(c.id));
-					if (allChecked) {
-						selectedComponentGroupIds = [...selectedComponentGroupIds, groupId];
+
+		if (groupId) {
+			const group = configuringService.grouped_components.find((g) => g.id === groupId);
+			if (group) {
+				const isGroupSelected = selectedComponentGroupIds.includes(groupId);
+				if (isGroupSelected) {
+					// Group was fully selected. Unchecking this component means the group is no longer fully selected.
+					// We remove the group ID, and add all OTHER components of this group to selectedComponentIds.
+					selectedComponentGroupIds = selectedComponentGroupIds.filter((id) => id !== groupId);
+					const otherComponentIds = group.components
+						.map((c) => c.id)
+						.filter((id) => id !== componentId);
+					selectedComponentIds = [...selectedComponentIds, ...otherComponentIds];
+				} else {
+					// Group was not fully selected.
+					const isCompSelected = selectedComponentIds.includes(componentId);
+					if (isCompSelected) {
+						// Uncheck it
+						selectedComponentIds = selectedComponentIds.filter((id) => id !== componentId);
+					} else {
+						// Check it
+						const newSelected = [...selectedComponentIds, componentId];
+						// Check if all components of the group are now selected
+						const allChecked = group.components.every((c) => newSelected.includes(c.id));
+						if (allChecked) {
+							// Upgrade to group selection: add group, remove individual components of this group
+							selectedComponentGroupIds = [...selectedComponentGroupIds, groupId];
+							selectedComponentIds = selectedComponentIds.filter(
+								(id) => !group.components.some((c) => c.id === id)
+							);
+						} else {
+							selectedComponentIds = newSelected;
+						}
 					}
 				}
+				return;
 			}
+		}
+
+		// Ungrouped component logic
+		if (selectedComponentIds.includes(componentId)) {
+			selectedComponentIds = selectedComponentIds.filter((id) => id !== componentId);
+		} else {
+			selectedComponentIds = [...selectedComponentIds, componentId];
 		}
 	}
 
 	function toggleGroup(group: ServiceComponentGroup) {
 		if (!configuringService) return;
-		const allChecked = group.components.every((c: ServiceComponent) =>
-			selectedComponentIds.includes(c.id)
-		);
-		if (allChecked) {
+		const isGroupSelected = selectedComponentGroupIds.includes(group.id);
+		if (isGroupSelected) {
+			// Uncheck the group: remove group ID and make sure none of its components are selected
 			selectedComponentGroupIds = selectedComponentGroupIds.filter((id) => id !== group.id);
 			selectedComponentIds = selectedComponentIds.filter(
-				(id) => !group.components.some((c: ServiceComponent) => c.id === id)
+				(id) => !group.components.some((c) => c.id === id)
 			);
 		} else {
+			// Check the group: add group ID and remove any individual components of this group from selectedComponentIds
 			selectedComponentGroupIds = [...selectedComponentGroupIds, group.id];
-			const newIds = group.components
-				.map((c: ServiceComponent) => c.id)
-				.filter((id: number) => !selectedComponentIds.includes(id));
-			selectedComponentIds = [...selectedComponentIds, ...newIds];
+			selectedComponentIds = selectedComponentIds.filter(
+				(id) => !group.components.some((c) => c.id === id)
+			);
 		}
 	}
 
@@ -231,7 +276,8 @@
 			}
 
 			toast.success('Service added successfully');
-			void goto(resolve(`/views/${publicId}`));
+			await goto(resolve(`/views/${publicId}`));
+			await invalidateAll();
 		} else {
 			if (!activeService) {
 				errorMessage = 'Service details not loaded';
@@ -254,7 +300,8 @@
 			}
 
 			toast.success('Service configuration saved successfully');
-			void goto(resolve(`/views/${publicId}`));
+			await goto(resolve(`/views/${publicId}`));
+			await invalidateAll();
 		}
 	}
 
@@ -292,7 +339,7 @@
 			<div class="grid gap-6">
 				<!-- Service Name Input/Dropdown Selector -->
 				<div class="grid gap-2">
-					<Label for="service-search" class="text-lg font-bold text-zinc-200">Service Name</Label>
+					<Label for="service-search" class="text-base font-bold text-zinc-200">Service Name</Label>
 					{#if mode === 'add'}
 						<div id="service-search-container" class="svelte-select-container relative">
 							<Select
@@ -312,7 +359,7 @@
 								<div slot="item" let:item class="flex w-full items-center justify-between py-1">
 									<span>{item.name}</span>
 									{#if selectedService && selectedService.id === item.id}
-										<span class="text-emerald-400">
+										<span class="text-zinc-200">
 											<Check class="size-4" />
 										</span>
 									{/if}
@@ -329,75 +376,32 @@
 				<!-- Component Checklist with Hierarchical groups -->
 				{#if configuringService}
 					<div class="grid gap-4 pt-5">
-						<Label class="text-lg font-bold text-zinc-200">Monitored Components</Label>
+						<Label class="text-base font-bold text-zinc-200">Monitored Components</Label>
 
-						<!-- Custom Radio Buttons and Component checklist in borderless container -->
+						<!-- Radio Buttons and Component checklist in borderless container -->
 						<div class="flex flex-col gap-4 rounded-lg bg-zinc-900/20 p-4">
-							<label class="group flex cursor-pointer items-start gap-3">
-								<input
-									type="radio"
-									name="component-mode"
-									value="all"
-									checked={componentMode === 'all'}
-									onchange={() => {
-										componentMode = 'all';
-									}}
-									class="sr-only"
-								/>
-								<div
-									class="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full border border-zinc-700 transition-all group-hover:border-zinc-500 {componentMode ===
-									'all'
-										? 'border-emerald-500 bg-emerald-500/10'
-										: ''}"
-								>
-									{#if componentMode === 'all'}
-										<div class="size-2.5 rounded-full bg-emerald-500"></div>
-									{/if}
-								</div>
-								<div class="flex flex-col">
-									<span
-										class="text-lg font-semibold text-zinc-200 transition-colors group-hover:text-white"
-									>
-										Monitor all components
-									</span>
-									<span class="mt-0.5 text-sm text-zinc-500">
-										Automatically monitor all current and future components for this service
-									</span>
-								</div>
-							</label>
-
-							<label class="group flex cursor-pointer items-start gap-3">
-								<input
-									type="radio"
-									name="component-mode"
-									value="custom"
-									checked={componentMode === 'custom'}
-									onchange={() => {
-										componentMode = 'custom';
-									}}
-									class="sr-only"
-								/>
-								<div
-									class="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full border border-zinc-700 transition-all group-hover:border-zinc-500 {componentMode ===
-									'custom'
-										? 'border-emerald-500 bg-emerald-500/10'
-										: ''}"
-								>
-									{#if componentMode === 'custom'}
-										<div class="size-2.5 rounded-full bg-emerald-500"></div>
-									{/if}
-								</div>
-								<div class="flex flex-col">
-									<span
-										class="text-lg font-semibold text-zinc-200 transition-colors group-hover:text-white"
-									>
-										Customize component selection
-									</span>
-									<span class="mt-0.5 text-sm text-zinc-500">
-										Select specific component groups or individual components to monitor
-									</span>
-								</div>
-							</label>
+							<RadioGroup.Root bind:value={componentMode} class="flex flex-col gap-5">
+								{#each componentModeOptions as opt}
+									<div class="flex flex-col gap-1">
+										<div class="flex items-center gap-3">
+											<RadioGroup.Item
+												value={opt.value}
+												id={opt.id}
+												class="size-5 shrink-0 cursor-pointer"
+											/>
+											<Label
+												for={opt.id}
+												class="cursor-pointer text-base font-semibold text-zinc-200 transition-colors select-none hover:text-white"
+											>
+												{opt.label}
+											</Label>
+										</div>
+										<span class="pl-8 text-xs font-normal text-zinc-500 select-none">
+											{opt.description}
+										</span>
+									</div>
+								{/each}
+							</RadioGroup.Root>
 
 							{#if componentMode === 'custom'}
 								<div class="ml-7 flex flex-col gap-4">
@@ -416,88 +420,98 @@
 										/>
 									</div>
 
-									<div class="grid max-h-[36rem] grid-cols-1 gap-3 overflow-y-auto pr-1">
-										{#each filteredGroupedComponents as group (group.id)}
-											{@const groupChecked = group.components.every((c) =>
-												selectedComponentIds.includes(c.id)
-											)}
-											{@const groupSomeChecked =
-												group.components.some((c) => selectedComponentIds.includes(c.id)) &&
-												!groupChecked}
+									<div class="grid max-h-[36rem] grid-cols-1 gap-1 overflow-y-auto pr-3">
+										<Accordion.Root type="multiple" class="w-full">
+											{#each filteredGroupedComponents as group (group.id)}
+												{@const groupChecked = selectedComponentGroupIds.includes(group.id)}
+												{@const groupSomeChecked =
+													!groupChecked &&
+													group.components.some((c) => selectedComponentIds.includes(c.id))}
 
-											<div class="py-2">
-												<!-- Group Header -->
-												<button
-													type="button"
-													onclick={() => toggleGroup(group)}
-													class="flex w-full cursor-pointer items-center gap-3 text-left transition-all hover:text-white"
-												>
+												<Accordion.Item value={String(group.id)} class="border-none">
+													<!-- Group Header Row -->
 													<div
-														class="flex size-5.5 shrink-0 items-center justify-center rounded transition-all {groupChecked
-															? 'bg-emerald-500 text-zinc-950'
-															: groupSomeChecked
-																? 'bg-emerald-500/20 text-emerald-400'
-																: 'bg-zinc-900'}"
+														class="flex w-full items-center justify-between gap-3 border-b border-zinc-800/40 py-2"
 													>
-														{#if groupChecked}
-															<Check class="size-3.5" />
-														{:else if groupSomeChecked}
-															<div class="size-2 rounded-sm bg-emerald-400"></div>
-														{/if}
-													</div>
-													<span class="text-lg font-bold text-zinc-200">{group.name} Group</span>
-												</button>
-
-												<!-- Child Components -->
-												<div class="mt-2 ml-7 grid gap-2.5 pl-3">
-													{#each group.components as component (component.id)}
-														{@const componentChecked = selectedComponentIds.includes(component.id)}
-														<button
-															type="button"
-															onclick={() => toggleComponent(component.id, group.id)}
-															class="flex cursor-pointer items-center gap-3 text-left transition-all hover:text-zinc-200 {componentChecked
-																? 'text-zinc-300'
-																: 'text-zinc-500'}"
-														>
-															<div
-																class="flex size-5 shrink-0 items-center justify-center rounded transition-all {componentChecked
-																	? 'bg-emerald-500/80 text-zinc-950'
-																	: 'bg-zinc-900'}"
+														<div class="flex flex-1 items-center gap-3">
+															<ControlledCheckbox
+																id={`group-${group.id}`}
+																checked={groupChecked}
+																indeterminate={groupSomeChecked}
+																onchange={() => toggleGroup(group)}
+																class="size-5 shrink-0 cursor-pointer"
+															/>
+															<Label
+																for={`group-${group.id}`}
+																class="flex-1 cursor-pointer py-1 text-sm font-medium transition-colors select-none {groupChecked
+																	? 'text-zinc-100'
+																	: 'text-zinc-300'}"
 															>
-																{#if componentChecked}
-																	<Check class="size-3" />
-																{/if}
-															</div>
-															<span class="text-base font-medium">{component.name}</span>
-														</button>
-													{/each}
-												</div>
-											</div>
-										{/each}
+																{group.name}
+																<span class="ml-1 text-xs font-normal text-zinc-500">
+																	({group.components.length})
+																</span>
+															</Label>
+														</div>
+														<Accordion.Trigger
+															class="hover:bg-zinc-850 flex h-8 w-8 shrink-0 items-center justify-center rounded-md p-1.5 text-zinc-400 transition-colors hover:text-white"
+														/>
+													</div>
+
+													<Accordion.Content class="pt-0 pb-0">
+														<!-- Child Components -->
+														<div class="flex w-full flex-col">
+															{#each group.components as component (component.id)}
+																{@const componentChecked =
+																	groupChecked || selectedComponentIds.includes(component.id)}
+																<div
+																	class="flex w-full items-center gap-3 border-b border-zinc-800/40 py-2 pl-8 last:border-none"
+																>
+																	<ControlledCheckbox
+																		id={`comp-${component.id}`}
+																		checked={componentChecked}
+																		onchange={() => toggleComponent(component.id, group.id)}
+																		class="size-5 shrink-0 cursor-pointer"
+																	/>
+																	<Label
+																		for={`comp-${component.id}`}
+																		class="flex-1 cursor-pointer py-1 text-sm font-medium transition-colors select-none {componentChecked
+																			? 'text-zinc-100'
+																			: 'text-zinc-300'}"
+																	>
+																		{component.name}
+																	</Label>
+																</div>
+															{/each}
+														</div>
+													</Accordion.Content>
+												</Accordion.Item>
+											{/each}
+										</Accordion.Root>
 
 										{#if filteredUngroupedComponents.length > 0}
-											<div class="py-2">
-												<div class="mt-2 ml-7 grid gap-2.5 pl-3">
+											<div class="py-1">
+												<div class="flex flex-col gap-1">
 													{#each filteredUngroupedComponents as component (component.id)}
 														{@const componentChecked = selectedComponentIds.includes(component.id)}
-														<button
-															type="button"
-															onclick={() => toggleComponent(component.id)}
-															class="flex cursor-pointer items-center gap-3 text-left transition-all hover:text-zinc-200 {componentChecked
-																? 'text-zinc-300'
-																: 'text-zinc-500'}"
+														<div
+															class="flex w-full items-center gap-3 border-b border-zinc-800/40 py-2 last:border-none"
 														>
-															<div
-																class="flex size-5 shrink-0 items-center justify-center rounded transition-all {componentChecked
-																	? 'bg-emerald-500/80 text-zinc-950'
-																	: 'bg-zinc-900'}"
+															<ControlledCheckbox
+																id={`comp-${component.id}`}
+																checked={componentChecked}
+																onchange={() => toggleComponent(component.id)}
+																class="size-5 shrink-0 cursor-pointer"
+															/>
+															<Label
+																for={`comp-${component.id}`}
+																class="flex-1 cursor-pointer py-1 text-sm font-medium transition-colors select-none {componentChecked
+																	? 'text-zinc-100'
+																	: 'text-zinc-300'}"
 															>
-																{#if componentChecked}
-																	<Check class="size-3" />
-																{/if}
-															</div>
-															<span class="text-base font-medium">{component.name}</span>
-														</button>
+																{component.name}
+															</Label>
+														</div>
 													{/each}
 												</div>
 											</div>
@@ -530,7 +544,9 @@
 					class="cursor-pointer px-6"
 					disabled={saving ||
 						(mode === 'add' && !selectedServiceId) ||
-						(componentMode === 'custom' && selectedComponentIds.length === 0)}
+						(componentMode === 'custom' &&
+							selectedComponentIds.length === 0 &&
+							selectedComponentGroupIds.length === 0)}
 					onclick={saveService}
 				>
 					{saving ? 'Saving...' : mode === 'add' ? 'Add Service' : 'Save Changes'}
