@@ -144,6 +144,12 @@ model ViewServiceResponse {
 
   @doc("Whether all components of this service are included")
   include_all_components: boolean;
+
+  @doc("List of specific component IDs to include (ignored if include_all_components is true)")
+  component_ids?: integer[];
+
+  @doc("List of specific component group IDs to include (ignored if include_all_components is true)")
+  component_group_ids?: integer[];
 }
 
 @doc("Add a service to a view with component configuration")
@@ -156,6 +162,19 @@ op addViewService(
 
   @body
   body: AddViewServiceRequest,
+): ViewServiceResponse | StandardErrors;
+
+@doc("Get a service's component configuration in a view")
+@get
+@route("/views/{publicId}/services/{serviceId}")
+op getViewService(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @doc("The service ID")
+  @path
+  serviceId: integer,
 ): ViewServiceResponse | StandardErrors;
 
 @doc("Edit a service's component configuration in a view")

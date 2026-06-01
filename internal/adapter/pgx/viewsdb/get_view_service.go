@@ -34,11 +34,23 @@ func (r *PostgresViewsRepository) GetViewService(ctx context.Context, viewID uin
 		return views.ViewService{}, apperrors.InternalError("failed to collect view service row", err)
 	}
 
+	compIDs := dto.ComponentIDs
+	if compIDs == nil {
+		compIDs = []int{}
+	}
+
+	compGrpIDs := dto.ComponentGroupIDs
+	if compGrpIDs == nil {
+		compGrpIDs = []int{}
+	}
+
 	return views.ViewService{
 		ID:                   dto.ID,
 		ViewID:               dto.ViewID,
 		ServiceID:            dto.ServiceID,
 		IncludeAllComponents: dto.IncludeAllComponents,
+		ComponentIDs:         compIDs,
+		ComponentGroupIDs:    compGrpIDs,
 		CreatedAt:            dto.CreatedAt,
 		UpdatedAt:            dto.UpdatedAt,
 	}, nil

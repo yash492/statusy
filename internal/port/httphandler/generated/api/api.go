@@ -207,6 +207,12 @@ type View struct {
 
 // ViewServiceResponse defines model for ViewServiceResponse.
 type ViewServiceResponse struct {
+	// ComponentGroupIds List of specific component group IDs to include (ignored if include_all_components is true)
+	ComponentGroupIds *[]int `json:"component_group_ids,omitempty"`
+
+	// ComponentIds List of specific component IDs to include (ignored if include_all_components is true)
+	ComponentIds *[]int `json:"component_ids,omitempty"`
+
 	// Id Unique identifier for the view-service mapping
 	Id int `json:"id"`
 
@@ -316,6 +322,9 @@ type ServerInterface interface {
 	// (DELETE /api/views/{publicId}/services/{serviceId})
 	DeleteViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int)
 
+	// (GET /api/views/{publicId}/services/{serviceId})
+	GetViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int)
+
 	// (PUT /api/views/{publicId}/services/{serviceId})
 	EditViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int)
 
@@ -384,6 +393,11 @@ func (_ Unimplemented) AddViewService(w http.ResponseWriter, r *http.Request, pu
 
 // (DELETE /api/views/{publicId}/services/{serviceId})
 func (_ Unimplemented) DeleteViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /api/views/{publicId}/services/{serviceId})
+func (_ Unimplemented) GetViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -744,6 +758,40 @@ func (siw *ServerInterfaceWrapper) DeleteViewService(w http.ResponseWriter, r *h
 	handler.ServeHTTP(w, r)
 }
 
+// GetViewService operation middleware
+func (siw *ServerInterfaceWrapper) GetViewService(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "serviceId" -------------
+	var serviceId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "serviceId", chi.URLParam(r, "serviceId"), &serviceId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "serviceId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetViewService(w, r, publicId, serviceId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // EditViewService operation middleware
 func (siw *ServerInterfaceWrapper) EditViewService(w http.ResponseWriter, r *http.Request) {
 
@@ -962,6 +1010,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/api/views/{publicId}/services/{serviceId}", wrapper.DeleteViewService)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views/{publicId}/services/{serviceId}", wrapper.GetViewService)
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/api/views/{publicId}/services/{serviceId}", wrapper.EditViewService)
@@ -1913,6 +1964,85 @@ func (response DeleteViewService500JSONResponse) VisitDeleteViewServiceResponse(
 	return err
 }
 
+type GetViewServiceRequestObject struct {
+	PublicId  string `json:"publicId"`
+	ServiceId int    `json:"serviceId"`
+}
+
+type GetViewServiceResponseObject interface {
+	VisitGetViewServiceResponse(w http.ResponseWriter) error
+}
+
+type GetViewService200JSONResponse ViewServiceResponse
+
+func (response GetViewService200JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewService400JSONResponse ErrorResponse
+
+func (response GetViewService400JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewService404JSONResponse ErrorResponse
+
+func (response GetViewService404JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewService409JSONResponse ErrorResponse
+
+func (response GetViewService409JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewService500JSONResponse ErrorResponse
+
+func (response GetViewService500JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type EditViewServiceRequestObject struct {
 	PublicId  string `json:"publicId"`
 	ServiceId int    `json:"serviceId"`
@@ -2110,6 +2240,9 @@ type StrictServerInterface interface {
 
 	// (DELETE /api/views/{publicId}/services/{serviceId})
 	DeleteViewService(ctx context.Context, request DeleteViewServiceRequestObject) (DeleteViewServiceResponseObject, error)
+
+	// (GET /api/views/{publicId}/services/{serviceId})
+	GetViewService(ctx context.Context, request GetViewServiceRequestObject) (GetViewServiceResponseObject, error)
 
 	// (PUT /api/views/{publicId}/services/{serviceId})
 	EditViewService(ctx context.Context, request EditViewServiceRequestObject) (EditViewServiceResponseObject, error)
@@ -2474,6 +2607,33 @@ func (sh *strictHandler) DeleteViewService(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+// GetViewService operation middleware
+func (sh *strictHandler) GetViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
+	var request GetViewServiceRequestObject
+
+	request.PublicId = publicId
+	request.ServiceId = serviceId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetViewService(ctx, request.(GetViewServiceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetViewService")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetViewServiceResponseObject); ok {
+		if err := validResponse.VisitGetViewServiceResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // EditViewService operation middleware
 func (sh *strictHandler) EditViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
 	var request EditViewServiceRequestObject
@@ -2538,45 +2698,46 @@ func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"H4sIAAAAAAAC/+xc7W/bvBH/VwhtwJNiShxsHbB52Ic06boA3Qvi5tmHB4VBiyebzyRSJSm7XuD/fSAl",
+	"SpRNyXaTNC/lp8QSdXe8lx/vjpTuooTnBWfAlIzGd5FMFpBj8+8FIT9TWE1ALGkCN/ClBKn0jULwAoSi",
+	"YIY1z0/ngpfFlBJzmYBMBC0U5SwaRx+pVIinSBaQ0JQmqHkKmafQ9ZVEiiPKkqwkgE7onHEBBNHUXpvi",
+	"LJu2wiIqkRIlvIniiCrIDVO1LiAaR5QpmIOINrG9goXAa/27lfZYOb+XhH5iu6L+ZwFqAcKVCWcZcvjz",
+	"FKkFIFkZMGpYzTjPADPNrL43pWSXwacFoOurLSqaHSZE/9FXlxRWLeFmVps4EvClpAJINP7F5dI7v88N",
+	"FT77FRKlpbu0t3e9zifwLaNfSkCUAFM0pSBQyoURs+HjkTWOGM5hl9oVlUWG10jftUrw0JFKUDbXZArB",
+	"l5SA8Crz3/XN08azDhPTkt/SqNGkkbvLd1CLH3SkDQTwQDw4XrWiakEZUgsqq9h13fu3AtJoHP1m1D4w",
+	"qiFl1FrT5/XfZs9Gggex6ja1R7FtH5MDLRxHe4LmPaFK43YvYHeE39FP+8uqpxvjrU6onBJIcZmpAXDS",
+	"XqJxcAGoHrxFzwGjwy3mF2lLg7XyXGodoYeUFxa9V7vobcfZ4cvReyG4uAFZcCbB5xPE477mIaTvOajg",
+	"C6ccpMRzD4W/lzlmpwIwwbMMEBiCdvS+IDBCtcR907pmiZHsvosstXR8aGxvTkuR+VON25uP1ng4USXO",
+	"kFRYlRIVeO4j7gHnRABWQKbYg0ifaA5S4bxAqwWwjsBohSWqn0WztblnaUZxlHKRa4oRwQpOFc3BJ0Ql",
+	"7C7fy1IIzaOeTD3DhvUJZUuQis6xomwet3olMco5o4oLc12A5NkSyBsfb0VVBr4pqwwQF0iWeY7Fepv5",
+	"YWtQRbyZ4JYp/dr3udkkWQApMyD/wNovGGaJJ4iAEem33wIQMIK0/psgtyRR3tJEsNSKpQzdfro82HwP",
+	"6OrPwx2taqaOao4Kvn7d9ri/UP2WM7ePtN1ZiL2d2Os3q2uCuAmjI8KzWjAvO4tvNzZN0gJkelTBUKU6",
+	"sgmddmE+rmioihdP6rCvhLWF6/WVN1rt4/7k0yVQ55O73ldTkFk5H6ZgRngolOwY1Taj3bTnvurd1exQ",
+	"Dd9R2pYGYp+f9MzR64jG14s6FbpPQuLkD/esEL2UHA/wWv725uNpKigwkq2N6YcFc9zBh9I3nCtEuA57",
+	"F60HSQ2UlLWpNKthI9js0IMH1L11kLs1qaYvjjt2H6LieIimwxXWqXtZZbB7WlGtzB2OXTLDGvElMh7t",
+	"eKH6cFV506UnU1vPZI7Uoa6sf6B+RBwV5SyjyXQAtqoRLnqdTBhfpRn+r16y3jSY0ceixl5f9sNZSuel",
+	"wFZ5diiy7bua5kH+6HRFKkfau2LY5lWjg4FejDOPPsdpWjL99XfoyTxoT+aoxVb70qlNdHJcFNo/ezoB",
+	"R7V6fP0dKpucCguw0yYPs8Wxfz+jkwMdu6mxG0gPl+YMTOFRFV8hCvRDaYalmlKn0dRleZEounQqM+cu",
+	"OoG8UGtUIZ52csYZeEuxI/K5bTUdn8sdQKmnKr2YzwXMTXXfLUytZk/KQleOhK/Ym29J6ppqsav1I7x0",
+	"Y9wl5QYoqgK3ToDWURwtQchqKudn52fneq68AIYLGo2jP5hLcVRgtTCTH+GCjiy6j+7q/yZZOd+Mum44",
+	"B49rfAC17YmYEbeqxI4RdBSZ9e6aVM/ulrVaNIFzUCBkNP7lgHqN6ut6PlbT48iZReTaQ8NsXG+iOyjb",
+	"2O6zHlwtYGbKvz8/r5YunVOZ2eOiyGhi5jD6VVYpUUtvML/bmaqx4+70RLWrgRZYIlkmCQABcqbN+PYB",
+	"xel2y3tE0XoEgRJeZgQxrlDJCAiptImVIyopoVrzljijBMk1U/hrLfLbpxEZMy1vSruSAjHtolIkUIv3",
+	"5+8rntVYwlma0aTesK22IJ12WAcKQRhZ//g9rT+p1Gh2M/T9TVwjRVNQ9GOCSY40KOAlppnZFXEWwXrG",
+	"3IzGGZKARbJAKc2UaaB2MULTmjg898DDpCKmQOTaISuiXe4zu9YICyDwtcjM5lCKMwk1oHwpQaxdRNGE",
+	"o8cEj8Pqzm6V2E3wA5wEOHmxcDK6a3+Y9GMw52jH6oCuA7kLHW2ovFvXmcAgduym8N4mni/d6Aj+fDIO",
+	"BysCNgRseEXYMEoByBlWPB9EiQvFc6SH2kqkE8k71Yge/jcwjYqXjhRaNb/7mmd/QckCCwnqr6VKT//U",
+	"Nds2i4ARASNeG0YIOdy8uJlMjkCIGylfCUAIKQM+BHz4kfGhs0E+2N1sRlqUsNs+Q3Bhd9PfrSfuLuzz",
+	"A45458S8LqtYmc/qbYym8V8WBCvThTmkZ6KFmVZkfI0TZ/tmW4B/Vrx5ajmiAoSd/MGsJf0fDDP+PtVX",
+	"e0YjQGiA0FcFofbgyen2IZpBOPUfLl1RRvhKHpCI+Q7fvHyU9WslQO63QK7/EFiA3wC/Lw1+lxRWcuSc",
+	"nCu47IFWLur3ErbPznXR89KM+Zf4AOqqGvdzNezR4tLQD8EXgu9lBt9ddUbymmyquMtA+Q4ymesI+4Ou",
+	"ulsH2t4TLpqEPXtqXozwpCJWqHv2iN56j90JQFQixlGtf+3vEhipT7VRaU0bo1mpjO0WgHW0oByv0QxQ",
+	"KSEtszMUIjlE8hNGchwVpWe5fE+oqkP1J4kIKEwzuRO09nXzpw9Zo/x3nKwfTpNb3yHYdE8uaqk2ISUI",
+	"QBKAZDglGLlvePhz8wtC2lOw5gs9FVqYibcvDiTuCyE7WNT93NNrRCT/B62eAJe2X2UJMBVg6tXAVHPE",
+	"f085cwM5X4KDW6ng+f7q5jngU7z3PfP+VwYOYzXUzgwFVQCYV11Q9W/t2CD7SfalNYiyPgz5ACoASEhm",
+	"AtYErDmseXMfsNn6kOCPhTaP10wKtVuAuwB3D167lcziGpBTt980fMrGfk9EG6klMJyC3TqsJpbTs0LH",
+	"nlc87WTD650ByQKSPTWS1R928ePFBarcHJkTcPZ7G1zUHzwbRwulCjke1UcP12e4KKLN583/AwAA//9L",
+	"qdo3DWEAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

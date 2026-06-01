@@ -90,6 +90,7 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 		GetServiceComponentsCmd:             command.NewGetServiceComponentsCmd(lg, servicesRepo, componentsRepo, componentGroupsRepo),
 		AddViewServiceCmd:                   command.NewAddViewServiceCmd(lg, viewsRepo),
 		EditViewServiceCmd:                  command.NewEditViewServiceCmd(lg, viewsRepo),
+		GetViewServiceCmd:                   command.NewGetViewServiceCmd(lg, viewsRepo),
 		DeleteViewServiceCmd:                command.NewDeleteViewServiceCmd(lg, viewsRepo),
 		EditViewCmd:                         command.NewEditViewCmd(lg, viewsRepo),
 		DeleteViewCmd:                       command.NewDeleteViewCmd(lg, viewsRepo),

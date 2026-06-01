@@ -41,6 +41,8 @@ export interface ViewServiceResponse {
 	id: number;
 	service_id: number;
 	include_all_components: boolean;
+	component_ids?: number[];
+	component_group_ids?: number[];
 }
 
 export class ViewsApi {
@@ -75,6 +77,12 @@ export class ViewsApi {
 			{
 				json: body
 			}
+		);
+	}
+
+	getViewService(viewPublicId: string, serviceId: number) {
+		return ApiClient.get<ViewServiceResponse>(
+			`${this.basePath}/${encodeURIComponent(viewPublicId)}/services/${serviceId}`
 		);
 	}
 

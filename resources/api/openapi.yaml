@@ -499,6 +499,53 @@ paths:
             schema:
               $ref: '#/components/schemas/AddViewServiceRequest'
   /api/views/{publicId}/services/{serviceId}:
+    get:
+      operationId: getViewService
+      description: Get a service's component configuration in a view
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          required: true
+          description: The service ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewServiceResponse'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       operationId: editViewService
       description: Edit a service's component configuration in a view
@@ -943,6 +990,16 @@ components:
         include_all_components:
           type: boolean
           description: Whether all components of this service are included
+        component_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component IDs to include (ignored if include_all_components is true)
+        component_group_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component group IDs to include (ignored if include_all_components is true)
     ViewServiceStatus:
       type: object
       required:

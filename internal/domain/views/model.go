@@ -27,6 +27,8 @@ type ViewService struct {
 	ViewID               uint
 	ServiceID            uint
 	IncludeAllComponents bool
+	ComponentIDs         []int
+	ComponentGroupIDs    []int
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
 }

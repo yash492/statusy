@@ -1,78 +1,134 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { ViewsApi } from '$lib/api/views/views';
+	import { StatuspageApi } from '$lib/api/statuspage/statuspage';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import * as Select from '$lib/components/ui/select';
+	import Check from '@lucide/svelte/icons/check';
+	import Search from '@lucide/svelte/icons/search';
+	import Select from 'svelte-select';
+	import { toast } from 'svelte-sonner';
+
+	interface ServiceComponent {
+		id: number;
+		name: string;
+	}
+
+	interface ServiceComponentGroup {
+		id: number;
+		name: string;
+		components: ServiceComponent[];
+	}
 
 	let {
 		mode,
 		publicId,
-		serviceSlug
+		serviceSlug = ''
 	}: { mode: 'add' | 'edit'; publicId: string; serviceSlug?: string } = $props();
 
-	// Mock available services for select dropdown
-	let availableServices = $state([
-		{ id: 1, name: 'Stripe', slug: 'stripe' },
-		{ id: 2, name: 'GitHub', slug: 'github' },
-		{ id: 3, name: 'Cloudflare', slug: 'cloudflare' },
-		{ id: 4, name: 'PostgreSQL', slug: 'postgresql' }
-	]);
+	const viewsApi = new ViewsApi();
+	const statuspageApi = new StatuspageApi();
 
+	let selectedService = $state<{ id: number; name: string; slug: string; url: string } | null>(
+		null
+	);
 	let selectedServiceIdStr = $state('');
 	let selectedServiceId = $derived(selectedServiceIdStr ? Number(selectedServiceIdStr) : null);
-	let selectOpen = $state(false);
-	let serviceSearchQuery = $state('');
 	let componentMode = $state<'all' | 'custom'>('all');
 	let errorMessage = $state<string | null>(null);
+	let saving = $state(false);
 
-	// Mock component structure for the selected service
-	let configuringService = $state({
-		service_name: 'Stripe',
-		grouped_components: [
-			{
-				id: 10,
-				name: 'API',
-				components: [
-					{ id: 101, name: 'v3 API' },
-					{ id: 102, name: 'Checkout' }
-				]
-			},
-			{
-				id: 11,
-				name: 'Dashboard',
-				components: [
-					{ id: 103, name: 'Billing Panel' },
-					{ id: 104, name: 'Developer Logs' }
-				]
+	let configuringService = $state<{
+		service_name: string;
+		grouped_components: ServiceComponentGroup[];
+		ungrouped_components: ServiceComponent[];
+	} | null>(null);
+
+	let selectedComponentIds = $state<number[]>([]);
+	let selectedComponentGroupIds = $state<number[]>([]);
+
+	let activeService = $state<{ id: number; name: string } | null>(null);
+
+	async function fetchServiceComponents(slug: string) {
+		const [res, err] = await statuspageApi.getComponents(slug);
+		if (err) {
+			errorMessage = err.message || 'Failed to fetch components for service';
+			toast.error(errorMessage);
+			return null;
+		}
+		return res;
+	}
+
+	async function fetchViewServiceConfig(serviceId: number) {
+		const [res, err] = await viewsApi.getViewService(publicId, serviceId);
+		if (err) {
+			errorMessage = err.message || 'Failed to fetch existing configuration';
+			toast.error(errorMessage);
+			return;
+		}
+		if (res) {
+			componentMode = res.include_all_components ? 'all' : 'custom';
+			if (res.include_all_components) {
+				selectAll();
+			} else {
+				selectedComponentIds = res.component_ids ?? [];
+				selectedComponentGroupIds = res.component_group_ids ?? [];
 			}
-		],
-		ungrouped_components: [
-			{ id: 105, name: 'Webhooks' },
-			{ id: 106, name: 'Support Portal' }
-		]
+		}
+	}
+
+	$effect(() => {
+		if (mode === 'edit' && serviceSlug) {
+			errorMessage = null;
+			void fetchServiceComponents(serviceSlug).then((res) => {
+				if (res) {
+					configuringService = {
+						service_name: res.service_name,
+						grouped_components: res.grouped_components,
+						ungrouped_components: res.ungrouped_components
+					};
+					activeService = {
+						id: res.service_id,
+						name: res.service_name
+					};
+					void fetchViewServiceConfig(res.service_id);
+				}
+			});
+		}
 	});
 
-	let selectedComponentIds = $state<number[]>([101, 102, 103, 104, 105, 106]);
-	let selectedComponentGroupIds = $state<number[]>([10, 11]);
-
-	let activeService = $state({
-		name: 'Stripe'
+	$effect(() => {
+		if (selectedService) {
+			selectedServiceIdStr = String(selectedService.id);
+			errorMessage = null;
+			void fetchServiceComponents(selectedService.slug).then((res) => {
+				if (res) {
+					configuringService = {
+						service_name: res.service_name,
+						grouped_components: res.grouped_components,
+						ungrouped_components: res.ungrouped_components
+					};
+					selectAll();
+				}
+			});
+		} else {
+			selectedServiceIdStr = '';
+			configuringService = null;
+		}
 	});
 
-	const selectedServiceLabel = $derived.by(() => {
-		if (mode === 'edit') return activeService.name;
-		const id = Number(selectedServiceIdStr);
-		const service = availableServices.find((s) => s.id === id);
-		return service ? service.name : '';
-	});
-
-	function autofocus(node: HTMLElement) {
-		requestAnimationFrame(() => {
-			node.focus();
-		});
+	async function loadUnconfiguredServices(filterText: string) {
+		const [res, err] = await viewsApi.getUnconfiguredServices(publicId, filterText || undefined);
+		if (err) {
+			toast.error(err.message || 'Failed to fetch unconfigured services');
+			return [];
+		}
+		return res ?? [];
 	}
 
 	function selectAll() {
+		if (!configuringService) return;
 		selectedComponentGroupIds = configuringService.grouped_components.map((g) => g.id);
 		const ids = configuringService.grouped_components.flatMap((g) => g.components.map((c) => c.id));
 		ids.push(...configuringService.ungrouped_components.map((c) => c.id));
@@ -80,6 +136,7 @@
 	}
 
 	function toggleComponent(componentId: number, groupId?: number) {
+		if (!configuringService) return;
 		if (selectedComponentIds.includes(componentId)) {
 			selectedComponentIds = selectedComponentIds.filter((id) => id !== componentId);
 			if (groupId) {
@@ -99,28 +156,87 @@
 		}
 	}
 
-	function toggleGroup(group: any) {
-		const allChecked = group.components.every((c: any) => selectedComponentIds.includes(c.id));
+	function toggleGroup(group: ServiceComponentGroup) {
+		if (!configuringService) return;
+		const allChecked = group.components.every((c: ServiceComponent) =>
+			selectedComponentIds.includes(c.id)
+		);
 		if (allChecked) {
 			selectedComponentGroupIds = selectedComponentGroupIds.filter((id) => id !== group.id);
 			selectedComponentIds = selectedComponentIds.filter(
-				(id) => !group.components.some((c: any) => c.id === id)
+				(id) => !group.components.some((c: ServiceComponent) => c.id === id)
 			);
 		} else {
 			selectedComponentGroupIds = [...selectedComponentGroupIds, group.id];
 			const newIds = group.components
-				.map((c: any) => c.id)
+				.map((c: ServiceComponent) => c.id)
 				.filter((id: number) => !selectedComponentIds.includes(id));
 			selectedComponentIds = [...selectedComponentIds, ...newIds];
 		}
 	}
 
-	function saveService() {
-		void goto(`/views/${publicId}`);
+	async function saveService() {
+		if (saving) return;
+
+		errorMessage = null;
+		saving = true;
+
+		const componentIds = componentMode === 'all' ? [] : selectedComponentIds;
+		const componentGroupIds = componentMode === 'all' ? [] : selectedComponentGroupIds;
+		const includeAllComponents = componentMode === 'all';
+
+		if (mode === 'add') {
+			if (!selectedServiceId) {
+				errorMessage = 'Please select a service';
+				saving = false;
+				return;
+			}
+
+			const [_, err] = await viewsApi.addViewService(publicId, {
+				service_id: selectedServiceId,
+				include_all_components: includeAllComponents,
+				component_ids: componentIds,
+				component_group_ids: componentGroupIds
+			});
+
+			saving = false;
+
+			if (err) {
+				errorMessage = err.message || 'Failed to add service to view';
+				toast.error(errorMessage);
+				return;
+			}
+
+			toast.success('Service added successfully');
+			void goto(resolve(`/views/${publicId}`));
+		} else {
+			if (!activeService) {
+				errorMessage = 'Service details not loaded';
+				saving = false;
+				return;
+			}
+
+			const [_, err] = await viewsApi.editViewService(publicId, activeService.id, {
+				include_all_components: includeAllComponents,
+				component_ids: componentIds,
+				component_group_ids: componentGroupIds
+			});
+
+			saving = false;
+
+			if (err) {
+				errorMessage = err.message || 'Failed to save service configuration';
+				toast.error(errorMessage);
+				return;
+			}
+
+			toast.success('Service configuration saved successfully');
+			void goto(resolve(`/views/${publicId}`));
+		}
 	}
 
 	function handleCancel() {
-		void goto(`/views/${publicId}`);
+		void goto(resolve(`/views/${publicId}`));
 	}
 </script>
 
@@ -153,48 +269,35 @@
 			<div class="grid gap-6">
 				<!-- Service Name Input/Dropdown Selector -->
 				<div class="grid gap-2">
-					<Label for="service-select" class="text-sm font-semibold text-zinc-300"
+					<Label for="service-search" class="text-sm font-semibold text-zinc-300"
 						>Service Name</Label
 					>
 					{#if mode === 'add'}
-						<Select.Root type="single" bind:value={selectedServiceIdStr} bind:open={selectOpen}>
-							<Select.Trigger
-								id="service-select"
-								class="flex h-12 w-full items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 text-sm text-white placeholder-zinc-500 transition-colors outline-none hover:bg-zinc-900/80 focus:bg-zinc-900/80 focus:ring-1 focus:ring-zinc-700"
+						<div id="service-search-container" class="svelte-select-container relative">
+							<Select
+								loadOptions={loadUnconfiguredServices}
+								itemId="id"
+								label="name"
+								bind:value={selectedService}
+								placeholder="Search services to add..."
+								class="w-full text-sm text-white outline-none"
 							>
-								{selectedServiceLabel || 'Select a service to add...'}
-							</Select.Trigger>
-							<Select.Content class="border border-zinc-800 bg-zinc-950 p-2 text-white">
-								<div class="px-2 py-1.5">
-									<input
-										type="text"
-										placeholder="Search service..."
-										use:autofocus
-										bind:value={serviceSearchQuery}
-										class="w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-xs text-white placeholder-zinc-500 outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700"
-										onkeydown={(e) => {
-											if (e.key === 'Escape' || e.key === 'Tab') return;
-											e.stopPropagation();
-										}}
-									/>
+								<div
+									slot="prepend"
+									class="pointer-events-none absolute top-1/2 left-3 z-10 flex -translate-y-1/2 items-center text-zinc-500"
+								>
+									<Search class="size-4" />
 								</div>
-								<div class="my-1 h-px bg-zinc-800/60"></div>
-								<div class="max-h-[200px] overflow-y-auto">
-									{#if availableServices.length === 0}
-										<div class="px-4 py-3 text-xs text-zinc-500">No services found.</div>
+								<div slot="item" let:item class="flex w-full items-center justify-between py-1">
+									<span>{item.name}</span>
+									{#if selectedService && selectedService.id === item.id}
+										<span class="text-emerald-400">
+											<Check class="size-4" />
+										</span>
 									{/if}
-									{#each availableServices as service}
-										<Select.Item
-											value={String(service.id)}
-											label={service.name}
-											class="cursor-pointer px-4 py-2.5 text-zinc-300 focus:bg-zinc-900 focus:text-white"
-										>
-											{service.name}
-										</Select.Item>
-									{/each}
 								</div>
-							</Select.Content>
-						</Select.Root>
+							</Select>
+						</div>
 					{:else if activeService}
 						<div class="rounded-lg bg-zinc-900/50 px-4 py-3 text-sm font-medium text-zinc-200">
 							{activeService.name}
@@ -280,7 +383,7 @@
 
 							{#if componentMode === 'custom'}
 								<div class="ml-7 grid max-h-72 grid-cols-1 gap-3 overflow-y-auto pr-1">
-									{#each configuringService.grouped_components as group}
+									{#each configuringService.grouped_components as group (group.id)}
 										{@const groupChecked = group.components.every((c) =>
 											selectedComponentIds.includes(c.id)
 										)}
@@ -303,20 +406,7 @@
 															: 'bg-zinc-900'}"
 												>
 													{#if groupChecked}
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															fill="none"
-															viewBox="0 0 24 24"
-															stroke-width="3"
-															stroke="currentColor"
-															class="size-2.5"
-														>
-															<path
-																stroke-linecap="round"
-																stroke-linejoin="round"
-																d="m4.5 12.75 6 6 9-13.5"
-															/>
-														</svg>
+														<Check class="size-2.5" />
 													{:else if groupSomeChecked}
 														<div class="size-1.5 rounded-sm bg-emerald-400"></div>
 													{/if}
@@ -326,7 +416,7 @@
 
 											<!-- Child Components -->
 											<div class="mt-2 ml-7 grid gap-2 pl-3">
-												{#each group.components as component}
+												{#each group.components as component (component.id)}
 													{@const componentChecked = selectedComponentIds.includes(component.id)}
 													<button
 														type="button"
@@ -341,20 +431,7 @@
 																: 'bg-zinc-900'}"
 														>
 															{#if componentChecked}
-																<svg
-																	xmlns="http://www.w3.org/2000/svg"
-																	fill="none"
-																	viewBox="0 0 24 24"
-																	stroke-width="3.5"
-																	stroke="currentColor"
-																	class="size-2"
-																>
-																	<path
-																		stroke-linecap="round"
-																		stroke-linejoin="round"
-																		d="m4.5 12.75 6 6 9-13.5"
-																	/>
-																</svg>
+																<Check class="size-2" />
 															{/if}
 														</div>
 														<span class="text-xs font-medium">{component.name}</span>
@@ -368,7 +445,7 @@
 										<div class="py-2">
 											<span class="text-sm font-bold text-zinc-200">General Components</span>
 											<div class="mt-2 ml-7 grid gap-2 pl-3">
-												{#each configuringService.ungrouped_components as component}
+												{#each configuringService.ungrouped_components as component (component.id)}
 													{@const componentChecked = selectedComponentIds.includes(component.id)}
 													<button
 														type="button"
@@ -383,20 +460,7 @@
 																: 'bg-zinc-900'}"
 														>
 															{#if componentChecked}
-																<svg
-																	xmlns="http://www.w3.org/2000/svg"
-																	fill="none"
-																	viewBox="0 0 24 24"
-																	stroke-width="3.5"
-																	stroke="currentColor"
-																	class="size-2"
-																>
-																	<path
-																		stroke-linecap="round"
-																		stroke-linejoin="round"
-																		d="m4.5 12.75 6 6 9-13.5"
-																	/>
-																</svg>
+																<Check class="size-2" />
 															{/if}
 														</div>
 														<span class="text-xs font-medium">{component.name}</span>
@@ -417,17 +481,19 @@
 				<Button
 					variant="ghost"
 					class="cursor-pointer px-5 hover:bg-zinc-900 hover:text-white"
+					disabled={saving}
 					onclick={handleCancel}
 				>
 					Cancel
 				</Button>
 				<Button
 					class="cursor-pointer px-6"
-					disabled={(mode === 'add' && !selectedServiceId) ||
+					disabled={saving ||
+						(mode === 'add' && !selectedServiceId) ||
 						(componentMode === 'custom' && selectedComponentIds.length === 0)}
 					onclick={saveService}
 				>
-					{mode === 'add' ? 'Add Service' : 'Save Changes'}
+					{saving ? 'Saving...' : (mode === 'add' ? 'Add Service' : 'Save Changes')}
 				</Button>
 			</div>
 		{:else}
@@ -435,3 +501,27 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	:global(.svelte-select-container) {
+		--background: rgba(24, 24, 27, 0.5) !important;
+		--border: 1px solid #27272a !important;
+		--border-hover: 1px solid #3f3f46 !important;
+		--border-focused: 1px solid #3f3f46 !important;
+		--list-background: #09090b !important;
+		--item-color: #a1a1aa !important;
+		--item-hover-bg: rgba(24, 24, 27, 0.5) !important;
+		--item-hover-color: #ffffff !important;
+		--item-active-background: #27272a !important;
+		--item-is-active-bg: #27272a !important;
+		--input-color: #ffffff !important;
+		--placeholder-color: #71717a !important;
+		--chevron-color: #a1a1aa !important;
+		--clear-icon-color: #a1a1aa !important;
+		--list-empty-color: #71717a !important;
+		--height: 48px !important;
+		--input-padding: 0 0 0 28px !important;
+		--value-container-padding: 0 0 0 28px !important;
+		border-radius: 8px !important;
+	}
+</style>

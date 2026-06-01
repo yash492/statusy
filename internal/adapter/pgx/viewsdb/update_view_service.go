@@ -62,27 +62,27 @@ func (r *PostgresViewsRepository) UpdateViewService(ctx context.Context, vs view
 	}
 
 	// Re-insert component selections if not include_all_components
-	if !vs.IncludeAllComponents {
+	if !vs.IncludeAllComponents && (len(componentIDs) > 0 || len(componentGroupIDs) > 0) {
+		batchInserts := &pgx.Batch{}
+
 		for _, componentID := range componentIDs {
-			_, err := tx.Exec(ctx, insertViewServiceComponentQuery, pgx.NamedArgs{
+			batchInserts.Queue(insertViewServiceComponentQuery, pgx.NamedArgs{
 				"view_service_id": dto.ID,
 				"component_id":    componentID,
 			})
-			if err != nil {
-				r.lg.ErrorContext(ctx, "error inserting view service component", slog.Uint64("view_service_id", uint64(dto.ID)), slog.Int("component_id", componentID), slog.Any("err", err))
-				return views.ViewService{}, apperrors.InternalError("failed to insert view service component", err)
-			}
 		}
 
 		for _, componentGroupID := range componentGroupIDs {
-			_, err := tx.Exec(ctx, insertViewServiceComponentGroupQuery, pgx.NamedArgs{
+			batchInserts.Queue(insertViewServiceComponentGroupQuery, pgx.NamedArgs{
 				"view_service_id":    dto.ID,
 				"component_group_id": componentGroupID,
 			})
-			if err != nil {
-				r.lg.ErrorContext(ctx, "error inserting view service component group", slog.Uint64("view_service_id", uint64(dto.ID)), slog.Int("component_group_id", componentGroupID), slog.Any("err", err))
-				return views.ViewService{}, apperrors.InternalError("failed to insert view service component group", err)
-			}
+		}
+
+		batchResults := tx.SendBatch(ctx, batchInserts)
+		if err := batchResults.Close(); err != nil {
+			r.lg.ErrorContext(ctx, "error executing batch inserts for view service components/groups", slog.Uint64("view_service_id", uint64(dto.ID)), slog.Any("err", err))
+			return views.ViewService{}, apperrors.InternalError("failed to execute batch inserts for components/groups", err)
 		}
 	}
 
@@ -91,11 +91,23 @@ func (r *PostgresViewsRepository) UpdateViewService(ctx context.Context, vs view
 		return views.ViewService{}, apperrors.InternalError("failed to commit update view service transaction", err)
 	}
 
+	compIDs := componentIDs
+	if compIDs == nil {
+		compIDs = []int{}
+ 	}
+ 
+	compGrpIDs := componentGroupIDs
+	if compGrpIDs == nil {
+		compGrpIDs = []int{}
+ 	}
+ 
 	return views.ViewService{
 		ID:                   dto.ID,
 		ViewID:               dto.ViewID,
 		ServiceID:            dto.ServiceID,
 		IncludeAllComponents: dto.IncludeAllComponents,
+		ComponentIDs:         compIDs,
+		ComponentGroupIDs:    compGrpIDs,
 		CreatedAt:            dto.CreatedAt,
 		UpdatedAt:            dto.UpdatedAt,
 	}, nil

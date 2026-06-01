@@ -21,6 +21,7 @@ type Handler struct {
 	GetServiceComponentsCmd             command.GetServiceComponentsCmd
 	AddViewServiceCmd                   command.AddViewServiceCmd
 	EditViewServiceCmd                  command.EditViewServiceCmd
+	GetViewServiceCmd                   command.GetViewServiceCmd
 	DeleteViewServiceCmd                command.DeleteViewServiceCmd
 	EditViewCmd                         command.EditViewCmd
 	DeleteViewCmd                       command.DeleteViewCmd
@@ -302,10 +303,51 @@ func (h Handler) AddViewService(ctx context.Context, request api.AddViewServiceR
 		return nil, err
 	}
 
+	compIDs := result.ComponentIDs
+	if compIDs == nil {
+		compIDs = []int{}
+	}
+
+	compGrpIDs := result.ComponentGroupIDs
+	if compGrpIDs == nil {
+		compGrpIDs = []int{}
+	}
+
 	return api.AddViewService200JSONResponse{
 		Id:                   int(result.ID),
 		ServiceId:            int(result.ServiceID),
 		IncludeAllComponents: result.IncludeAllComponents,
+		ComponentIds:         &compIDs,
+		ComponentGroupIds:    &compGrpIDs,
+	}, nil
+}
+
+// (GET /views/{public_id}/services/{serviceId})
+func (h Handler) GetViewService(ctx context.Context, request api.GetViewServiceRequestObject) (api.GetViewServiceResponseObject, error) {
+	result, err := h.GetViewServiceCmd.Execute(ctx, command.GetViewServiceParams{
+		ViewPublicID: request.PublicId,
+		ServiceID:    request.ServiceId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	compIDs := result.ComponentIDs
+	if compIDs == nil {
+		compIDs = []int{}
+	}
+
+	compGrpIDs := result.ComponentGroupIDs
+	if compGrpIDs == nil {
+		compGrpIDs = []int{}
+	}
+
+	return api.GetViewService200JSONResponse{
+		Id:                   int(result.ID),
+		ServiceId:            int(result.ServiceID),
+		IncludeAllComponents: result.IncludeAllComponents,
+		ComponentIds:         &compIDs,
+		ComponentGroupIds:    &compGrpIDs,
 	}, nil
 }
 
@@ -332,10 +374,22 @@ func (h Handler) EditViewService(ctx context.Context, request api.EditViewServic
 		return nil, err
 	}
 
+	compIDs := result.ComponentIDs
+	if compIDs == nil {
+		compIDs = []int{}
+	}
+
+	compGrpIDs := result.ComponentGroupIDs
+	if compGrpIDs == nil {
+		compGrpIDs = []int{}
+	}
+
 	return api.EditViewService200JSONResponse{
 		Id:                   int(result.ID),
 		ServiceId:            int(result.ServiceID),
 		IncludeAllComponents: result.IncludeAllComponents,
+		ComponentIds:         &compIDs,
+		ComponentGroupIds:    &compGrpIDs,
 	}, nil
 }
 

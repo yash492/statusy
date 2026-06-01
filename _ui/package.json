@@ -50,6 +50,7 @@
 	"dependencies": {
 		"@js-temporal/polyfill": "^0.5.1",
 		"ky": "2.0.2",
-		"mode-watcher": "^1.1.0"
+		"mode-watcher": "^1.1.0",
+		"svelte-select": "^5.8.3"
 	}
 }
