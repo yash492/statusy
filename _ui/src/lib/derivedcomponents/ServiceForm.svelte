@@ -50,6 +50,41 @@
 
 	let activeService = $state<{ id: number; name: string } | null>(null);
 
+	let componentSearchQuery = $state('');
+
+	let filteredGroupedComponents = $derived.by(() => {
+		if (!configuringService) return [];
+		const query = componentSearchQuery.toLowerCase().trim();
+		if (!query) return configuringService.grouped_components;
+
+		return configuringService.grouped_components
+			.map((group) => {
+				const matchesGroup = group.name.toLowerCase().includes(query);
+				const matchingComponents = group.components.filter((c) =>
+					c.name.toLowerCase().includes(query)
+				);
+
+				if (matchesGroup || matchingComponents.length > 0) {
+					return {
+						...group,
+						components: matchesGroup ? group.components : matchingComponents
+					};
+				}
+				return null;
+			})
+			.filter((g): g is NonNullable<typeof g> => g !== null);
+	});
+
+	let filteredUngroupedComponents = $derived.by(() => {
+		if (!configuringService) return [];
+		const query = componentSearchQuery.toLowerCase().trim();
+		if (!query) return configuringService.ungrouped_components;
+
+		return configuringService.ungrouped_components.filter((c) =>
+			c.name.toLowerCase().includes(query)
+		);
+	});
+
 	async function fetchServiceComponents(slug: string) {
 		const [res, err] = await statuspageApi.getComponents(slug);
 		if (err) {
@@ -269,7 +304,7 @@
 			<div class="grid gap-6">
 				<!-- Service Name Input/Dropdown Selector -->
 				<div class="grid gap-2">
-					<Label for="service-search" class="text-sm font-semibold text-zinc-300"
+					<Label for="service-search" class="text-lg font-bold text-zinc-200"
 						>Service Name</Label
 					>
 					{#if mode === 'add'}
@@ -308,11 +343,11 @@
 				<!-- Component Checklist with Hierarchical groups -->
 				{#if configuringService}
 					<div class="grid gap-4 pt-5">
-						<Label class="text-sm font-semibold text-zinc-300">Monitored Components</Label>
+						<Label class="text-lg font-bold text-zinc-200">Monitored Components</Label>
 
-						<!-- Custom Radio Buttons and Component checklist in border container -->
+						<!-- Custom Radio Buttons and Component checklist in borderless container -->
 						<div
-							class="flex flex-col gap-4 rounded-lg border border-zinc-800/40 bg-zinc-900/20 p-4"
+							class="flex flex-col gap-4 rounded-lg bg-zinc-900/20 p-4"
 						>
 							<label class="group flex cursor-pointer items-start gap-3">
 								<input
@@ -327,22 +362,22 @@
 									class="sr-only"
 								/>
 								<div
-									class="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border border-zinc-700 transition-all group-hover:border-zinc-500 {componentMode ===
+									class="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full border border-zinc-700 transition-all group-hover:border-zinc-500 {componentMode ===
 									'all'
 										? 'border-emerald-500 bg-emerald-500/10'
 										: ''}"
 								>
 									{#if componentMode === 'all'}
-										<div class="size-2 rounded-full bg-emerald-500"></div>
+										<div class="size-2.5 rounded-full bg-emerald-500"></div>
 									{/if}
 								</div>
 								<div class="flex flex-col">
 									<span
-										class="text-sm font-medium text-zinc-200 transition-colors group-hover:text-white"
+										class="text-lg font-semibold text-zinc-200 transition-colors group-hover:text-white"
 									>
 										Monitor all components
 									</span>
-									<span class="mt-0.5 text-xs text-zinc-500">
+									<span class="mt-0.5 text-sm text-zinc-500">
 										Automatically monitor all current and future components for this service
 									</span>
 								</div>
@@ -360,115 +395,137 @@
 									class="sr-only"
 								/>
 								<div
-									class="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border border-zinc-700 transition-all group-hover:border-zinc-500 {componentMode ===
+									class="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full border border-zinc-700 transition-all group-hover:border-zinc-500 {componentMode ===
 									'custom'
 										? 'border-emerald-500 bg-emerald-500/10'
 										: ''}"
 								>
 									{#if componentMode === 'custom'}
-										<div class="size-2 rounded-full bg-emerald-500"></div>
+										<div class="size-2.5 rounded-full bg-emerald-500"></div>
 									{/if}
 								</div>
 								<div class="flex flex-col">
 									<span
-										class="text-sm font-medium text-zinc-200 transition-colors group-hover:text-white"
+										class="text-lg font-semibold text-zinc-200 transition-colors group-hover:text-white"
 									>
 										Customize component selection
 									</span>
-									<span class="mt-0.5 text-xs text-zinc-500">
+									<span class="mt-0.5 text-sm text-zinc-500">
 										Select specific component groups or individual components to monitor
 									</span>
 								</div>
 							</label>
 
 							{#if componentMode === 'custom'}
-								<div class="ml-7 grid max-h-72 grid-cols-1 gap-3 overflow-y-auto pr-1">
-									{#each configuringService.grouped_components as group (group.id)}
-										{@const groupChecked = group.components.every((c) =>
-											selectedComponentIds.includes(c.id)
-										)}
-										{@const groupSomeChecked =
-											group.components.some((c) => selectedComponentIds.includes(c.id)) &&
-											!groupChecked}
+								<div class="ml-7 flex flex-col gap-4">
+									<!-- Search Input -->
+									<div class="relative w-full">
+										<div
+											class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-500"
+										>
+											<Search class="size-4" />
+										</div>
+										<input
+											type="text"
+											bind:value={componentSearchQuery}
+											placeholder="Filter components by name..."
+											class="w-full rounded-lg border border-zinc-800 bg-zinc-950/40 py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-zinc-700"
+										/>
+									</div>
 
-										<div class="py-2">
-											<!-- Group Header -->
-											<button
-												type="button"
-												onclick={() => toggleGroup(group)}
-												class="flex w-full cursor-pointer items-center gap-3 text-left transition-all hover:text-white"
-											>
-												<div
-													class="flex size-4 shrink-0 items-center justify-center rounded transition-all {groupChecked
-														? 'bg-emerald-500 text-zinc-950'
-														: groupSomeChecked
-															? 'bg-emerald-500/20 text-emerald-400'
-															: 'bg-zinc-900'}"
+									<div class="grid max-h-[36rem] grid-cols-1 gap-3 overflow-y-auto pr-1">
+										{#each filteredGroupedComponents as group (group.id)}
+											{@const groupChecked = group.components.every((c) =>
+												selectedComponentIds.includes(c.id)
+											)}
+											{@const groupSomeChecked =
+												group.components.some((c) => selectedComponentIds.includes(c.id)) &&
+												!groupChecked}
+
+											<div class="py-2">
+												<!-- Group Header -->
+												<button
+													type="button"
+													onclick={() => toggleGroup(group)}
+													class="flex w-full cursor-pointer items-center gap-3 text-left transition-all hover:text-white"
 												>
-													{#if groupChecked}
-														<Check class="size-2.5" />
-													{:else if groupSomeChecked}
-														<div class="size-1.5 rounded-sm bg-emerald-400"></div>
-													{/if}
+													<div
+														class="flex size-5.5 shrink-0 items-center justify-center rounded transition-all {groupChecked
+															? 'bg-emerald-500 text-zinc-950'
+															: groupSomeChecked
+																? 'bg-emerald-500/20 text-emerald-400'
+																: 'bg-zinc-900'}"
+													>
+														{#if groupChecked}
+															<Check class="size-3.5" />
+														{:else if groupSomeChecked}
+															<div class="size-2 rounded-sm bg-emerald-400"></div>
+														{/if}
+													</div>
+													<span class="text-lg font-bold text-zinc-200">{group.name} Group</span>
+												</button>
+
+												<!-- Child Components -->
+												<div class="mt-2 ml-7 grid gap-2.5 pl-3">
+													{#each group.components as component (component.id)}
+														{@const componentChecked = selectedComponentIds.includes(component.id)}
+														<button
+															type="button"
+															onclick={() => toggleComponent(component.id, group.id)}
+															class="flex cursor-pointer items-center gap-3 text-left transition-all hover:text-zinc-200 {componentChecked
+																? 'text-zinc-300'
+																: 'text-zinc-500'}"
+														>
+															<div
+																class="flex size-5 shrink-0 items-center justify-center rounded transition-all {componentChecked
+																	? 'bg-emerald-500/80 text-zinc-950'
+																	: 'bg-zinc-900'}"
+															>
+																{#if componentChecked}
+																	<Check class="size-3" />
+																{/if}
+															</div>
+															<span class="text-base font-medium">{component.name}</span>
+														</button>
+													{/each}
 												</div>
-												<span class="text-sm font-bold text-zinc-200">{group.name} Group</span>
-											</button>
-
-											<!-- Child Components -->
-											<div class="mt-2 ml-7 grid gap-2 pl-3">
-												{#each group.components as component (component.id)}
-													{@const componentChecked = selectedComponentIds.includes(component.id)}
-													<button
-														type="button"
-														onclick={() => toggleComponent(component.id, group.id)}
-														class="flex cursor-pointer items-center gap-3 text-left transition-all hover:text-zinc-200 {componentChecked
-															? 'text-zinc-300'
-															: 'text-zinc-500'}"
-													>
-														<div
-															class="flex size-3.5 shrink-0 items-center justify-center rounded transition-all {componentChecked
-																? 'bg-emerald-500/80 text-zinc-950'
-																: 'bg-zinc-900'}"
-														>
-															{#if componentChecked}
-																<Check class="size-2" />
-															{/if}
-														</div>
-														<span class="text-xs font-medium">{component.name}</span>
-													</button>
-												{/each}
 											</div>
-										</div>
-									{/each}
+										{/each}
 
-									{#if configuringService.ungrouped_components.length > 0}
-										<div class="py-2">
-											<span class="text-sm font-bold text-zinc-200">General Components</span>
-											<div class="mt-2 ml-7 grid gap-2 pl-3">
-												{#each configuringService.ungrouped_components as component (component.id)}
-													{@const componentChecked = selectedComponentIds.includes(component.id)}
-													<button
-														type="button"
-														onclick={() => toggleComponent(component.id)}
-														class="flex cursor-pointer items-center gap-3 text-left transition-all hover:text-zinc-200 {componentChecked
-															? 'text-zinc-300'
-															: 'text-zinc-500'}"
-													>
-														<div
-															class="flex size-3.5 shrink-0 items-center justify-center rounded transition-all {componentChecked
-																? 'bg-emerald-500/80 text-zinc-950'
-																: 'bg-zinc-900'}"
+										{#if filteredUngroupedComponents.length > 0}
+											<div class="py-2">
+												<div class="mt-2 ml-7 grid gap-2.5 pl-3">
+													{#each filteredUngroupedComponents as component (component.id)}
+														{@const componentChecked = selectedComponentIds.includes(component.id)}
+														<button
+															type="button"
+															onclick={() => toggleComponent(component.id)}
+															class="flex cursor-pointer items-center gap-3 text-left transition-all hover:text-zinc-200 {componentChecked
+																? 'text-zinc-300'
+																: 'text-zinc-500'}"
 														>
-															{#if componentChecked}
-																<Check class="size-2" />
-															{/if}
-														</div>
-														<span class="text-xs font-medium">{component.name}</span>
-													</button>
-												{/each}
+															<div
+																class="flex size-5 shrink-0 items-center justify-center rounded transition-all {componentChecked
+																	? 'bg-emerald-500/80 text-zinc-950'
+																	: 'bg-zinc-900'}"
+															>
+																{#if componentChecked}
+																	<Check class="size-3" />
+																{/if}
+															</div>
+															<span class="text-base font-medium">{component.name}</span>
+														</button>
+													{/each}
+												</div>
 											</div>
-										</div>
-									{/if}
+										{/if}
+
+										{#if filteredGroupedComponents.length === 0 && filteredUngroupedComponents.length === 0}
+											<div class="py-4 text-center text-sm text-zinc-500">
+												No components match your search filter.
+											</div>
+										{/if}
+									</div>
 								</div>
 							{/if}
 						</div>
