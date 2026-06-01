@@ -44,7 +44,7 @@ model View {
 @doc("Get or create default view")
 @post
 @route("/views/default")
-op getDefaultView(): View | StandardErrors;
+op createOrGetDefaultView(): View | StandardErrors;
 
 model Component {
   @doc("Unique identifier for the component")

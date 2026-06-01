@@ -1,4 +1,4 @@
-import KyClient from '$lib/api/ky/ky';
+import KyClient, { safeAsync } from '$lib/api/ky/ky';
 
 export interface EditViewRequest {
 	name: string;
@@ -47,34 +47,40 @@ export class ViewsApi {
 	private readonly basePath = 'views';
 
 	edit(publicId: string, body: EditViewRequest) {
-		return KyClient.put(`${this.basePath}/${encodeURIComponent(publicId)}`, {
+		return safeAsync(KyClient.put(`${this.basePath}/${encodeURIComponent(publicId)}`, {
 			json: body
-		}).json<View>();
+		}).json<View>());
 	}
 
 	delete(publicId: string) {
-		return KyClient.delete(`${this.basePath}/${encodeURIComponent(publicId)}`);
+		return safeAsync(KyClient.delete(`${this.basePath}/${encodeURIComponent(publicId)}`));
 	}
 
 	getUnconfiguredServices(viewPublicId: string, search?: string) {
-		return KyClient.get(`${this.basePath}/${encodeURIComponent(viewPublicId)}/unconfigured-services`, {
+		return safeAsync(KyClient.get(`${this.basePath}/${encodeURIComponent(viewPublicId)}/unconfigured-services`, {
 			searchParams: search ? { search } : undefined
-		}).json<{ id: number; name: string; slug: string; url: string }[]>();
+		}).json<{
+			id: number; name: string; slug: string; url: string
+		}[]>());
 	}
 
 	addViewService(viewPublicId: string, body: AddViewServiceRequest) {
-		return KyClient.post(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services`, {
+		return safeAsync(KyClient.post(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services`, {
 			json: body
-		}).json<ViewServiceResponse>();
+		}).json<ViewServiceResponse>());
 	}
 
 	editViewService(viewPublicId: string, serviceId: number, body: EditViewServiceRequest) {
-		return KyClient.put(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services/${serviceId}`, {
+		return safeAsync(KyClient.put(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services/${serviceId}`, {
 			json: body
-		}).json<ViewServiceResponse>();
+		}).json<ViewServiceResponse>());
 	}
 
 	deleteViewService(viewPublicId: string, serviceId: number) {
-		return KyClient.delete(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services/${serviceId}`);
+		return safeAsync(KyClient.delete(`${this.basePath}/${encodeURIComponent(viewPublicId)}/services/${serviceId}`));
+	}
+
+	createOrGetDefaultView() {
+		return safeAsync(KyClient.post(`${this.basePath}/default`).json<View>())
 	}
 }

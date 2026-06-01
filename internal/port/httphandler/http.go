@@ -162,7 +162,7 @@ func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request a
 }
 
 // (POST /api/views/default)
-func (h Handler) GetDefaultView(ctx context.Context, request api.GetDefaultViewRequestObject) (api.GetDefaultViewResponseObject, error) {
+func (h Handler) CreateOrGetDefaultView(ctx context.Context, request api.CreateOrGetDefaultViewRequestObject) (api.CreateOrGetDefaultViewResponseObject, error) {
 	view, err := h.GetOrCreateDefaultViewCmd.Execute(ctx)
 	if err != nil {
 		return nil, err
@@ -180,7 +180,7 @@ func (h Handler) GetDefaultView(ctx context.Context, request api.GetDefaultViewR
 		})
 	}
 
-	return api.GetDefaultView200JSONResponse{
+	return api.CreateOrGetDefaultView200JSONResponse{
 		Name:        view.Name,
 		PublicId:    view.PublicID,
 		Description: view.Description,

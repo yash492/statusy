@@ -146,7 +146,6 @@
 				if (requestId !== latestRequestId) {
 					return;
 				}
-
 				results = pages;
 				activeIndex = pages.length === 0 ? 0 : Math.min(activeIndex, pages.length - 1);
 				hasSearchResponse = true;
@@ -236,7 +235,7 @@
 												<li>
 													<button
 														type="button"
-														class={`w-full cursor-pointer px-3 py-2 text-left flex flex-col gap-0.5 ${
+														class={`flex w-full cursor-pointer flex-col gap-0.5 px-3 py-2 text-left ${
 															index === activeIndex
 																? 'bg-accent text-accent-foreground'
 																: 'hover:bg-accent/60'
@@ -248,7 +247,9 @@
 													>
 														<p class="text-sm font-medium">{result.name}</p>
 														{#if result.url}
-															<span class="text-xs text-zinc-500 font-mono select-none">{result.url}</span>
+															<span class="font-mono text-xs text-zinc-500 select-none"
+																>{result.url}</span
+															>
 														{/if}
 													</button>
 												</li>

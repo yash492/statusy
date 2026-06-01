@@ -12,7 +12,6 @@
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -25,50 +24,15 @@
 	let viewDescription = $state('');
 	let isDefaultView = $state(false);
 
-	// Local reactive services state synced with localStorage
+	// Local reactive services state
 	let localServices = $state<any[]>([]);
 
-	onMount(() => {
-		const stored = localStorage.getItem(`statusy_view_${data.view.public_id}`);
-		if (stored) {
-			localServices = JSON.parse(stored);
-		} else {
-			localServices = [...data.view.services];
-			localStorage.setItem(`statusy_view_${data.view.public_id}`, JSON.stringify(localServices));
-		}
-
-		const storedMeta = localStorage.getItem(`statusy_view_meta_${data.view.public_id}`);
-		if (storedMeta) {
-			const meta = JSON.parse(storedMeta);
-			viewName = meta.name;
-			viewDescription = meta.description;
-		}
-
-		const defaultPublicId = localStorage.getItem('statusy_default_view_public_id');
-		isDefaultView = (defaultPublicId === data.view.public_id);
-	});
-
 	$effect(() => {
-		const stored = localStorage.getItem(`statusy_view_${data.view.public_id}`);
-		if (stored) {
-			localServices = JSON.parse(stored);
-		} else {
-			localServices = [...data.view.services];
-			localStorage.setItem(`statusy_view_${data.view.public_id}`, JSON.stringify(localServices));
-		}
-
-		const storedMeta = localStorage.getItem(`statusy_view_meta_${data.view.public_id}`);
-		if (storedMeta) {
-			const meta = JSON.parse(storedMeta);
-			viewName = meta.name;
-			viewDescription = meta.description;
-		} else {
-			viewName = data.view.name;
-			viewDescription = data.view.description;
-		}
-
-		const defaultPublicId = localStorage.getItem('statusy_default_view_public_id');
-		isDefaultView = (defaultPublicId === data.view.public_id);
+		// Sync local state when view data from page load changes
+		viewName = data.view.name;
+		viewDescription = data.view.description;
+		isDefaultView = data.view.is_default;
+		localServices = data.view.services;
 	});
 
 	// Compute metrics dynamically from localState
@@ -116,9 +80,7 @@
 		if (serviceToDelete) {
 			try {
 				await viewsApi.deleteViewService(data.view.public_id, serviceToDelete.id);
-				const updated = localServices.filter((s) => s.id !== serviceToDelete.id);
-				localServices = updated;
-				localStorage.setItem(`statusy_view_${data.view.public_id}`, JSON.stringify(updated));
+				localServices = localServices.filter((s) => s.id !== serviceToDelete.id);
 				isDeleteConfirmOpen = false;
 				serviceToDelete = null;
 			} catch (err: any) {
@@ -147,7 +109,6 @@
 	let editViewDescription = $state('');
 	let editViewIsDefault = $state(false);
 	let editViewError = $state<string | null>(null);
-	let isMenuOpen = $state(false);
 
 	function openEditViewDialog() {
 		editViewName = viewName;
@@ -166,23 +127,9 @@
 				is_default: editViewIsDefault
 			});
 
-			localStorage.setItem(`statusy_view_meta_${data.view.public_id}`, JSON.stringify({
-				name: editViewName,
-				description: editViewDescription
-			}));
-
 			viewName = editViewName;
 			viewDescription = editViewDescription;
-
-			if (editViewIsDefault) {
-				localStorage.setItem('statusy_default_view_public_id', data.view.public_id);
-				isDefaultView = true;
-			} else {
-				if (localStorage.getItem('statusy_default_view_public_id') === data.view.public_id) {
-					localStorage.removeItem('statusy_default_view_public_id');
-				}
-				isDefaultView = false;
-			}
+			isDefaultView = editViewIsDefault;
 
 			isEditViewOpen = false;
 		} catch (err: any) {
@@ -208,11 +155,6 @@
 		try {
 			await viewsApi.delete(data.view.public_id);
 
-			localStorage.removeItem(`statusy_view_${data.view.public_id}`);
-			localStorage.removeItem(`statusy_view_meta_${data.view.public_id}`);
-			if (localStorage.getItem('statusy_default_view_public_id') === data.view.public_id) {
-				localStorage.removeItem('statusy_default_view_public_id');
-			}
 			isDeleteViewOpen = false;
 			void goto('/');
 		} catch (err: any) {
@@ -239,7 +181,9 @@
 			</h1>
 
 			{#if isDefaultView}
-				<span class="rounded border border-zinc-700/50 bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+				<span
+					class="rounded border border-zinc-700/50 bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium tracking-wider text-zinc-400 uppercase"
+				>
 					Default
 				</span>
 			{/if}
@@ -547,7 +491,8 @@
 				/>
 			</div>
 			<div class="grid gap-2">
-				<Label for="view-description" class="text-sm font-semibold text-zinc-300">Description</Label>
+				<Label for="view-description" class="text-sm font-semibold text-zinc-300">Description</Label
+				>
 				<Textarea
 					id="view-description"
 					bind:value={editViewDescription}
@@ -555,7 +500,7 @@
 					class="border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700"
 				/>
 			</div>
-			
+
 			<label class="mt-2 flex cursor-pointer items-center gap-2 select-none">
 				<input
 					type="checkbox"
@@ -602,12 +547,15 @@
 				Delete View?
 			</Dialog.Title>
 			{#if deleteViewError}
-				<div class="mt-2 rounded-lg border border-red-500/20 bg-red-950/20 p-3 text-sm text-red-400">
+				<div
+					class="mt-2 rounded-lg border border-red-500/20 bg-red-950/20 p-3 text-sm text-red-400"
+				>
 					{deleteViewError}
 				</div>
 			{/if}
 			<Dialog.Description class="mt-2 text-zinc-400">
-				Are you sure you want to delete the view <span class="font-bold text-white">{viewName}</span>? This action will remove all configured services for this view and cannot be undone.
+				Are you sure you want to delete the view <span class="font-bold text-white">{viewName}</span
+				>? This action will remove all configured services for this view and cannot be undone.
 			</Dialog.Description>
 		</Dialog.Header>
 

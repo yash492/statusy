@@ -331,7 +331,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /api/views/default:
     post:
-      operationId: getDefaultView
+      operationId: createOrGetDefaultView
       description: Get or create default view
       parameters: []
       responses:
