@@ -25,4 +25,5 @@ type ComponentGroupResult struct {
 
 type GroupRepository interface {
 	SaveAll(ctx context.Context, params []GroupParams) ([]ComponentGroupResult, error)
+	GetByServiceID(ctx context.Context, serviceID uint) ([]ComponentGroupResult, error)
 }

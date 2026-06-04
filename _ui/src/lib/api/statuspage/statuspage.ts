@@ -1,4 +1,4 @@
-import KyClient from '$lib/api/ky/ky';
+import { ApiClient } from '$lib/api/ky/ky';
 
 export interface Statuspage {
 	id: number;
@@ -37,34 +37,71 @@ export interface StatuspageScheduledMaintenances {
 	total_count: number;
 }
 
+export interface Component {
+	id: number;
+	name: string;
+	provider_id: string;
+}
+
+export interface ComponentGroup {
+	id: number;
+	name: string;
+	provider_id: string;
+	components: Component[];
+}
+
+export interface ServiceComponents {
+	service_id: number;
+	service_name: string;
+	service_slug: string;
+	grouped_components: ComponentGroup[];
+	ungrouped_components: Component[];
+}
+
 export class StatuspageApi {
 	private readonly basePath = 'statuspages';
 
 	list(search?: string) {
-		return KyClient.get(this.basePath, {
+		return ApiClient.get<Statuspage[]>(this.basePath, {
 			searchParams: search ? { search } : undefined
-		}).json<Statuspage[]>();
+		});
 	}
 
 	bySlug(slug: string) {
-		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}`).json<Statuspage>();
+		return ApiClient.get<Statuspage>(`${this.basePath}/${encodeURIComponent(slug)}`);
 	}
 
-	incidents(slug: string, pageNumber = 1, pageSize = 10) {
-		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}/incidents`, {
-			searchParams: {
-				page_number: pageNumber,
-				page_size: pageSize
+	incidents(slug: string, pageNumber = 1, pageSize = 10, componentIds?: number[], componentGroupIds?: number[]) {
+		return ApiClient.get<StatuspageIncidents>(
+			`${this.basePath}/${encodeURIComponent(slug)}/incidents`,
+			{
+				searchParams: {
+					page_number: pageNumber,
+					page_size: pageSize,
+					...(componentIds && componentIds.length > 0 ? { component_ids: componentIds.join(',') } : {}),
+					...(componentGroupIds && componentGroupIds.length > 0 ? { component_group_ids: componentGroupIds.join(',') } : {})
+				}
 			}
-		}).json<StatuspageIncidents>();
+		);
 	}
 
-	scheduledMaintenances(slug: string, pageNumber = 1, pageSize = 10) {
-		return KyClient.get(`${this.basePath}/${encodeURIComponent(slug)}/schedule-maintenances`, {
-			searchParams: {
-				page_number: pageNumber,
-				page_size: pageSize
+	scheduledMaintenances(slug: string, pageNumber = 1, pageSize = 10, componentIds?: number[], componentGroupIds?: number[]) {
+		return ApiClient.get<StatuspageScheduledMaintenances>(
+			`${this.basePath}/${encodeURIComponent(slug)}/schedule-maintenances`,
+			{
+				searchParams: {
+					page_number: pageNumber,
+					page_size: pageSize,
+					...(componentIds && componentIds.length > 0 ? { component_ids: componentIds.join(',') } : {}),
+					...(componentGroupIds && componentGroupIds.length > 0 ? { component_group_ids: componentGroupIds.join(',') } : {})
+				}
 			}
-		}).json<StatuspageScheduledMaintenances>();
+		);
+	}
+
+	getComponents(serviceSlug: string) {
+		return ApiClient.get<ServiceComponents>(
+			`services/${encodeURIComponent(serviceSlug)}/components`
+		);
 	}
 }

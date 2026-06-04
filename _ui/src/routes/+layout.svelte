@@ -1,7 +1,7 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
-
-	import Navbar from '$lib/derivedcomponents/Navbar.svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
 	import './layout.css';
 	let { children } = $props();
@@ -9,8 +9,11 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 <ModeWatcher />
+<Toaster />
 
-<Navbar />
-<main class="mb-10">
-	{@render children()}
-</main>
+<div class="flex min-h-screen flex-col bg-zinc-950">
+	<Navbar />
+	<main class="mx-auto mt-4 mb-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+		{@render children?.()}
+	</main>
+</div>

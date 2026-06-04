@@ -4,6 +4,7 @@ import "@typespec/versioning";
 import "./models.tsp";
 import "./statuspage.tsp";
 import "./incident.tsp";
+import "./views.tsp";
 
 using Http;
 

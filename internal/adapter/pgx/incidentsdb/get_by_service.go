@@ -27,10 +27,23 @@ type incidentByServiceDto struct {
 }
 
 func (c *PostgresIncidentRepository) GetByService(ctx context.Context, params incidents.IncidentByServiceParams) ([]incidents.IncidentByServiceResult, error) {
+	compIDs := params.ComponentIDs
+	if compIDs == nil {
+		compIDs = []int{}
+	}
+	compGroupIDs := params.ComponentGroupIDs
+	if compGroupIDs == nil {
+		compGroupIDs = []int{}
+	}
+	hasFilter := len(compIDs) > 0 || len(compGroupIDs) > 0
+
 	rows, err := c.readDB.Query(ctx, getIncidentsByServiceQuery, pgx.NamedArgs{
-		"service_id": params.ServiceID,
-		"limit":      params.Limit,
-		"offset":     params.Offset,
+		"service_id":          params.ServiceID,
+		"has_filter":          hasFilter,
+		"component_ids":       compIDs,
+		"component_group_ids": compGroupIDs,
+		"limit":               params.Limit,
+		"offset":              params.Offset,
 	})
 	if err != nil {
 		c.lg.ErrorContext(ctx, "error querying incidents by service", slog.Any("service_id", params.ServiceID), slog.Any("err", err))

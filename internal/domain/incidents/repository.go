@@ -32,9 +32,11 @@ type IncidentResult struct {
 }
 
 type IncidentByServiceParams struct {
-	ServiceID uint
-	Limit     int
-	Offset    int
+	ServiceID         uint
+	ComponentIDs      []int
+	ComponentGroupIDs []int
+	Limit             int
+	Offset            int
 }
 
 type IncidentByServiceResult struct {
@@ -86,6 +88,7 @@ type IncidentComponentResult struct {
 type Repository interface {
 	SaveAll(ctx context.Context, params []IncidentParams) ([]IncidentResult, error)
 	GetByService(ctx context.Context, params IncidentByServiceParams) ([]IncidentByServiceResult, error)
+	UpdateResolutionStatus(ctx context.Context, serviceIDs []uint) error
 }
 
 type UpdatesRepository interface {

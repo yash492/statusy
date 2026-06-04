@@ -3,6 +3,7 @@ module github.com/yash492/statusy
 go 1.26
 
 require (
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/cors v1.2.2

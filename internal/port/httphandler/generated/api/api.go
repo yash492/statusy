@@ -23,6 +23,93 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
+// AddViewServiceRequest defines model for AddViewServiceRequest.
+type AddViewServiceRequest struct {
+	// ComponentGroupIds List of specific component group IDs to include (ignored if include_all_components is true)
+	ComponentGroupIds *[]int `json:"component_group_ids,omitempty"`
+
+	// ComponentIds List of specific component IDs to include (ignored if include_all_components is true)
+	ComponentIds *[]int `json:"component_ids,omitempty"`
+
+	// IncludeAllComponents Whether to include all components of the service
+	IncludeAllComponents bool `json:"include_all_components"`
+
+	// MonitorIncidents Whether to monitor incidents for the service
+	MonitorIncidents bool `json:"monitor_incidents"`
+
+	// MonitorScheduledMaintenances Whether to monitor scheduled maintenances for the service
+	MonitorScheduledMaintenances bool `json:"monitor_scheduled_maintenances"`
+
+	// ServiceId The ID of the service to add to the view
+	ServiceId int `json:"service_id"`
+}
+
+// Component defines model for Component.
+type Component struct {
+	// Id Unique identifier for the component
+	Id int `json:"id"`
+
+	// Name Display name of the component
+	Name string `json:"name"`
+
+	// ProviderId Provider-specific identifier for the component
+	ProviderId string `json:"provider_id"`
+}
+
+// ComponentGroup defines model for ComponentGroup.
+type ComponentGroup struct {
+	// Components List of components within this group
+	Components []Component `json:"components"`
+
+	// Id Unique identifier for the component group
+	Id int `json:"id"`
+
+	// Name Display name of the component group
+	Name string `json:"name"`
+
+	// ProviderId Provider-specific identifier for the component group
+	ProviderId string `json:"provider_id"`
+}
+
+// CreateViewRequest defines model for CreateViewRequest.
+type CreateViewRequest struct {
+	// Description Description of the view
+	Description string `json:"description"`
+
+	// Name Display name of the view
+	Name string `json:"name"`
+}
+
+// EditViewRequest defines model for EditViewRequest.
+type EditViewRequest struct {
+	// Description Description of the view
+	Description string `json:"description"`
+
+	// IsDefault Whether this is the default view
+	IsDefault bool `json:"is_default"`
+
+	// Name Display name of the view
+	Name string `json:"name"`
+}
+
+// EditViewServiceRequest defines model for EditViewServiceRequest.
+type EditViewServiceRequest struct {
+	// ComponentGroupIds List of specific component group IDs to include (ignored if include_all_components is true)
+	ComponentGroupIds *[]int `json:"component_group_ids,omitempty"`
+
+	// ComponentIds List of specific component IDs to include (ignored if include_all_components is true)
+	ComponentIds *[]int `json:"component_ids,omitempty"`
+
+	// IncludeAllComponents Whether to include all components of the service
+	IncludeAllComponents bool `json:"include_all_components"`
+
+	// MonitorIncidents Whether to monitor incidents for the service
+	MonitorIncidents bool `json:"monitor_incidents"`
+
+	// MonitorScheduledMaintenances Whether to monitor scheduled maintenances for the service
+	MonitorScheduledMaintenances bool `json:"monitor_scheduled_maintenances"`
+}
+
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
 	// Code Error code identifier
@@ -50,6 +137,14 @@ type Incident struct {
 	Title string `json:"title"`
 }
 
+// PaginatedViewServices defines model for PaginatedViewServices.
+type PaginatedViewServices struct {
+	DownCount  int                 `json:"down_count"`
+	Services   []ViewServiceStatus `json:"services"`
+	TotalCount int                 `json:"total_count"`
+	UpCount    int                 `json:"up_count"`
+}
+
 // ScheduledMaintenance defines model for ScheduledMaintenance.
 type ScheduledMaintenance struct {
 	// EndsAt The end time of the scheduled maintenance event in UTC
@@ -72,6 +167,24 @@ type ScheduledMaintenance struct {
 
 	// Title Title or summary of the incident
 	Title string `json:"title"`
+}
+
+// ServiceComponents defines model for ServiceComponents.
+type ServiceComponents struct {
+	// GroupedComponents List of component groups for the service
+	GroupedComponents []ComponentGroup `json:"grouped_components"`
+
+	// ServiceId The service ID
+	ServiceId int `json:"service_id"`
+
+	// ServiceName The service name
+	ServiceName string `json:"service_name"`
+
+	// ServiceSlug The service slug
+	ServiceSlug string `json:"service_slug"`
+
+	// UngroupedComponents List of ungrouped components for the service
+	UngroupedComponents []Component `json:"ungrouped_components"`
 }
 
 // Statuspage defines model for Statuspage.
@@ -103,6 +216,87 @@ type StatuspageScheduledMaintenances struct {
 	TotalCount            int                    `json:"total_count"`
 }
 
+// View defines model for View.
+type View struct {
+	// Description Description of the view
+	Description string `json:"description"`
+
+	// IsDefault Whether this is the default view
+	IsDefault bool `json:"is_default"`
+
+	// Name Display name of the view
+	Name string `json:"name"`
+
+	// PublicId Unique public identifier (Snowflake ID) for the view
+	PublicId string `json:"public_id"`
+}
+
+// ViewServiceResponse defines model for ViewServiceResponse.
+type ViewServiceResponse struct {
+	// ComponentGroupIds List of specific component group IDs to include (ignored if include_all_components is true)
+	ComponentGroupIds *[]int `json:"component_group_ids,omitempty"`
+
+	// ComponentIds List of specific component IDs to include (ignored if include_all_components is true)
+	ComponentIds *[]int `json:"component_ids,omitempty"`
+
+	// Id Unique identifier for the view-service mapping
+	Id int `json:"id"`
+
+	// IncludeAllComponents Whether all components of this service are included
+	IncludeAllComponents bool `json:"include_all_components"`
+
+	// MonitorIncidents Whether to monitor incidents for the service
+	MonitorIncidents bool `json:"monitor_incidents"`
+
+	// MonitorScheduledMaintenances Whether to monitor scheduled maintenances for the service
+	MonitorScheduledMaintenances bool `json:"monitor_scheduled_maintenances"`
+
+	// ServiceId The ID of the service
+	ServiceId int `json:"service_id"`
+}
+
+// ViewServiceStatus defines model for ViewServiceStatus.
+type ViewServiceStatus struct {
+	// ComponentGroupIds List of specific component group IDs to include (ignored if include_all_components is true)
+	ComponentGroupIds *[]int `json:"component_group_ids,omitempty"`
+
+	// ComponentIds List of specific component IDs to include (ignored if include_all_components is true)
+	ComponentIds *[]int `json:"component_ids,omitempty"`
+
+	// Id Unique identifier for the status page service
+	Id int `json:"id"`
+
+	// IncludeAllComponents Whether all components of this service are included in the view
+	IncludeAllComponents bool `json:"include_all_components"`
+
+	// LastIncident Active incident description (empty string if none)
+	LastIncident string `json:"last_incident"`
+
+	// LastIncidentLink Link to the active incident on the provider's status page (empty string if none)
+	LastIncidentLink string `json:"last_incident_link"`
+
+	// MonitorIncidents Whether to monitor incidents for the service
+	MonitorIncidents bool `json:"monitor_incidents"`
+
+	// MonitorScheduledMaintenances Whether to monitor scheduled maintenances for the service
+	MonitorScheduledMaintenances bool `json:"monitor_scheduled_maintenances"`
+
+	// Name Display name of the service
+	Name string `json:"name"`
+
+	// Slug URL-friendly slug of the service
+	Slug string `json:"slug"`
+
+	// Status Aggregated status of the service (up or down)
+	Status string `json:"status"`
+
+	// UpcomingMaintenance Upcoming scheduled maintenance description (empty string if none)
+	UpcomingMaintenance string `json:"upcoming_maintenance"`
+
+	// UpcomingMaintenanceLink Link to the upcoming scheduled maintenance on the provider's status page (empty string if none)
+	UpcomingMaintenanceLink string `json:"upcoming_maintenance_link"`
+}
+
 // ListStatuspagesParams defines parameters for ListStatuspages.
 type ListStatuspagesParams struct {
 	// Search Search term to filter status pages by name or slug
@@ -116,6 +310,12 @@ type IncidentByStatuspageParams struct {
 
 	// PageSize Number of updates per page
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// ComponentIds Comma-separated list of component IDs to filter by
+	ComponentIds *string `form:"component_ids,omitempty" json:"component_ids,omitempty"`
+
+	// ComponentGroupIds Comma-separated list of component group IDs to filter by
+	ComponentGroupIds *string `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
 }
 
 // ScheduledMaintenanceByStatuspageParams defines parameters for ScheduledMaintenanceByStatuspage.
@@ -125,10 +325,55 @@ type ScheduledMaintenanceByStatuspageParams struct {
 
 	// PageSize Number of updates per page
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// ComponentIds Comma-separated list of component IDs to filter by
+	ComponentIds *string `form:"component_ids,omitempty" json:"component_ids,omitempty"`
+
+	// ComponentGroupIds Comma-separated list of component group IDs to filter by
+	ComponentGroupIds *string `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
 }
+
+// ListViewsParams defines parameters for ListViews.
+type ListViewsParams struct {
+	// Search Optional search term to filter views by name or description
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+}
+
+// GetUnconfiguredServicesParams defines parameters for GetUnconfiguredServices.
+type GetUnconfiguredServicesParams struct {
+	// Search Search term to filter services by name or slug
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+}
+
+// GetViewServicesParams defines parameters for GetViewServices.
+type GetViewServicesParams struct {
+	// PageNumber Page number for paginated results (default: 1)
+	PageNumber *int `form:"page_number,omitempty" json:"page_number,omitempty"`
+
+	// PageSize Number of items per page (default: 20)
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// Search Optional search term to filter services by name or slug
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+}
+
+// CreateViewJSONRequestBody defines body for CreateView for application/json ContentType.
+type CreateViewJSONRequestBody = CreateViewRequest
+
+// EditViewJSONRequestBody defines body for EditView for application/json ContentType.
+type EditViewJSONRequestBody = EditViewRequest
+
+// AddViewServiceJSONRequestBody defines body for AddViewService for application/json ContentType.
+type AddViewServiceJSONRequestBody = AddViewServiceRequest
+
+// EditViewServiceJSONRequestBody defines body for EditViewService for application/json ContentType.
+type EditViewServiceJSONRequestBody = EditViewServiceRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (GET /api/services/{serviceSlug}/components)
+	GetServiceComponents(w http.ResponseWriter, r *http.Request, serviceSlug string)
 
 	// (GET /api/statuspages)
 	ListStatuspages(w http.ResponseWriter, r *http.Request, params ListStatuspagesParams)
@@ -147,11 +392,52 @@ type ServerInterface interface {
 
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params ScheduledMaintenanceByStatuspageParams)
+
+	// (GET /api/views)
+	ListViews(w http.ResponseWriter, r *http.Request, params ListViewsParams)
+
+	// (POST /api/views)
+	CreateView(w http.ResponseWriter, r *http.Request)
+
+	// (POST /api/views/default)
+	CreateOrGetDefaultView(w http.ResponseWriter, r *http.Request)
+
+	// (DELETE /api/views/{publicId})
+	DeleteView(w http.ResponseWriter, r *http.Request, publicId string)
+
+	// (GET /api/views/{publicId})
+	GetView(w http.ResponseWriter, r *http.Request, publicId string)
+
+	// (PUT /api/views/{publicId})
+	EditView(w http.ResponseWriter, r *http.Request, publicId string)
+
+	// (POST /api/views/{publicId}/services)
+	AddViewService(w http.ResponseWriter, r *http.Request, publicId string)
+
+	// (DELETE /api/views/{publicId}/services/{serviceId})
+	DeleteViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int)
+
+	// (GET /api/views/{publicId}/services/{serviceId})
+	GetViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int)
+
+	// (PUT /api/views/{publicId}/services/{serviceId})
+	EditViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int)
+
+	// (GET /api/views/{publicId}/unconfigured-services)
+	GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, publicId string, params GetUnconfiguredServicesParams)
+
+	// (GET /api/views/{publicId}/view-services)
+	GetViewServices(w http.ResponseWriter, r *http.Request, publicId string, params GetViewServicesParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
+
+// (GET /api/services/{serviceSlug}/components)
+func (_ Unimplemented) GetServiceComponents(w http.ResponseWriter, r *http.Request, serviceSlug string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
 
 // (GET /api/statuspages)
 func (_ Unimplemented) ListStatuspages(w http.ResponseWriter, r *http.Request, params ListStatuspagesParams) {
@@ -183,6 +469,66 @@ func (_ Unimplemented) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// (GET /api/views)
+func (_ Unimplemented) ListViews(w http.ResponseWriter, r *http.Request, params ListViewsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /api/views)
+func (_ Unimplemented) CreateView(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /api/views/default)
+func (_ Unimplemented) CreateOrGetDefaultView(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (DELETE /api/views/{publicId})
+func (_ Unimplemented) DeleteView(w http.ResponseWriter, r *http.Request, publicId string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /api/views/{publicId})
+func (_ Unimplemented) GetView(w http.ResponseWriter, r *http.Request, publicId string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (PUT /api/views/{publicId})
+func (_ Unimplemented) EditView(w http.ResponseWriter, r *http.Request, publicId string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /api/views/{publicId}/services)
+func (_ Unimplemented) AddViewService(w http.ResponseWriter, r *http.Request, publicId string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (DELETE /api/views/{publicId}/services/{serviceId})
+func (_ Unimplemented) DeleteViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /api/views/{publicId}/services/{serviceId})
+func (_ Unimplemented) GetViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (PUT /api/views/{publicId}/services/{serviceId})
+func (_ Unimplemented) EditViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /api/views/{publicId}/unconfigured-services)
+func (_ Unimplemented) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, publicId string, params GetUnconfiguredServicesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /api/views/{publicId}/view-services)
+func (_ Unimplemented) GetViewServices(w http.ResponseWriter, r *http.Request, publicId string, params GetViewServicesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler            ServerInterface
@@ -191,6 +537,31 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// GetServiceComponents operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceComponents(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "serviceSlug" -------------
+	var serviceSlug string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "serviceSlug", chi.URLParam(r, "serviceSlug"), &serviceSlug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "serviceSlug", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetServiceComponents(w, r, serviceSlug)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // ListStatuspages operation middleware
 func (siw *ServerInterfaceWrapper) ListStatuspages(w http.ResponseWriter, r *http.Request) {
@@ -327,6 +698,22 @@ func (siw *ServerInterfaceWrapper) IncidentByStatuspage(w http.ResponseWriter, r
 		return
 	}
 
+	// ------------- Optional query parameter "component_ids" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_ids", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "component_group_ids" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_group_ids", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.IncidentByStatuspage(w, r, statuspageSlug, params)
 	}))
@@ -371,8 +758,369 @@ func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.Respo
 		return
 	}
 
+	// ------------- Optional query parameter "component_ids" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_ids", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "component_group_ids" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_group_ids", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ScheduledMaintenanceByStatuspage(w, r, statuspageSlug, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListViews operation middleware
+func (siw *ServerInterfaceWrapper) ListViews(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListViewsParams
+
+	// ------------- Optional query parameter "search" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "search", r.URL.Query(), &params.Search, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "search", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListViews(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateView operation middleware
+func (siw *ServerInterfaceWrapper) CreateView(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateView(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateOrGetDefaultView operation middleware
+func (siw *ServerInterfaceWrapper) CreateOrGetDefaultView(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateOrGetDefaultView(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteView operation middleware
+func (siw *ServerInterfaceWrapper) DeleteView(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteView(w, r, publicId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetView operation middleware
+func (siw *ServerInterfaceWrapper) GetView(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetView(w, r, publicId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// EditView operation middleware
+func (siw *ServerInterfaceWrapper) EditView(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.EditView(w, r, publicId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AddViewService operation middleware
+func (siw *ServerInterfaceWrapper) AddViewService(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddViewService(w, r, publicId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteViewService operation middleware
+func (siw *ServerInterfaceWrapper) DeleteViewService(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "serviceId" -------------
+	var serviceId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "serviceId", chi.URLParam(r, "serviceId"), &serviceId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "serviceId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteViewService(w, r, publicId, serviceId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetViewService operation middleware
+func (siw *ServerInterfaceWrapper) GetViewService(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "serviceId" -------------
+	var serviceId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "serviceId", chi.URLParam(r, "serviceId"), &serviceId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "serviceId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetViewService(w, r, publicId, serviceId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// EditViewService operation middleware
+func (siw *ServerInterfaceWrapper) EditViewService(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "serviceId" -------------
+	var serviceId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "serviceId", chi.URLParam(r, "serviceId"), &serviceId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "serviceId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.EditViewService(w, r, publicId, serviceId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetUnconfiguredServices operation middleware
+func (siw *ServerInterfaceWrapper) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetUnconfiguredServicesParams
+
+	// ------------- Optional query parameter "search" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "search", r.URL.Query(), &params.Search, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "search", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetUnconfiguredServices(w, r, publicId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetViewServices operation middleware
+func (siw *ServerInterfaceWrapper) GetViewServices(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetViewServicesParams
+
+	// ------------- Optional query parameter "page_number" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_number", r.URL.Query(), &params.PageNumber, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_number", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_size", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "search" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "search", r.URL.Query(), &params.Search, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "search", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetViewServices(w, r, publicId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -496,6 +1244,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/services/{serviceSlug}/components", wrapper.GetServiceComponents)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/statuspages", wrapper.ListStatuspages)
 	})
 	r.Group(func(r chi.Router) {
@@ -513,8 +1264,122 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances", wrapper.ScheduledMaintenanceByStatuspage)
 	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views", wrapper.ListViews)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/views", wrapper.CreateView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/views/default", wrapper.CreateOrGetDefaultView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/views/{publicId}", wrapper.DeleteView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views/{publicId}", wrapper.GetView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/views/{publicId}", wrapper.EditView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/views/{publicId}/services", wrapper.AddViewService)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/views/{publicId}/services/{serviceId}", wrapper.DeleteViewService)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views/{publicId}/services/{serviceId}", wrapper.GetViewService)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/views/{publicId}/services/{serviceId}", wrapper.EditViewService)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views/{publicId}/unconfigured-services", wrapper.GetUnconfiguredServices)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views/{publicId}/view-services", wrapper.GetViewServices)
+	})
 
 	return r
+}
+
+type GetServiceComponentsRequestObject struct {
+	ServiceSlug string `json:"serviceSlug"`
+}
+
+type GetServiceComponentsResponseObject interface {
+	VisitGetServiceComponentsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceComponents200JSONResponse ServiceComponents
+
+func (response GetServiceComponents200JSONResponse) VisitGetServiceComponentsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceComponents400JSONResponse ErrorResponse
+
+func (response GetServiceComponents400JSONResponse) VisitGetServiceComponentsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceComponents404JSONResponse ErrorResponse
+
+func (response GetServiceComponents404JSONResponse) VisitGetServiceComponentsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceComponents409JSONResponse ErrorResponse
+
+func (response GetServiceComponents409JSONResponse) VisitGetServiceComponentsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetServiceComponents500JSONResponse ErrorResponse
+
+func (response GetServiceComponents500JSONResponse) VisitGetServiceComponentsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
 }
 
 type ListStatuspagesRequestObject struct {
@@ -539,19 +1404,58 @@ func (response ListStatuspages200JSONResponse) VisitListStatuspagesResponse(w ht
 	return err
 }
 
-type ListStatuspagesdefaultJSONResponse struct {
-	Body       ErrorResponse
-	StatusCode int
-}
+type ListStatuspages400JSONResponse ErrorResponse
 
-func (response ListStatuspagesdefaultJSONResponse) VisitListStatuspagesResponse(w http.ResponseWriter) error {
+func (response ListStatuspages400JSONResponse) VisitListStatuspagesResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
 		return err
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListStatuspages404JSONResponse ErrorResponse
+
+func (response ListStatuspages404JSONResponse) VisitListStatuspagesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListStatuspages409JSONResponse ErrorResponse
+
+func (response ListStatuspages409JSONResponse) VisitListStatuspagesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListStatuspages500JSONResponse ErrorResponse
+
+func (response ListStatuspages500JSONResponse) VisitListStatuspagesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -578,19 +1482,58 @@ func (response StatuspageBySlug200JSONResponse) VisitStatuspageBySlugResponse(w 
 	return err
 }
 
-type StatuspageBySlugdefaultJSONResponse struct {
-	Body       ErrorResponse
-	StatusCode int
-}
+type StatuspageBySlug400JSONResponse ErrorResponse
 
-func (response StatuspageBySlugdefaultJSONResponse) VisitStatuspageBySlugResponse(w http.ResponseWriter) error {
+func (response StatuspageBySlug400JSONResponse) VisitStatuspageBySlugResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
 		return err
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type StatuspageBySlug404JSONResponse ErrorResponse
+
+func (response StatuspageBySlug404JSONResponse) VisitStatuspageBySlugResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type StatuspageBySlug409JSONResponse ErrorResponse
+
+func (response StatuspageBySlug409JSONResponse) VisitStatuspageBySlugResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type StatuspageBySlug500JSONResponse ErrorResponse
+
+func (response StatuspageBySlug500JSONResponse) VisitStatuspageBySlugResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -623,19 +1566,58 @@ func (response GetAtomFeed200ApplicationatomXmlCharsetUtf8Response) VisitGetAtom
 	return err
 }
 
-type GetAtomFeeddefaultJSONResponse struct {
-	Body       ErrorResponse
-	StatusCode int
-}
+type GetAtomFeed400JSONResponse ErrorResponse
 
-func (response GetAtomFeeddefaultJSONResponse) VisitGetAtomFeedResponse(w http.ResponseWriter) error {
+func (response GetAtomFeed400JSONResponse) VisitGetAtomFeedResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
 		return err
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAtomFeed404JSONResponse ErrorResponse
+
+func (response GetAtomFeed404JSONResponse) VisitGetAtomFeedResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAtomFeed409JSONResponse ErrorResponse
+
+func (response GetAtomFeed409JSONResponse) VisitGetAtomFeedResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAtomFeed500JSONResponse ErrorResponse
+
+func (response GetAtomFeed500JSONResponse) VisitGetAtomFeedResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -668,19 +1650,58 @@ func (response GetRssFeed200ApplicationrssXmlCharsetUtf8Response) VisitGetRssFee
 	return err
 }
 
-type GetRssFeeddefaultJSONResponse struct {
-	Body       ErrorResponse
-	StatusCode int
-}
+type GetRssFeed400JSONResponse ErrorResponse
 
-func (response GetRssFeeddefaultJSONResponse) VisitGetRssFeedResponse(w http.ResponseWriter) error {
+func (response GetRssFeed400JSONResponse) VisitGetRssFeedResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
 		return err
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRssFeed404JSONResponse ErrorResponse
+
+func (response GetRssFeed404JSONResponse) VisitGetRssFeedResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRssFeed409JSONResponse ErrorResponse
+
+func (response GetRssFeed409JSONResponse) VisitGetRssFeedResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetRssFeed500JSONResponse ErrorResponse
+
+func (response GetRssFeed500JSONResponse) VisitGetRssFeedResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -708,19 +1729,58 @@ func (response IncidentByStatuspage200JSONResponse) VisitIncidentByStatuspageRes
 	return err
 }
 
-type IncidentByStatuspagedefaultJSONResponse struct {
-	Body       ErrorResponse
-	StatusCode int
-}
+type IncidentByStatuspage400JSONResponse ErrorResponse
 
-func (response IncidentByStatuspagedefaultJSONResponse) VisitIncidentByStatuspageResponse(w http.ResponseWriter) error {
+func (response IncidentByStatuspage400JSONResponse) VisitIncidentByStatuspageResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
 		return err
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type IncidentByStatuspage404JSONResponse ErrorResponse
+
+func (response IncidentByStatuspage404JSONResponse) VisitIncidentByStatuspageResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type IncidentByStatuspage409JSONResponse ErrorResponse
+
+func (response IncidentByStatuspage409JSONResponse) VisitIncidentByStatuspageResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type IncidentByStatuspage500JSONResponse ErrorResponse
+
+func (response IncidentByStatuspage500JSONResponse) VisitIncidentByStatuspageResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 	_, err := buf.WriteTo(w)
 	return err
 }
@@ -748,25 +1808,998 @@ func (response ScheduledMaintenanceByStatuspage200JSONResponse) VisitScheduledMa
 	return err
 }
 
-type ScheduledMaintenanceByStatuspagedefaultJSONResponse struct {
-	Body       ErrorResponse
-	StatusCode int
-}
+type ScheduledMaintenanceByStatuspage400JSONResponse ErrorResponse
 
-func (response ScheduledMaintenanceByStatuspagedefaultJSONResponse) VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
+func (response ScheduledMaintenanceByStatuspage400JSONResponse) VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
 		return err
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ScheduledMaintenanceByStatuspage404JSONResponse ErrorResponse
+
+func (response ScheduledMaintenanceByStatuspage404JSONResponse) VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ScheduledMaintenanceByStatuspage409JSONResponse ErrorResponse
+
+func (response ScheduledMaintenanceByStatuspage409JSONResponse) VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ScheduledMaintenanceByStatuspage500JSONResponse ErrorResponse
+
+func (response ScheduledMaintenanceByStatuspage500JSONResponse) VisitScheduledMaintenanceByStatuspageResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViewsRequestObject struct {
+	Params ListViewsParams
+}
+
+type ListViewsResponseObject interface {
+	VisitListViewsResponse(w http.ResponseWriter) error
+}
+
+type ListViews200JSONResponse []View
+
+func (response ListViews200JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViews400JSONResponse ErrorResponse
+
+func (response ListViews400JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViews404JSONResponse ErrorResponse
+
+func (response ListViews404JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViews409JSONResponse ErrorResponse
+
+func (response ListViews409JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViews500JSONResponse ErrorResponse
+
+func (response ListViews500JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateViewRequestObject struct {
+	Body *CreateViewJSONRequestBody
+}
+
+type CreateViewResponseObject interface {
+	VisitCreateViewResponse(w http.ResponseWriter) error
+}
+
+type CreateView200JSONResponse View
+
+func (response CreateView200JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateView400JSONResponse ErrorResponse
+
+func (response CreateView400JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateView404JSONResponse ErrorResponse
+
+func (response CreateView404JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateView409JSONResponse ErrorResponse
+
+func (response CreateView409JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateView500JSONResponse ErrorResponse
+
+func (response CreateView500JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateOrGetDefaultViewRequestObject struct {
+}
+
+type CreateOrGetDefaultViewResponseObject interface {
+	VisitCreateOrGetDefaultViewResponse(w http.ResponseWriter) error
+}
+
+type CreateOrGetDefaultView200JSONResponse View
+
+func (response CreateOrGetDefaultView200JSONResponse) VisitCreateOrGetDefaultViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateOrGetDefaultView400JSONResponse ErrorResponse
+
+func (response CreateOrGetDefaultView400JSONResponse) VisitCreateOrGetDefaultViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateOrGetDefaultView404JSONResponse ErrorResponse
+
+func (response CreateOrGetDefaultView404JSONResponse) VisitCreateOrGetDefaultViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateOrGetDefaultView409JSONResponse ErrorResponse
+
+func (response CreateOrGetDefaultView409JSONResponse) VisitCreateOrGetDefaultViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateOrGetDefaultView500JSONResponse ErrorResponse
+
+func (response CreateOrGetDefaultView500JSONResponse) VisitCreateOrGetDefaultViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewRequestObject struct {
+	PublicId string `json:"publicId"`
+}
+
+type DeleteViewResponseObject interface {
+	VisitDeleteViewResponse(w http.ResponseWriter) error
+}
+
+type DeleteView204Response struct {
+}
+
+func (response DeleteView204Response) VisitDeleteViewResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteView400JSONResponse ErrorResponse
+
+func (response DeleteView400JSONResponse) VisitDeleteViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteView404JSONResponse ErrorResponse
+
+func (response DeleteView404JSONResponse) VisitDeleteViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteView409JSONResponse ErrorResponse
+
+func (response DeleteView409JSONResponse) VisitDeleteViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteView500JSONResponse ErrorResponse
+
+func (response DeleteView500JSONResponse) VisitDeleteViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewRequestObject struct {
+	PublicId string `json:"publicId"`
+}
+
+type GetViewResponseObject interface {
+	VisitGetViewResponse(w http.ResponseWriter) error
+}
+
+type GetView200JSONResponse View
+
+func (response GetView200JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetView400JSONResponse ErrorResponse
+
+func (response GetView400JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetView404JSONResponse ErrorResponse
+
+func (response GetView404JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetView409JSONResponse ErrorResponse
+
+func (response GetView409JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetView500JSONResponse ErrorResponse
+
+func (response GetView500JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewRequestObject struct {
+	PublicId string `json:"publicId"`
+	Body     *EditViewJSONRequestBody
+}
+
+type EditViewResponseObject interface {
+	VisitEditViewResponse(w http.ResponseWriter) error
+}
+
+type EditView200JSONResponse View
+
+func (response EditView200JSONResponse) VisitEditViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditView400JSONResponse ErrorResponse
+
+func (response EditView400JSONResponse) VisitEditViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditView404JSONResponse ErrorResponse
+
+func (response EditView404JSONResponse) VisitEditViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditView409JSONResponse ErrorResponse
+
+func (response EditView409JSONResponse) VisitEditViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditView500JSONResponse ErrorResponse
+
+func (response EditView500JSONResponse) VisitEditViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewServiceRequestObject struct {
+	PublicId string `json:"publicId"`
+	Body     *AddViewServiceJSONRequestBody
+}
+
+type AddViewServiceResponseObject interface {
+	VisitAddViewServiceResponse(w http.ResponseWriter) error
+}
+
+type AddViewService200JSONResponse ViewServiceResponse
+
+func (response AddViewService200JSONResponse) VisitAddViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewService400JSONResponse ErrorResponse
+
+func (response AddViewService400JSONResponse) VisitAddViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewService404JSONResponse ErrorResponse
+
+func (response AddViewService404JSONResponse) VisitAddViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewService409JSONResponse ErrorResponse
+
+func (response AddViewService409JSONResponse) VisitAddViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewService500JSONResponse ErrorResponse
+
+func (response AddViewService500JSONResponse) VisitAddViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewServiceRequestObject struct {
+	PublicId  string `json:"publicId"`
+	ServiceId int    `json:"serviceId"`
+}
+
+type DeleteViewServiceResponseObject interface {
+	VisitDeleteViewServiceResponse(w http.ResponseWriter) error
+}
+
+type DeleteViewService204Response struct {
+}
+
+func (response DeleteViewService204Response) VisitDeleteViewServiceResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteViewService400JSONResponse ErrorResponse
+
+func (response DeleteViewService400JSONResponse) VisitDeleteViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewService404JSONResponse ErrorResponse
+
+func (response DeleteViewService404JSONResponse) VisitDeleteViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewService409JSONResponse ErrorResponse
+
+func (response DeleteViewService409JSONResponse) VisitDeleteViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewService500JSONResponse ErrorResponse
+
+func (response DeleteViewService500JSONResponse) VisitDeleteViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewServiceRequestObject struct {
+	PublicId  string `json:"publicId"`
+	ServiceId int    `json:"serviceId"`
+}
+
+type GetViewServiceResponseObject interface {
+	VisitGetViewServiceResponse(w http.ResponseWriter) error
+}
+
+type GetViewService200JSONResponse ViewServiceResponse
+
+func (response GetViewService200JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewService400JSONResponse ErrorResponse
+
+func (response GetViewService400JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewService404JSONResponse ErrorResponse
+
+func (response GetViewService404JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewService409JSONResponse ErrorResponse
+
+func (response GetViewService409JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewService500JSONResponse ErrorResponse
+
+func (response GetViewService500JSONResponse) VisitGetViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewServiceRequestObject struct {
+	PublicId  string `json:"publicId"`
+	ServiceId int    `json:"serviceId"`
+	Body      *EditViewServiceJSONRequestBody
+}
+
+type EditViewServiceResponseObject interface {
+	VisitEditViewServiceResponse(w http.ResponseWriter) error
+}
+
+type EditViewService200JSONResponse ViewServiceResponse
+
+func (response EditViewService200JSONResponse) VisitEditViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewService400JSONResponse ErrorResponse
+
+func (response EditViewService400JSONResponse) VisitEditViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewService404JSONResponse ErrorResponse
+
+func (response EditViewService404JSONResponse) VisitEditViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewService409JSONResponse ErrorResponse
+
+func (response EditViewService409JSONResponse) VisitEditViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewService500JSONResponse ErrorResponse
+
+func (response EditViewService500JSONResponse) VisitEditViewServiceResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetUnconfiguredServicesRequestObject struct {
+	PublicId string `json:"publicId"`
+	Params   GetUnconfiguredServicesParams
+}
+
+type GetUnconfiguredServicesResponseObject interface {
+	VisitGetUnconfiguredServicesResponse(w http.ResponseWriter) error
+}
+
+type GetUnconfiguredServices200JSONResponse []Statuspage
+
+func (response GetUnconfiguredServices200JSONResponse) VisitGetUnconfiguredServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetUnconfiguredServices400JSONResponse ErrorResponse
+
+func (response GetUnconfiguredServices400JSONResponse) VisitGetUnconfiguredServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetUnconfiguredServices404JSONResponse ErrorResponse
+
+func (response GetUnconfiguredServices404JSONResponse) VisitGetUnconfiguredServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetUnconfiguredServices409JSONResponse ErrorResponse
+
+func (response GetUnconfiguredServices409JSONResponse) VisitGetUnconfiguredServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetUnconfiguredServices500JSONResponse ErrorResponse
+
+func (response GetUnconfiguredServices500JSONResponse) VisitGetUnconfiguredServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewServicesRequestObject struct {
+	PublicId string `json:"publicId"`
+	Params   GetViewServicesParams
+}
+
+type GetViewServicesResponseObject interface {
+	VisitGetViewServicesResponse(w http.ResponseWriter) error
+}
+
+type GetViewServices200JSONResponse PaginatedViewServices
+
+func (response GetViewServices200JSONResponse) VisitGetViewServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewServices400JSONResponse ErrorResponse
+
+func (response GetViewServices400JSONResponse) VisitGetViewServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewServices404JSONResponse ErrorResponse
+
+func (response GetViewServices404JSONResponse) VisitGetViewServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewServices409JSONResponse ErrorResponse
+
+func (response GetViewServices409JSONResponse) VisitGetViewServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewServices500JSONResponse ErrorResponse
+
+func (response GetViewServices500JSONResponse) VisitGetViewServicesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 	_, err := buf.WriteTo(w)
 	return err
 }
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+
+	// (GET /api/services/{serviceSlug}/components)
+	GetServiceComponents(ctx context.Context, request GetServiceComponentsRequestObject) (GetServiceComponentsResponseObject, error)
 
 	// (GET /api/statuspages)
 	ListStatuspages(ctx context.Context, request ListStatuspagesRequestObject) (ListStatuspagesResponseObject, error)
@@ -785,6 +2818,42 @@ type StrictServerInterface interface {
 
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduledMaintenanceByStatuspage(ctx context.Context, request ScheduledMaintenanceByStatuspageRequestObject) (ScheduledMaintenanceByStatuspageResponseObject, error)
+
+	// (GET /api/views)
+	ListViews(ctx context.Context, request ListViewsRequestObject) (ListViewsResponseObject, error)
+
+	// (POST /api/views)
+	CreateView(ctx context.Context, request CreateViewRequestObject) (CreateViewResponseObject, error)
+
+	// (POST /api/views/default)
+	CreateOrGetDefaultView(ctx context.Context, request CreateOrGetDefaultViewRequestObject) (CreateOrGetDefaultViewResponseObject, error)
+
+	// (DELETE /api/views/{publicId})
+	DeleteView(ctx context.Context, request DeleteViewRequestObject) (DeleteViewResponseObject, error)
+
+	// (GET /api/views/{publicId})
+	GetView(ctx context.Context, request GetViewRequestObject) (GetViewResponseObject, error)
+
+	// (PUT /api/views/{publicId})
+	EditView(ctx context.Context, request EditViewRequestObject) (EditViewResponseObject, error)
+
+	// (POST /api/views/{publicId}/services)
+	AddViewService(ctx context.Context, request AddViewServiceRequestObject) (AddViewServiceResponseObject, error)
+
+	// (DELETE /api/views/{publicId}/services/{serviceId})
+	DeleteViewService(ctx context.Context, request DeleteViewServiceRequestObject) (DeleteViewServiceResponseObject, error)
+
+	// (GET /api/views/{publicId}/services/{serviceId})
+	GetViewService(ctx context.Context, request GetViewServiceRequestObject) (GetViewServiceResponseObject, error)
+
+	// (PUT /api/views/{publicId}/services/{serviceId})
+	EditViewService(ctx context.Context, request EditViewServiceRequestObject) (EditViewServiceResponseObject, error)
+
+	// (GET /api/views/{publicId}/unconfigured-services)
+	GetUnconfiguredServices(ctx context.Context, request GetUnconfiguredServicesRequestObject) (GetUnconfiguredServicesResponseObject, error)
+
+	// (GET /api/views/{publicId}/view-services)
+	GetViewServices(ctx context.Context, request GetViewServicesRequestObject) (GetViewServicesResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -814,6 +2883,32 @@ type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
 	options     StrictHTTPServerOptions
+}
+
+// GetServiceComponents operation middleware
+func (sh *strictHandler) GetServiceComponents(w http.ResponseWriter, r *http.Request, serviceSlug string) {
+	var request GetServiceComponentsRequestObject
+
+	request.ServiceSlug = serviceSlug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceComponents(ctx, request.(GetServiceComponentsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceComponents")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetServiceComponentsResponseObject); ok {
+		if err := validResponse.VisitGetServiceComponentsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
 }
 
 // ListStatuspages operation middleware
@@ -974,29 +3069,396 @@ func (sh *strictHandler) ScheduledMaintenanceByStatuspage(w http.ResponseWriter,
 	}
 }
 
+// ListViews operation middleware
+func (sh *strictHandler) ListViews(w http.ResponseWriter, r *http.Request, params ListViewsParams) {
+	var request ListViewsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListViews(ctx, request.(ListViewsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListViews")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListViewsResponseObject); ok {
+		if err := validResponse.VisitListViewsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateView operation middleware
+func (sh *strictHandler) CreateView(w http.ResponseWriter, r *http.Request) {
+	var request CreateViewRequestObject
+
+	var body CreateViewJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateView(ctx, request.(CreateViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateViewResponseObject); ok {
+		if err := validResponse.VisitCreateViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateOrGetDefaultView operation middleware
+func (sh *strictHandler) CreateOrGetDefaultView(w http.ResponseWriter, r *http.Request) {
+	var request CreateOrGetDefaultViewRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateOrGetDefaultView(ctx, request.(CreateOrGetDefaultViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateOrGetDefaultView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateOrGetDefaultViewResponseObject); ok {
+		if err := validResponse.VisitCreateOrGetDefaultViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteView operation middleware
+func (sh *strictHandler) DeleteView(w http.ResponseWriter, r *http.Request, publicId string) {
+	var request DeleteViewRequestObject
+
+	request.PublicId = publicId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteView(ctx, request.(DeleteViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteViewResponseObject); ok {
+		if err := validResponse.VisitDeleteViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetView operation middleware
+func (sh *strictHandler) GetView(w http.ResponseWriter, r *http.Request, publicId string) {
+	var request GetViewRequestObject
+
+	request.PublicId = publicId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetView(ctx, request.(GetViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetViewResponseObject); ok {
+		if err := validResponse.VisitGetViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// EditView operation middleware
+func (sh *strictHandler) EditView(w http.ResponseWriter, r *http.Request, publicId string) {
+	var request EditViewRequestObject
+
+	request.PublicId = publicId
+
+	var body EditViewJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.EditView(ctx, request.(EditViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "EditView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(EditViewResponseObject); ok {
+		if err := validResponse.VisitEditViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// AddViewService operation middleware
+func (sh *strictHandler) AddViewService(w http.ResponseWriter, r *http.Request, publicId string) {
+	var request AddViewServiceRequestObject
+
+	request.PublicId = publicId
+
+	var body AddViewServiceJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.AddViewService(ctx, request.(AddViewServiceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "AddViewService")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(AddViewServiceResponseObject); ok {
+		if err := validResponse.VisitAddViewServiceResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteViewService operation middleware
+func (sh *strictHandler) DeleteViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
+	var request DeleteViewServiceRequestObject
+
+	request.PublicId = publicId
+	request.ServiceId = serviceId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteViewService(ctx, request.(DeleteViewServiceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteViewService")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteViewServiceResponseObject); ok {
+		if err := validResponse.VisitDeleteViewServiceResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetViewService operation middleware
+func (sh *strictHandler) GetViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
+	var request GetViewServiceRequestObject
+
+	request.PublicId = publicId
+	request.ServiceId = serviceId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetViewService(ctx, request.(GetViewServiceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetViewService")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetViewServiceResponseObject); ok {
+		if err := validResponse.VisitGetViewServiceResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// EditViewService operation middleware
+func (sh *strictHandler) EditViewService(w http.ResponseWriter, r *http.Request, publicId string, serviceId int) {
+	var request EditViewServiceRequestObject
+
+	request.PublicId = publicId
+	request.ServiceId = serviceId
+
+	var body EditViewServiceJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.EditViewService(ctx, request.(EditViewServiceRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "EditViewService")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(EditViewServiceResponseObject); ok {
+		if err := validResponse.VisitEditViewServiceResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetUnconfiguredServices operation middleware
+func (sh *strictHandler) GetUnconfiguredServices(w http.ResponseWriter, r *http.Request, publicId string, params GetUnconfiguredServicesParams) {
+	var request GetUnconfiguredServicesRequestObject
+
+	request.PublicId = publicId
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetUnconfiguredServices(ctx, request.(GetUnconfiguredServicesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetUnconfiguredServices")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetUnconfiguredServicesResponseObject); ok {
+		if err := validResponse.VisitGetUnconfiguredServicesResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetViewServices operation middleware
+func (sh *strictHandler) GetViewServices(w http.ResponseWriter, r *http.Request, publicId string, params GetViewServicesParams) {
+	var request GetViewServicesRequestObject
+
+	request.PublicId = publicId
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetViewServices(ctx, request.(GetViewServicesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetViewServices")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetViewServicesResponseObject); ok {
+		if err := validResponse.VisitGetViewServicesResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"f77+XwAAAP//APW7ww1+AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

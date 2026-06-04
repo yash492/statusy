@@ -13,9 +13,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/yash492/statusy/internal/adapter/pgx/componentgroupsdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/componentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenancesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/viewsdb"
 	"github.com/yash492/statusy/internal/command"
 	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/port/httphandler"
@@ -62,11 +65,39 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 		deps.readDB,
 		deps.writeDB,
 	)
+	viewsRepo := viewsdb.NewPostgresViewsRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
+	componentsRepo := componentsdb.NewPostgresComponentRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
+	componentGroupsRepo := componentgroupsdb.NewPostgresComponentGroupsRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
 	handler := httphandler.Handler{
 		ListStatuspageCmd:                   command.NewListStatuspageCmd(lg, servicesRepo),
 		StatuspageBySlugCmd:                 command.NewStatuspageBySlugCmd(lg, servicesRepo),
 		IncidentByStatuspageCmd:             command.NewIncidentByStatuspageCmd(lg, servicesRepo, incidentsRepo),
 		ScheduledMaintenanceByStatuspageCmd: command.NewScheduledMaintenanceByStatuspageCmd(lg, servicesRepo, scheduledMaintenancesRepo),
+		GetOrCreateDefaultViewCmd:           command.NewGetOrCreateDefaultViewCmd(lg, viewsRepo),
+		GetUnconfiguredServicesCmd:          command.NewGetUnconfiguredServicesCmd(lg, viewsRepo),
+		GetServiceComponentsCmd:             command.NewGetServiceComponentsCmd(lg, servicesRepo, componentsRepo, componentGroupsRepo),
+		AddViewServiceCmd:                   command.NewAddViewServiceCmd(lg, viewsRepo),
+		EditViewServiceCmd:                  command.NewEditViewServiceCmd(lg, viewsRepo),
+		GetViewServiceCmd:                   command.NewGetViewServiceCmd(lg, viewsRepo),
+		DeleteViewServiceCmd:                command.NewDeleteViewServiceCmd(lg, viewsRepo),
+		EditViewCmd:                         command.NewEditViewCmd(lg, viewsRepo),
+		DeleteViewCmd:                       command.NewDeleteViewCmd(lg, viewsRepo),
+		GetViewServicesCmd:                  command.NewGetViewServicesCmd(lg, viewsRepo),
+		ListViewsCmd:                        command.NewListViewsCmd(lg, viewsRepo),
+		CreateViewCmd:                       command.NewCreateViewCmd(lg, viewsRepo),
+		GetViewCmd:                          command.NewGetViewCmd(lg, viewsRepo),
 	}
 	return ServerApplication{
 		HttpHandler: handler,

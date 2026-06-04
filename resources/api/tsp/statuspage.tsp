@@ -25,31 +25,31 @@ op listStatuspages(
   @doc("Search term to filter status pages by name or slug")
   @query
   search?: string,
-): Statuspage[] | ErrorResponse;
-
-@doc("Get statuspage by slug")
-@get
-@route("/statuspages/{statuspageSlug}")
-op statuspageBySlug(
-  @doc("Unique identifier of the status page")
-  @path
-  statuspageSlug: string,
-): Statuspage | ErrorResponse;
-
-@doc("Get RSS feed for a status page")
-@get
-@route("/statuspages/{statuspageSlug}/feed.rss")
-op getRssFeed(
-  @doc("Unique identifier of the status page")
-  @path
-  statuspageSlug: string,
-): RssResponse | ErrorResponse;
-
-@doc("Get Atom feed for a status page")
-@get
-@route("/statuspages/{statuspageSlug}/feed.atom")
-op getAtomFeed(
-  @doc("Unique identifier of the status page")
-  @path
-  statuspageSlug: string,
-): AtomResponse | ErrorResponse;
+): Statuspage[] | StandardErrors;
+ 
+ @doc("Get statuspage by slug")
+ @get
+ @route("/statuspages/{statuspageSlug}")
+ op statuspageBySlug(
+   @doc("Unique identifier of the status page")
+   @path
+   statuspageSlug: string,
+ ): Statuspage | StandardErrors;
+ 
+ @doc("Get RSS feed for a status page")
+ @get
+ @route("/statuspages/{statuspageSlug}/feed.rss")
+ op getRssFeed(
+   @doc("Unique identifier of the status page")
+   @path
+   statuspageSlug: string,
+ ): RssResponse | StandardErrors;
+ 
+ @doc("Get Atom feed for a status page")
+ @get
+ @route("/statuspages/{statuspageSlug}/feed.atom")
+ op getAtomFeed(
+   @doc("Unique identifier of the status page")
+   @path
+   statuspageSlug: string,
+ ): AtomResponse | StandardErrors;

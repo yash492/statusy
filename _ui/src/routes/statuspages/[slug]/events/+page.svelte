@@ -1,18 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import Search from '@lucide/svelte/icons/search';
 	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
 	import ScheduledMaintenancesTable, {
 		type ScheduledMaintenanceDisplay
 	} from '$lib/derivedcomponents/ScheduledMaintenancesTable.svelte';
-	import CheckIcon from '@lucide/svelte/icons/check';
-	import ClipboardIcon from '@lucide/svelte/icons/clipboard';
-	import RssIcon from '@lucide/svelte/icons/rss';
-	import SlackIcon from '@lucide/svelte/icons/slack';
 	import type { PaginationState } from '@tanstack/table-core';
+	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -23,14 +20,63 @@
 	let isSubscribeDialogOpen = $state(false);
 	let subscribeTab = $state<SubscribeTab>('rss');
 	let copiedKey = $state<CopyKey | null>(null);
-	let copyError = $state<string | null>(null);
 	let copyResetTimer: ReturnType<typeof setTimeout> | null = null;
 
+	let isFilterDialogOpen = $state(false);
+	let filterSearchQuery = $state('');
+
 	const PAGE_SIZE = 10;
-	const initialPagination: PaginationState = {
+	const initialPagination: PaginationState = $derived({
 		pageIndex: Math.max(0, data.page - 1),
 		pageSize: data.pageSize
-	};
+	});
+
+	const hasFilter = $derived(data.componentIds.length > 0 || data.componentGroupIds.length > 0);
+
+	const activeFilters = $derived.by(() => {
+		if (!data.serviceComponents) return { groups: [], ungrouped: [] };
+
+		const groupIdsSet = new Set(data.componentGroupIds);
+		const compIdsSet = new Set(data.componentIds);
+		const query = filterSearchQuery.toLowerCase().trim();
+
+		// Filter selected groups
+		const groups = data.serviceComponents.grouped_components
+			.map((g) => {
+				const isGroupSelected = groupIdsSet.has(g.id);
+				const selectedComps = g.components.filter((c) => compIdsSet.has(c.id));
+
+				if (!isGroupSelected && selectedComps.length === 0) {
+					return null;
+				}
+
+				// Check name match
+				const matchesGroupQuery = g.name.toLowerCase().includes(query);
+				const filteredComps = selectedComps.filter((c) =>
+					c.name.toLowerCase().includes(query)
+				);
+
+				if (matchesGroupQuery || filteredComps.length > 0 || isGroupSelected) {
+					return {
+						id: g.id,
+						name: g.name,
+						isFullySelected: isGroupSelected,
+						components: isGroupSelected ? g.components.filter(c => c.name.toLowerCase().includes(query)) : filteredComps
+					};
+				}
+				return null;
+			})
+			.filter((g): g is NonNullable<typeof g> => g !== null);
+
+		// Filter selected ungrouped components
+		const ungrouped = data.serviceComponents.ungrouped_components.filter((c) => {
+			const isSelected = compIdsSet.has(c.id);
+			const matchesQuery = c.name.toLowerCase().includes(query);
+			return isSelected && matchesQuery;
+		});
+
+		return { groups, ungrouped };
+	});
 
 	const isIncidents = $derived('incidents' in data.resp);
 	const incidentsArray = $derived(isIncidents ? (data.resp as any).incidents : []);
@@ -103,7 +149,6 @@
 		if (!open) {
 			subscribeTab = 'rss';
 			copiedKey = null;
-			copyError = null;
 			if (copyResetTimer) {
 				clearTimeout(copyResetTimer);
 				copyResetTimer = null;
@@ -113,9 +158,9 @@
 
 	async function copyText(value: string, key: CopyKey) {
 		try {
-			copyError = null;
 			await navigator.clipboard.writeText(value);
 			copiedKey = key;
+			toast.success('Copied feed snippet to clipboard');
 
 			if (copyResetTimer) {
 				clearTimeout(copyResetTimer);
@@ -126,16 +171,16 @@
 				copyResetTimer = null;
 			}, 1800);
 		} catch {
-			copyError = 'Could not copy. Please copy manually.';
+			toast.error('Could not copy. Please copy manually.');
 		}
 	}
 </script>
 
-<div class="mx-auto w-4/5">
+<div class="mx-auto">
 	<div class="w-full">
 		<div class="mb-6 flex justify-between md:mb-4">
 			<div class="mb-4 flex w-fit flex-col gap-3 md:flex-row md:items-center">
-				<p class="text-xl font-bold">{data.resp.statuspage.name}</p>
+				<p class="text-3xl font-bold">{data.resp.statuspage.name}</p>
 				{#if data.resp.statuspage.url}
 					<a
 						href={data.resp.statuspage.url}
@@ -146,130 +191,34 @@
 						<span>Visit Status Page</span>
 					</a>
 				{/if}
-			</div>
-			<div>
-				<Dialog.Root open={isSubscribeDialogOpen} onOpenChange={onSubscribeDialogOpenChange}>
-					<Button class="cursor-pointer" onclick={() => (isSubscribeDialogOpen = true)}>
-						Subscribe to Updates
-					</Button>
-					<Dialog.Content class="sm:max-w-2xl">
-						<div class="grid gap-4">
-							<Dialog.Header>
-								<Dialog.Title>Subscribe to Updates</Dialog.Title>
-							</Dialog.Header>
-
-							<Tabs.Root
-								value={subscribeTab}
-								onValueChange={(value) => (subscribeTab = value as SubscribeTab)}
-							>
-								<Tabs.List class="grid w-full grid-cols-2 sm:w-[30%]">
-									<Tabs.Trigger class="cursor-pointer gap-1.5" value="rss">
-										<RssIcon class="size-4" />
-										RSS
-									</Tabs.Trigger>
-									<Tabs.Trigger class="cursor-pointer gap-1.5" value="slack">
-										<SlackIcon class="size-4" />
-										Slack
-									</Tabs.Trigger>
-								</Tabs.List>
-
-								<Tabs.Content value="rss" class="grid gap-3 pt-2">
-									<div class="rounded-md border p-3">
-										<p class="mb-2 text-sm font-medium">RSS Feed</p>
-										<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-											<code class="block rounded bg-muted px-2 py-1 text-xs break-all"
-												>{feedRssPath}</code
-											>
-											<Button
-												type="button"
-												variant="outline"
-												class="h-9 w-9 shrink-0 cursor-pointer p-0"
-												onclick={() => copyText(feedRssPath, 'rss')}
-												title={copiedKey === 'rss' ? 'Copied' : 'Copy RSS URL'}
-												aria-label={copiedKey === 'rss' ? 'Copied RSS URL' : 'Copy RSS URL'}
-											>
-												{#if copiedKey === 'rss'}
-													<CheckIcon class="size-4" />
-												{:else}
-													<ClipboardIcon class="size-4" />
-												{/if}
-												<span class="sr-only"
-													>{copiedKey === 'rss' ? 'Copied RSS URL' : 'Copy RSS URL'}</span
-												>
-											</Button>
-										</div>
-									</div>
-
-									<div class="rounded-md border p-3">
-										<p class="mb-2 text-sm font-medium">Atom Feed</p>
-										<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-											<code class="block rounded bg-muted px-2 py-1 text-xs break-all"
-												>{feedAtomPath}</code
-											>
-											<Button
-												type="button"
-												variant="outline"
-												class="h-9 w-9 shrink-0 cursor-pointer p-0"
-												onclick={() => copyText(feedAtomPath, 'atom')}
-												title={copiedKey === 'atom' ? 'Copied' : 'Copy Atom URL'}
-												aria-label={copiedKey === 'atom' ? 'Copied Atom URL' : 'Copy Atom URL'}
-											>
-												{#if copiedKey === 'atom'}
-													<CheckIcon class="size-4" />
-												{:else}
-													<ClipboardIcon class="size-4" />
-												{/if}
-												<span class="sr-only"
-													>{copiedKey === 'atom' ? 'Copied Atom URL' : 'Copy Atom URL'}</span
-												>
-											</Button>
-										</div>
-									</div>
-								</Tabs.Content>
-
-								<Tabs.Content value="slack" class="grid gap-3 pt-2">
-									<p class="text-sm text-muted-foreground">
-										To receive live status updates in Slack, copy and paste the text below into the
-										Slack channel of your choice.
-									</p>
-									<div></div>
-									<div class="flex items-center justify-between rounded-md border p-3">
-										<code class="block rounded bg-muted px-2 py-1 text-xs break-all"
-											>{slackSnippet}</code
-										>
-										<div class="flex justify-end">
-											<Button
-												type="button"
-												variant="outline"
-												class="h-9 w-9 shrink-0 cursor-pointer p-0"
-												onclick={() => copyText(slackSnippet, 'slack')}
-												title={copiedKey === 'slack' ? 'Copied' : 'Copy Slack snippet'}
-												aria-label={copiedKey === 'slack'
-													? 'Copied Slack snippet'
-													: 'Copy Slack snippet'}
-											>
-												{#if copiedKey === 'slack'}
-													<CheckIcon class="size-4" />
-												{:else}
-													<ClipboardIcon class="size-4" />
-												{/if}
-												<span class="sr-only"
-													>{copiedKey === 'slack'
-														? 'Copied Slack snippet'
-														: 'Copy Slack snippet'}</span
-												>
-											</Button>
-										</div>
-									</div>
-								</Tabs.Content>
-							</Tabs.Root>
-
-							{#if copyError}
-								<p class="text-sm text-destructive">{copyError}</p>
-							{/if}
-						</div>
-					</Dialog.Content>
-				</Dialog.Root>
+				{#if hasFilter}
+					<div class="flex items-center gap-2">
+						<span
+							class="flex w-fit items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/30 px-3 py-1 text-xs text-zinc-400"
+						>
+							<span class="size-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+							Filter Active
+						</span>
+						<button
+							onclick={() => {
+								filterSearchQuery = '';
+								isFilterDialogOpen = true;
+							}}
+							class="flex cursor-pointer items-center gap-1 rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1 text-xs text-zinc-400 shadow-sm transition-all hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
+						>
+							View Filters
+						</button>
+					</div>
+				{:else}
+					<div class="flex items-center gap-2">
+						<span
+							class="flex w-fit items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/30 px-3 py-1 text-xs text-zinc-400"
+						>
+							<span class="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+							All Components Monitored
+						</span>
+					</div>
+				{/if}
 			</div>
 		</div>
 
@@ -305,3 +254,102 @@
 		</div>
 	</div>
 </div>
+
+<!-- Component Filter Dialog -->
+<Dialog.Root
+	open={isFilterDialogOpen}
+	onOpenChange={(open) => {
+		if (!open) {
+			isFilterDialogOpen = false;
+		}
+	}}
+>
+	<Dialog.Content class="border-zinc-800 bg-zinc-950 text-white shadow-xl sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title class="text-lg font-bold text-white">Active Component Filters</Dialog.Title>
+			<Dialog.Description class="text-zinc-400 text-sm">
+				Only incidents and scheduled maintenance events affecting the following components are displayed.
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<div class="grid gap-4 py-4">
+			<!-- Search Bar -->
+			<div class="relative w-full">
+				<input
+					type="text"
+					bind:value={filterSearchQuery}
+					placeholder="Search active filters..."
+					class="w-full rounded-lg border border-zinc-800 bg-zinc-900/40 py-2 pr-4 pl-9 text-sm text-white placeholder-zinc-500 outline-none focus:border-zinc-700"
+				/>
+				<div class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+					<Search class="size-4" />
+				</div>
+			</div>
+
+			<!-- Filter List -->
+			<div class="max-h-75 overflow-y-auto pr-1 flex flex-col gap-3">
+				{#each activeFilters.groups as g (g.id)}
+					<div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-3">
+						<div class="flex items-center justify-between">
+							<span class="text-sm font-semibold text-zinc-200">{g.name}</span>
+							{#if g.isFullySelected}
+								<span
+									class="rounded bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium tracking-wider text-zinc-500 uppercase border border-zinc-800/40"
+								>
+									Group Monitored
+								</span>
+							{/if}
+						</div>
+						{#if !g.isFullySelected && g.components.length > 0}
+							<div class="mt-2 flex flex-col gap-1 border-t border-zinc-900/50 pt-2">
+								{#each g.components as c (c.id)}
+									<span class="text-xs text-zinc-200 pl-2 flex items-center gap-1.5">
+										<span class="size-1 rounded-full bg-zinc-500"></span>
+										{c.name}
+									</span>
+								{/each}
+							</div>
+						{:else if g.isFullySelected && g.components.length > 0}
+							<div class="mt-2 flex flex-col gap-1 border-t border-zinc-900/50 pt-2">
+								{#each g.components as c (c.id)}
+									<span class="text-xs text-zinc-200 pl-2 flex items-center gap-1.5">
+										<span class="size-1 rounded-full bg-zinc-500"></span>
+										{c.name}
+									</span>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/each}
+
+				{#each activeFilters.ungrouped as c (c.id)}
+					<div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-3 flex items-center justify-between">
+						<span class="text-sm font-medium text-zinc-200">{c.name}</span>
+						<span
+							class="rounded bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium tracking-wider text-zinc-500 uppercase border border-zinc-800/40"
+						>
+							Component Monitored
+						</span>
+					</div>
+				{/each}
+
+				{#if activeFilters.groups.length === 0 && activeFilters.ungrouped.length === 0}
+					<div class="py-8 text-center text-sm text-zinc-500">
+						No active component filters match your query.
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<Dialog.Footer>
+			<button
+				class="w-full cursor-pointer rounded-lg bg-zinc-100 py-2 text-sm font-semibold text-zinc-950 transition-colors hover:bg-zinc-200"
+				onclick={() => {
+					isFilterDialogOpen = false;
+				}}
+			>
+				Close
+			</button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

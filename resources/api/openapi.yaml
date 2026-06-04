@@ -4,6 +4,48 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /api/services/{serviceSlug}/components:
+    get:
+      operationId: getServiceComponents
+      description: Get all components and groups for a service
+      parameters:
+        - name: serviceSlug
+          in: path
+          required: true
+          description: The service slug
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceComponents'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/statuspages:
     get:
       operationId: listStatuspages
@@ -25,8 +67,26 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Statuspage'
-        default:
-          description: An unexpected error response.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
@@ -49,8 +109,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Statuspage'
-        default:
-          description: An unexpected error response.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
@@ -73,8 +151,26 @@ paths:
             application/atom+xml; charset=utf-8:
               schema:
                 type: string
-        default:
-          description: An unexpected error response.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
@@ -97,8 +193,26 @@ paths:
             application/rss+xml; charset=utf-8:
               schema:
                 type: string
-        default:
-          description: An unexpected error response.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
@@ -128,6 +242,20 @@ paths:
           schema:
             type: integer
           explode: false
+        - name: component_ids
+          in: query
+          required: false
+          description: Comma-separated list of component IDs to filter by
+          schema:
+            type: string
+          explode: false
+        - name: component_group_ids
+          in: query
+          required: false
+          description: Comma-separated list of component group IDs to filter by
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -135,8 +263,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatuspageIncidents'
-        default:
-          description: An unexpected error response.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
@@ -166,6 +312,20 @@ paths:
           schema:
             type: integer
           explode: false
+        - name: component_ids
+          in: query
+          required: false
+          description: Comma-separated list of component IDs to filter by
+          schema:
+            type: string
+          explode: false
+        - name: component_group_ids
+          in: query
+          required: false
+          description: Comma-separated list of component group IDs to filter by
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -173,14 +333,708 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatuspageScheduledMaintenances'
-        default:
-          description: An unexpected error response.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/views:
+    get:
+      operationId: listViews
+      description: Get all views
+      parameters:
+        - name: search
+          in: query
+          required: false
+          description: Optional search term to filter views by name or description
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/View'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: createView
+      description: Create a new view
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateViewRequest'
+  /api/views/default:
+    post:
+      operationId: createOrGetDefaultView
+      description: Get or create default view
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/views/{publicId}:
+    put:
+      operationId: editView
+      description: Edit a view's details
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditViewRequest'
+    delete:
+      operationId: deleteView
+      description: Delete a view
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: getView
+      description: Get a view's details
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/View'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/views/{publicId}/services:
+    post:
+      operationId: addViewService
+      description: Add a service to a view with component configuration
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewServiceResponse'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddViewServiceRequest'
+  /api/views/{publicId}/services/{serviceId}:
+    get:
+      operationId: getViewService
+      description: Get a service's component configuration in a view
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          required: true
+          description: The service ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewServiceResponse'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: editViewService
+      description: Edit a service's component configuration in a view
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          required: true
+          description: The service ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewServiceResponse'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditViewServiceRequest'
+    delete:
+      operationId: deleteViewService
+      description: Remove a service from a view
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          required: true
+          description: The service ID
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/views/{publicId}/unconfigured-services:
+    get:
+      operationId: getUnconfiguredServices
+      description: Get all services not configured in a view
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          description: Search term to filter services by name or slug
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Statuspage'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/views/{publicId}/view-services:
+    get:
+      operationId: getViewServices
+      description: Get configured services in a view with pagination and search
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+        - name: page_number
+          in: query
+          required: false
+          description: 'Page number for paginated results (default: 1)'
+          schema:
+            type: integer
+          explode: false
+        - name: page_size
+          in: query
+          required: false
+          description: 'Number of items per page (default: 20)'
+          schema:
+            type: integer
+          explode: false
+        - name: search
+          in: query
+          required: false
+          description: Optional search term to filter services by name or slug
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedViewServices'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
+    AddViewServiceRequest:
+      type: object
+      required:
+        - service_id
+        - include_all_components
+        - monitor_incidents
+        - monitor_scheduled_maintenances
+      properties:
+        service_id:
+          type: integer
+          description: The ID of the service to add to the view
+        include_all_components:
+          type: boolean
+          description: Whether to include all components of the service
+        monitor_incidents:
+          type: boolean
+          description: Whether to monitor incidents for the service
+        monitor_scheduled_maintenances:
+          type: boolean
+          description: Whether to monitor scheduled maintenances for the service
+        component_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component IDs to include (ignored if include_all_components is true)
+        component_group_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component group IDs to include (ignored if include_all_components is true)
+    Component:
+      type: object
+      required:
+        - id
+        - name
+        - provider_id
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the component
+        name:
+          type: string
+          description: Display name of the component
+        provider_id:
+          type: string
+          description: Provider-specific identifier for the component
+    ComponentGroup:
+      type: object
+      required:
+        - id
+        - name
+        - provider_id
+        - components
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the component group
+        name:
+          type: string
+          description: Display name of the component group
+        provider_id:
+          type: string
+          description: Provider-specific identifier for the component group
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+          description: List of components within this group
+    CreateViewRequest:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          description: Display name of the view
+        description:
+          type: string
+          description: Description of the view
+    EditViewRequest:
+      type: object
+      required:
+        - name
+        - description
+        - is_default
+      properties:
+        name:
+          type: string
+          description: Display name of the view
+        description:
+          type: string
+          description: Description of the view
+        is_default:
+          type: boolean
+          description: Whether this is the default view
+    EditViewServiceRequest:
+      type: object
+      required:
+        - include_all_components
+        - monitor_incidents
+        - monitor_scheduled_maintenances
+      properties:
+        include_all_components:
+          type: boolean
+          description: Whether to include all components of the service
+        monitor_incidents:
+          type: boolean
+          description: Whether to monitor incidents for the service
+        monitor_scheduled_maintenances:
+          type: boolean
+          description: Whether to monitor scheduled maintenances for the service
+        component_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component IDs to include (ignored if include_all_components is true)
+        component_group_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component group IDs to include (ignored if include_all_components is true)
     ErrorResponse:
       type: object
       required:
@@ -218,6 +1072,24 @@ components:
           type: string
           format: date-time
           description: Timestamp when the incident was created by the provider
+    PaginatedViewServices:
+      type: object
+      required:
+        - services
+        - total_count
+        - up_count
+        - down_count
+      properties:
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewServiceStatus'
+        total_count:
+          type: integer
+        up_count:
+          type: integer
+        down_count:
+          type: integer
     PaginationQuery:
       type: object
       properties:
@@ -262,6 +1134,34 @@ components:
           type: string
           format: date-time
           description: Timestamp when the incident was created by the provider
+    ServiceComponents:
+      type: object
+      required:
+        - service_id
+        - service_name
+        - service_slug
+        - grouped_components
+        - ungrouped_components
+      properties:
+        service_id:
+          type: integer
+          description: The service ID
+        service_name:
+          type: string
+          description: The service name
+        service_slug:
+          type: string
+          description: The service slug
+        grouped_components:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentGroup'
+          description: List of component groups for the service
+        ungrouped_components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+          description: List of ungrouped components for the service
     Statuspage:
       type: object
       required:
@@ -312,6 +1212,118 @@ components:
           $ref: '#/components/schemas/Statuspage'
         total_count:
           type: integer
+    View:
+      type: object
+      required:
+        - name
+        - public_id
+        - description
+        - is_default
+      properties:
+        name:
+          type: string
+          description: Display name of the view
+        public_id:
+          type: string
+          description: Unique public identifier (Snowflake ID) for the view
+        description:
+          type: string
+          description: Description of the view
+        is_default:
+          type: boolean
+          description: Whether this is the default view
+    ViewServiceResponse:
+      type: object
+      required:
+        - id
+        - service_id
+        - include_all_components
+        - monitor_incidents
+        - monitor_scheduled_maintenances
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the view-service mapping
+        service_id:
+          type: integer
+          description: The ID of the service
+        include_all_components:
+          type: boolean
+          description: Whether all components of this service are included
+        monitor_incidents:
+          type: boolean
+          description: Whether to monitor incidents for the service
+        monitor_scheduled_maintenances:
+          type: boolean
+          description: Whether to monitor scheduled maintenances for the service
+        component_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component IDs to include (ignored if include_all_components is true)
+        component_group_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component group IDs to include (ignored if include_all_components is true)
+    ViewServiceStatus:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - status
+        - last_incident
+        - include_all_components
+        - monitor_incidents
+        - monitor_scheduled_maintenances
+        - upcoming_maintenance
+        - last_incident_link
+        - upcoming_maintenance_link
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the status page service
+        name:
+          type: string
+          description: Display name of the service
+        slug:
+          type: string
+          description: URL-friendly slug of the service
+        status:
+          type: string
+          description: Aggregated status of the service (up or down)
+        last_incident:
+          type: string
+          description: Active incident description (empty string if none)
+        include_all_components:
+          type: boolean
+          description: Whether all components of this service are included in the view
+        monitor_incidents:
+          type: boolean
+          description: Whether to monitor incidents for the service
+        monitor_scheduled_maintenances:
+          type: boolean
+          description: Whether to monitor scheduled maintenances for the service
+        upcoming_maintenance:
+          type: string
+          description: Upcoming scheduled maintenance description (empty string if none)
+        last_incident_link:
+          type: string
+          description: Link to the active incident on the provider's status page (empty string if none)
+        upcoming_maintenance_link:
+          type: string
+          description: Link to the upcoming scheduled maintenance on the provider's status page (empty string if none)
+        component_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component IDs to include (ignored if include_all_components is true)
+        component_group_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component group IDs to include (ignored if include_all_components is true)
 servers:
   - url: https://statusy.app
     description: A Status Page Aggregator

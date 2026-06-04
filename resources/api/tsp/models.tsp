@@ -14,13 +14,39 @@ model PaginationQuery {
   page_size?: integer;
 }
 
-@error
 model ErrorResponse {
   @doc("Error code identifier")
   code: string;
 
   @doc("Human-readable error message")
   message: string;
+}
+
+model BadRequestResponse {
+  @statusCode statusCode: 400;
+  @body body: ErrorResponse;
+}
+
+model NotFoundResponse {
+  @statusCode statusCode: 404;
+  @body body: ErrorResponse;
+}
+
+model ConflictResponse {
+  @statusCode statusCode: 409;
+  @body body: ErrorResponse;
+}
+
+model InternalServerErrorResponse {
+  @statusCode statusCode: 500;
+  @body body: ErrorResponse;
+}
+
+union StandardErrors {
+  BadRequestResponse,
+  NotFoundResponse,
+  ConflictResponse,
+  InternalServerErrorResponse,
 }
 
 model RssResponse {

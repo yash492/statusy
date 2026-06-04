@@ -36,9 +36,11 @@ type ScheduledMaintenanceResult struct {
 }
 
 type ScheduledMaintenanceByServiceParams struct {
-	ServiceID uint
-	Limit     int
-	Offset    int
+	ServiceID         uint
+	ComponentIDs      []int
+	ComponentGroupIDs []int
+	Limit             int
+	Offset            int
 }
 
 type ScheduledMaintenanceByServiceResult struct {
