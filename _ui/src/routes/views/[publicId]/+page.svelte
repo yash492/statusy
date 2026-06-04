@@ -33,7 +33,7 @@
 		viewName = data.view.name;
 		viewDescription = data.view.description;
 		isDefaultView = data.view.is_default;
-		localServices = data.view.services;
+		localServices = [];
 	});
 
 	// Compute metrics dynamically from localState

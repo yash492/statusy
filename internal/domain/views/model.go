@@ -8,7 +8,6 @@ type View struct {
 	PublicID    string
 	Description string
 	IsDefault   bool
-	Services    []ViewServiceStatus
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

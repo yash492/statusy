@@ -34,7 +34,6 @@ func (c GetOrCreateDefaultViewCmd) Execute(ctx context.Context) (views.View, err
 			Name:        "Default View",
 			Description: "Default monitoring dashboard",
 			IsDefault:   true,
-			Services:    []views.ViewServiceStatus{},
 		})
 		if err != nil {
 			return views.View{}, err

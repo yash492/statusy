@@ -21,7 +21,6 @@ export interface View {
 	public_id: string;
 	description: string;
 	is_default: boolean;
-	services: ViewServiceStatus[];
 }
 
 export interface AddViewServiceRequest {

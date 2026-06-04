@@ -36,10 +36,8 @@ model View {
 
   @doc("Whether this is the default view")
   is_default: boolean;
-
-  @doc("Configuration of services in this view")
-  services: ViewServiceStatus[];
 }
+
 
 @doc("Get or create default view")
 @post

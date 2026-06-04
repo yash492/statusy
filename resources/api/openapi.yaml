@@ -955,7 +955,6 @@ components:
         - public_id
         - description
         - is_default
-        - services
       properties:
         name:
           type: string
@@ -969,11 +968,6 @@ components:
         is_default:
           type: boolean
           description: Whether this is the default view
-        services:
-          type: array
-          items:
-            $ref: '#/components/schemas/ViewServiceStatus'
-          description: Configuration of services in this view
     ViewServiceResponse:
       type: object
       required:

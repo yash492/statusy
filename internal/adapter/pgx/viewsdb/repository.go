@@ -45,18 +45,12 @@ func (r *PostgresViewsRepository) GetDefault(ctx context.Context) (views.View, e
 		return views.View{}, apperrors.InternalError("failed to collect default view row", err)
 	}
 
-	services, err := r.GetServicesByViewID(ctx, dto.ID)
-	if err != nil {
-		return views.View{}, err
-	}
-
 	return views.View{
 		ID:          dto.ID,
 		Name:        dto.Name,
 		PublicID:    dto.PublicID,
 		Description: dto.Description,
 		IsDefault:   dto.IsDefault,
-		Services:    services,
 		CreatedAt:   dto.CreatedAt,
 		UpdatedAt:   dto.UpdatedAt,
 	}, nil
@@ -91,7 +85,6 @@ func (r *PostgresViewsRepository) Save(ctx context.Context, view views.View) (vi
 		PublicID:    dto.PublicID,
 		Description: dto.Description,
 		IsDefault:   dto.IsDefault,
-		Services:    []views.ViewServiceStatus{},
 		CreatedAt:   dto.CreatedAt,
 		UpdatedAt:   dto.UpdatedAt,
 	}, nil
@@ -142,18 +135,12 @@ func (r *PostgresViewsRepository) GetByPublicID(ctx context.Context, publicID st
 		return views.View{}, apperrors.InternalError("failed to collect view row by public_id", err)
 	}
 
-	servicesList, err := r.GetServicesByViewID(ctx, dto.ID)
-	if err != nil {
-		return views.View{}, err
-	}
-
 	return views.View{
 		ID:          dto.ID,
 		Name:        dto.Name,
 		PublicID:    dto.PublicID,
 		Description: dto.Description,
 		IsDefault:   dto.IsDefault,
-		Services:    servicesList,
 		CreatedAt:   dto.CreatedAt,
 		UpdatedAt:   dto.UpdatedAt,
 	}, nil

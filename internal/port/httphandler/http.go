@@ -169,24 +169,11 @@ func (h Handler) CreateOrGetDefaultView(ctx context.Context, request api.CreateO
 		return nil, err
 	}
 
-	services := make([]api.ViewServiceStatus, 0, len(view.Services))
-	for _, s := range view.Services {
-		services = append(services, api.ViewServiceStatus{
-			Id:                   int(s.ID),
-			Name:                 s.Name,
-			Slug:                 s.Slug,
-			Status:               s.Status,
-			LastIncident:         s.LastIncident,
-			IncludeAllComponents: s.IncludeAllComponents,
-		})
-	}
-
 	return api.CreateOrGetDefaultView200JSONResponse{
 		Name:        view.Name,
 		PublicId:    view.PublicID,
 		Description: view.Description,
 		IsDefault:   view.IsDefault,
-		Services:    services,
 	}, nil
 }
 
@@ -418,24 +405,11 @@ func (h Handler) EditView(ctx context.Context, request api.EditViewRequestObject
 		return nil, err
 	}
 
-	services := make([]api.ViewServiceStatus, 0, len(result.Services))
-	for _, s := range result.Services {
-		services = append(services, api.ViewServiceStatus{
-			Id:                   int(s.ID),
-			Name:                 s.Name,
-			Slug:                 s.Slug,
-			Status:               s.Status,
-			LastIncident:         s.LastIncident,
-			IncludeAllComponents: s.IncludeAllComponents,
-		})
-	}
-
 	return api.EditView200JSONResponse{
 		Name:        result.Name,
 		PublicId:    result.PublicID,
 		Description: result.Description,
 		IsDefault:   result.IsDefault,
-		Services:    services,
 	}, nil
 }
 

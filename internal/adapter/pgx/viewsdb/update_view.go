@@ -57,18 +57,12 @@ func (r *PostgresViewsRepository) UpdateView(ctx context.Context, view views.Vie
 		return views.View{}, apperrors.InternalError("failed to commit update view transaction", err)
 	}
 
-	servicesList, err := r.GetServicesByViewID(ctx, dto.ID)
-	if err != nil {
-		return views.View{}, err
-	}
-
 	return views.View{
 		ID:          dto.ID,
 		Name:        dto.Name,
 		PublicID:    dto.PublicID,
 		Description: dto.Description,
 		IsDefault:   dto.IsDefault,
-		Services:    servicesList,
 		CreatedAt:   dto.CreatedAt,
 		UpdatedAt:   dto.UpdatedAt,
 	}, nil
