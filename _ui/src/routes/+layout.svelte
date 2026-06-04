@@ -14,7 +14,7 @@
 
 <Sidebar.Provider>
 	<AppSidebar />
-	<main class="mt-10">
+	<main class="mx-12 mt-10 w-5/6">
 		{@render children?.()}
 	</main>
 </Sidebar.Provider>

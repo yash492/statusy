@@ -12,10 +12,22 @@ SELECT
   COALESCE(ai.title, '') AS last_incident,
   COALESCE(ai.link, '') AS last_incident_link,
   COALESCE(um.title, '') AS upcoming_maintenance,
-  COALESCE(um.link, '') AS upcoming_maintenance_link
+  COALESCE(um.link, '') AS upcoming_maintenance_link,
+  COALESCE(vsc.component_ids, '{}') AS component_ids,
+  COALESCE(vscg.component_group_ids, '{}') AS component_group_ids
 FROM view_services vs
 JOIN views v ON v.id = vs.view_id
 JOIN services s ON s.id = vs.service_id
+LEFT JOIN LATERAL (
+  SELECT COALESCE(array_agg(component_id) FILTER (WHERE component_id IS NOT NULL), '{}') AS component_ids
+  FROM view_service_components
+  WHERE view_service_id = vs.id AND deleted_at IS NULL
+) vsc ON true
+LEFT JOIN LATERAL (
+  SELECT COALESCE(array_agg(component_group_id) FILTER (WHERE component_group_id IS NOT NULL), '{}') AS component_group_ids
+  FROM view_service_component_groups
+  WHERE view_service_id = vs.id AND deleted_at IS NULL
+) vscg ON true
 LEFT JOIN LATERAL (
   SELECT i.id, i.title, i.link
   FROM incidents i

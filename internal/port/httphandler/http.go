@@ -3,6 +3,8 @@ package httphandler
 import (
 	"context"
 	"log/slog"
+	"strconv"
+	"strings"
 
 	"github.com/yash492/statusy/internal/command"
 	"github.com/yash492/statusy/internal/port/httphandler/generated/api"
@@ -80,9 +82,11 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 	}
 
 	result, err := h.IncidentByStatuspageCmd.Execute(ctx, command.IncidentByStatuspageParams{
-		StatuspageSlug: request.StatuspageSlug,
-		PageNumber:     pageNumber,
-		PageSize:       pageSize,
+		StatuspageSlug:    request.StatuspageSlug,
+		ComponentIDs:      parseCommaSeparatedInts(request.Params.ComponentIds),
+		ComponentGroupIDs: parseCommaSeparatedInts(request.Params.ComponentGroupIds),
+		PageNumber:        pageNumber,
+		PageSize:          pageSize,
 	})
 
 	if err != nil {
@@ -128,9 +132,11 @@ func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request a
 	}
 
 	result, err := h.ScheduledMaintenanceByStatuspageCmd.Execute(ctx, command.ScheduledMaintenanceByStatuspageParams{
-		StatuspageSlug: request.StatuspageSlug,
-		PageNumber:     pageNumber,
-		PageSize:       pageSize,
+		StatuspageSlug:    request.StatuspageSlug,
+		ComponentIDs:      parseCommaSeparatedInts(request.Params.ComponentIds),
+		ComponentGroupIDs: parseCommaSeparatedInts(request.Params.ComponentGroupIds),
+		PageNumber:        pageNumber,
+		PageSize:          pageSize,
 	})
 
 	if err != nil {
@@ -466,6 +472,8 @@ func (h Handler) GetViewServices(ctx context.Context, request api.GetViewService
 
 	services := make([]api.ViewServiceStatus, 0, len(result.Services))
 	for _, s := range result.Services {
+		compIDs := s.ComponentIDs
+		compGroupIDs := s.ComponentGroupIDs
 		services = append(services, api.ViewServiceStatus{
 			Id:                           int(s.ID),
 			Name:                         s.Name,
@@ -478,6 +486,8 @@ func (h Handler) GetViewServices(ctx context.Context, request api.GetViewService
 			MonitorScheduledMaintenances: s.MonitorScheduledMaintenances,
 			UpcomingMaintenance:          s.UpcomingMaintenance,
 			UpcomingMaintenanceLink:      s.UpcomingMaintenanceLink,
+			ComponentIds:                 &compIDs,
+			ComponentGroupIds:            &compGroupIDs,
 		})
 	}
 
@@ -487,4 +497,22 @@ func (h Handler) GetViewServices(ctx context.Context, request api.GetViewService
 		UpCount:    int(result.UpCount),
 		DownCount:  int(result.DownCount),
 	}, nil
+}
+
+func parseCommaSeparatedInts(s *string) []int {
+	if s == nil || *s == "" {
+		return nil
+	}
+	var res []int
+	for _, part := range strings.Split(*s, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		val, err := strconv.Atoi(part)
+		if err == nil {
+			res = append(res, val)
+		}
+	}
+	return res
 }

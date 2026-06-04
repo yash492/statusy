@@ -31,9 +31,11 @@ func NewIncidentByStatuspageCmd(
 }
 
 type IncidentByStatuspageParams struct {
-	StatuspageSlug string
-	PageNumber     int
-	PageSize       int
+	StatuspageSlug    string
+	ComponentIDs      []int
+	ComponentGroupIDs []int
+	PageNumber        int
+	PageSize          int
 }
 
 type IncidentByStatuspageIncident struct {
@@ -79,9 +81,11 @@ func (c IncidentByStatuspageCmd) Execute(ctx context.Context, params IncidentByS
 	offset := (pageNumber - 1) * pageSize
 
 	incidentRows, err := c.incidentsRepo.GetByService(ctx, incidents.IncidentByServiceParams{
-		ServiceID: service.ID,
-		Limit:     pageSize,
-		Offset:    offset,
+		ServiceID:         service.ID,
+		ComponentIDs:      params.ComponentIDs,
+		ComponentGroupIDs: params.ComponentGroupIDs,
+		Limit:             pageSize,
+		Offset:            offset,
 	})
 	if err != nil {
 		return IncidentByStatuspageResult{}, err

@@ -169,6 +169,20 @@
 		await goto('/');
 		await invalidateAll();
 	}
+
+	function getEventsUrl(service: any) {
+		const params = new URLSearchParams();
+		if (!service.include_all_components) {
+			if (service.component_ids && service.component_ids.length > 0) {
+				params.set('component_ids', service.component_ids.join(','));
+			}
+			if (service.component_group_ids && service.component_group_ids.length > 0) {
+				params.set('component_group_ids', service.component_group_ids.join(','));
+			}
+		}
+		const queryString = params.toString();
+		return `/statuspages/${service.slug}/events` + (queryString ? `?${queryString}` : '');
+	}
 </script>
 
 <svelte:head>
@@ -176,7 +190,7 @@
 	<meta name="description" content={viewDescription} />
 </svelte:head>
 
-<div class="mx-auto w-11/12">
+<div class="mx-auto">
 	<!-- Header and Subtitle -->
 	<div class="mb-6">
 		<div class="flex items-center gap-3">
@@ -280,13 +294,22 @@
 
 			<Table.Body>
 				{#each localServices as service (service.id)}
-					<Table.Row class="group border-zinc-800 transition-all duration-200 hover:bg-zinc-900/30">
+					<Table.Row 
+						class="group border-zinc-800 transition-all duration-200 hover:bg-zinc-900/30 cursor-pointer"
+						onclick={(e) => {
+							const target = e.target as HTMLElement;
+							if (target.closest('a') || target.closest('button')) {
+								return;
+							}
+							void goto(getEventsUrl(service));
+						}}
+					>
 						<!-- Service & Clickable Status Details -->
 						<Table.Cell class="py-3">
 							<div class="flex flex-col gap-1.5">
 								<div class="flex flex-col">
 									<a
-										href={`/statuspages/${service.slug}/events`}
+										href={getEventsUrl(service)}
 										class="font-bold text-white transition-colors hover:text-zinc-300 hover:underline"
 									>
 										{service.name}

@@ -242,6 +242,20 @@ paths:
           schema:
             type: integer
           explode: false
+        - name: component_ids
+          in: query
+          required: false
+          description: Comma-separated list of component IDs to filter by
+          schema:
+            type: string
+          explode: false
+        - name: component_group_ids
+          in: query
+          required: false
+          description: Comma-separated list of component group IDs to filter by
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -297,6 +311,20 @@ paths:
           description: Number of updates per page
           schema:
             type: integer
+          explode: false
+        - name: component_ids
+          in: query
+          required: false
+          description: Comma-separated list of component IDs to filter by
+          schema:
+            type: string
+          explode: false
+        - name: component_group_ids
+          in: query
+          required: false
+          description: Comma-separated list of component group IDs to filter by
+          schema:
+            type: string
           explode: false
       responses:
         '200':
@@ -1147,6 +1175,16 @@ components:
         upcoming_maintenance_link:
           type: string
           description: Link to the upcoming scheduled maintenance on the provider's status page (empty string if none)
+        component_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component IDs to include (ignored if include_all_components is true)
+        component_group_ids:
+          type: array
+          items:
+            type: integer
+          description: List of specific component group IDs to include (ignored if include_all_components is true)
 servers:
   - url: https://statusy.app
     description: A Status Page Aggregator

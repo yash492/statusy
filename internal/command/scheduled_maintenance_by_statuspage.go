@@ -31,9 +31,11 @@ func NewScheduledMaintenanceByStatuspageCmd(
 }
 
 type ScheduledMaintenanceByStatuspageParams struct {
-	StatuspageSlug string
-	PageNumber     int
-	PageSize       int
+	StatuspageSlug    string
+	ComponentIDs      []int
+	ComponentGroupIDs []int
+	PageNumber        int
+	PageSize          int
 }
 
 type ScheduledMaintenanceByStatuspageIncident struct {
@@ -81,9 +83,11 @@ func (c ScheduledMaintenanceByStatuspageCmd) Execute(ctx context.Context, params
 	offset := (pageNumber - 1) * pageSize
 
 	maintenanceRows, err := c.scheduledMaintenancesRepo.GetByService(ctx, scheduledmaintenance.ScheduledMaintenanceByServiceParams{
-		ServiceID: service.ID,
-		Limit:     pageSize,
-		Offset:    offset,
+		ServiceID:         service.ID,
+		ComponentIDs:      params.ComponentIDs,
+		ComponentGroupIDs: params.ComponentGroupIDs,
+		Limit:             pageSize,
+		Offset:            offset,
 	})
 	if err != nil {
 		return ScheduledMaintenanceByStatuspageResult{}, err

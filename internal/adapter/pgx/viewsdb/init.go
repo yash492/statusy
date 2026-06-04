@@ -53,6 +53,8 @@ type viewServiceDto struct {
 	LastIncidentLink             string     `db:"last_incident_link"`
 	UpcomingMaintenance          string     `db:"upcoming_maintenance"`
 	UpcomingMaintenanceLink      string     `db:"upcoming_maintenance_link"`
+	ComponentIDs                 []int      `db:"component_ids"`
+	ComponentGroupIDs            []int      `db:"component_group_ids"`
 	UpdatedAt                    time.Time  `db:"updated_at"`
 	DeletedAt                    *time.Time `db:"deleted_at"`
 }

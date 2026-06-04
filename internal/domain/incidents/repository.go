@@ -32,9 +32,11 @@ type IncidentResult struct {
 }
 
 type IncidentByServiceParams struct {
-	ServiceID uint
-	Limit     int
-	Offset    int
+	ServiceID         uint
+	ComponentIDs      []int
+	ComponentGroupIDs []int
+	Limit             int
+	Offset            int
 }
 
 type IncidentByServiceResult struct {

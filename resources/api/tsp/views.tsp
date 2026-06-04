@@ -37,6 +37,12 @@ model ViewServiceStatus {
 
   @doc("Link to the upcoming scheduled maintenance on the provider's status page (empty string if none)")
   upcoming_maintenance_link: string;
+
+  @doc("List of specific component IDs to include (ignored if include_all_components is true)")
+  component_ids?: integer[];
+
+  @doc("List of specific component group IDs to include (ignored if include_all_components is true)")
+  component_group_ids?: integer[];
 }
 
 model PaginatedViewServices {

@@ -24,6 +24,8 @@ type ViewServiceStatus struct {
 	UpcomingMaintenance          string
 	LastIncidentLink             string
 	UpcomingMaintenanceLink      string
+	ComponentIDs                 []int
+	ComponentGroupIDs            []int
 }
 
 type ViewService struct {

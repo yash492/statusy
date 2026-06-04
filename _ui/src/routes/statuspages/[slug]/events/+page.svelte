@@ -2,6 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import Search from '@lucide/svelte/icons/search';
 	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
 	import ScheduledMaintenancesTable, {
 		type ScheduledMaintenanceDisplay
@@ -20,11 +22,61 @@
 	let copiedKey = $state<CopyKey | null>(null);
 	let copyResetTimer: ReturnType<typeof setTimeout> | null = null;
 
+	let isFilterDialogOpen = $state(false);
+	let filterSearchQuery = $state('');
+
 	const PAGE_SIZE = 10;
-	const initialPagination: PaginationState = {
+	const initialPagination: PaginationState = $derived({
 		pageIndex: Math.max(0, data.page - 1),
 		pageSize: data.pageSize
-	};
+	});
+
+	const hasFilter = $derived(data.componentIds.length > 0 || data.componentGroupIds.length > 0);
+
+	const activeFilters = $derived.by(() => {
+		if (!data.serviceComponents) return { groups: [], ungrouped: [] };
+
+		const groupIdsSet = new Set(data.componentGroupIds);
+		const compIdsSet = new Set(data.componentIds);
+		const query = filterSearchQuery.toLowerCase().trim();
+
+		// Filter selected groups
+		const groups = data.serviceComponents.grouped_components
+			.map((g) => {
+				const isGroupSelected = groupIdsSet.has(g.id);
+				const selectedComps = g.components.filter((c) => compIdsSet.has(c.id));
+
+				if (!isGroupSelected && selectedComps.length === 0) {
+					return null;
+				}
+
+				// Check name match
+				const matchesGroupQuery = g.name.toLowerCase().includes(query);
+				const filteredComps = selectedComps.filter((c) =>
+					c.name.toLowerCase().includes(query)
+				);
+
+				if (matchesGroupQuery || filteredComps.length > 0 || isGroupSelected) {
+					return {
+						id: g.id,
+						name: g.name,
+						isFullySelected: isGroupSelected,
+						components: isGroupSelected ? g.components.filter(c => c.name.toLowerCase().includes(query)) : filteredComps
+					};
+				}
+				return null;
+			})
+			.filter((g): g is NonNullable<typeof g> => g !== null);
+
+		// Filter selected ungrouped components
+		const ungrouped = data.serviceComponents.ungrouped_components.filter((c) => {
+			const isSelected = compIdsSet.has(c.id);
+			const matchesQuery = c.name.toLowerCase().includes(query);
+			return isSelected && matchesQuery;
+		});
+
+		return { groups, ungrouped };
+	});
 
 	const isIncidents = $derived('incidents' in data.resp);
 	const incidentsArray = $derived(isIncidents ? (data.resp as any).incidents : []);
@@ -124,7 +176,7 @@
 	}
 </script>
 
-<div class="mx-auto w-11/12">
+<div class="mx-auto">
 	<div class="w-full">
 		<div class="mb-6 flex justify-between md:mb-4">
 			<div class="mb-4 flex w-fit flex-col gap-3 md:flex-row md:items-center">
@@ -138,6 +190,34 @@
 					>
 						<span>Visit Status Page</span>
 					</a>
+				{/if}
+				{#if hasFilter}
+					<div class="flex items-center gap-2">
+						<span
+							class="flex w-fit items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/30 px-3 py-1 text-xs text-zinc-400"
+						>
+							<span class="size-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+							Filter Active
+						</span>
+						<button
+							onclick={() => {
+								filterSearchQuery = '';
+								isFilterDialogOpen = true;
+							}}
+							class="flex cursor-pointer items-center gap-1 rounded-full border border-zinc-800 bg-zinc-950/80 px-3 py-1 text-xs text-zinc-400 shadow-sm transition-all hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
+						>
+							View Filters
+						</button>
+					</div>
+				{:else}
+					<div class="flex items-center gap-2">
+						<span
+							class="flex w-fit items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/30 px-3 py-1 text-xs text-zinc-400"
+						>
+							<span class="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+							All Components Monitored
+						</span>
+					</div>
 				{/if}
 			</div>
 		</div>
@@ -174,3 +254,102 @@
 		</div>
 	</div>
 </div>
+
+<!-- Component Filter Dialog -->
+<Dialog.Root
+	open={isFilterDialogOpen}
+	onOpenChange={(open) => {
+		if (!open) {
+			isFilterDialogOpen = false;
+		}
+	}}
+>
+	<Dialog.Content class="border-zinc-800 bg-zinc-950 text-white shadow-xl sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title class="text-lg font-bold text-white">Active Component Filters</Dialog.Title>
+			<Dialog.Description class="text-zinc-400 text-sm">
+				Only incidents and scheduled maintenance events affecting the following components are displayed.
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<div class="grid gap-4 py-4">
+			<!-- Search Bar -->
+			<div class="relative w-full">
+				<input
+					type="text"
+					bind:value={filterSearchQuery}
+					placeholder="Search active filters..."
+					class="w-full rounded-lg border border-zinc-800 bg-zinc-900/40 py-2 pr-4 pl-9 text-sm text-white placeholder-zinc-500 outline-none focus:border-zinc-700"
+				/>
+				<div class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+					<Search class="size-4" />
+				</div>
+			</div>
+
+			<!-- Filter List -->
+			<div class="max-h-75 overflow-y-auto pr-1 flex flex-col gap-3">
+				{#each activeFilters.groups as g (g.id)}
+					<div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-3">
+						<div class="flex items-center justify-between">
+							<span class="text-sm font-semibold text-zinc-200">{g.name}</span>
+							{#if g.isFullySelected}
+								<span
+									class="rounded bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium tracking-wider text-zinc-500 uppercase border border-zinc-800/40"
+								>
+									Group Monitored
+								</span>
+							{/if}
+						</div>
+						{#if !g.isFullySelected && g.components.length > 0}
+							<div class="mt-2 flex flex-col gap-1 border-t border-zinc-900/50 pt-2">
+								{#each g.components as c (c.id)}
+									<span class="text-xs text-zinc-200 pl-2 flex items-center gap-1.5">
+										<span class="size-1 rounded-full bg-zinc-500"></span>
+										{c.name}
+									</span>
+								{/each}
+							</div>
+						{:else if g.isFullySelected && g.components.length > 0}
+							<div class="mt-2 flex flex-col gap-1 border-t border-zinc-900/50 pt-2">
+								{#each g.components as c (c.id)}
+									<span class="text-xs text-zinc-200 pl-2 flex items-center gap-1.5">
+										<span class="size-1 rounded-full bg-zinc-500"></span>
+										{c.name}
+									</span>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/each}
+
+				{#each activeFilters.ungrouped as c (c.id)}
+					<div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-3 flex items-center justify-between">
+						<span class="text-sm font-medium text-zinc-200">{c.name}</span>
+						<span
+							class="rounded bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium tracking-wider text-zinc-500 uppercase border border-zinc-800/40"
+						>
+							Component Monitored
+						</span>
+					</div>
+				{/each}
+
+				{#if activeFilters.groups.length === 0 && activeFilters.ungrouped.length === 0}
+					<div class="py-8 text-center text-sm text-zinc-500">
+						No active component filters match your query.
+					</div>
+				{/if}
+			</div>
+		</div>
+
+		<Dialog.Footer>
+			<button
+				class="w-full cursor-pointer rounded-lg bg-zinc-100 py-2 text-sm font-semibold text-zinc-950 transition-colors hover:bg-zinc-200"
+				onclick={() => {
+					isFilterDialogOpen = false;
+				}}
+			>
+				Close
+			</button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
