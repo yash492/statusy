@@ -8,6 +8,7 @@
 	import * as Table from '$lib/components/ui/table';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
+	import Calendar from '@lucide/svelte/icons/calendar';
 	import CheckCircle from '@lucide/svelte/icons/check-circle';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
@@ -27,46 +28,60 @@
 
 	// Local reactive services state
 	let localServices = $state<any[]>([]);
+	let totalServicesCount = $state(0);
+	let upServicesCount = $state(0);
+	let downServicesCount = $state(0);
+	let currentPage = $state(1);
+	let searchQuery = $state('');
+	const itemsPerPage = 5;
 
 	$effect(() => {
 		// Sync local state when view data from page load changes
 		viewName = data.view.name;
 		viewDescription = data.view.description;
 		isDefaultView = data.view.is_default;
-		localServices = [];
+
+		currentPage = 1;
+	});
+
+	async function loadServices() {
+		const [res, err] = await viewsApi.getViewServices(
+			data.view.public_id,
+			currentPage,
+			itemsPerPage,
+			searchQuery
+		);
+		if (err) {
+			toast.error(err.message || 'Failed to load services');
+			return;
+		}
+		if (res) {
+			localServices = res.services;
+			totalServicesCount = res.total_count;
+			upServicesCount = res.up_count;
+			downServicesCount = res.down_count;
+		}
+	}
+
+	$effect(() => {
+		if (data.view.public_id) {
+			const _ = currentPage;
+			const __ = searchQuery;
+			void loadServices();
+		}
+	});
+
+	$effect(() => {
+		const _ = searchQuery;
+		currentPage = 1;
 	});
 
 	// Compute metrics dynamically from localState
-	const totalCount = $derived(localServices.length);
-	const upCount = $derived(localServices.filter((s) => s.status === 'operational').length);
-	const downCount = $derived(localServices.filter((s) => s.status !== 'operational').length);
+	const totalCount = $derived(totalServicesCount);
+	const upCount = $derived(upServicesCount);
+	const downCount = $derived(downServicesCount);
 
-	// Search and Pagination State
-	let searchQuery = $state('');
-	let currentPage = $state(1);
-	const itemsPerPage = 5;
-
-	// Filtered services based on search query
-	const filteredServices = $derived(
-		localServices.filter(
-			(service) =>
-				service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				service.slug.toLowerCase().includes(searchQuery.toLowerCase())
-		)
-	);
-
-	// Paginated services based on filtered list
-	const totalPages = $derived(Math.ceil(filteredServices.length / itemsPerPage) || 1);
-	const paginatedServices = $derived(
-		filteredServices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-	);
-
-	// Reset to page 1 if search query changes
-	$effect(() => {
-		if (searchQuery) {
-			currentPage = 1;
-		}
-	});
+	const totalPages = $derived(Math.ceil(totalServicesCount / itemsPerPage) || 1);
 
 	// Deletion State
 	let isDeleteConfirmOpen = $state(false);
@@ -87,7 +102,12 @@
 			toast.success(`Successfully removed ${serviceToDelete.name}`);
 			isDeleteConfirmOpen = false;
 			serviceToDelete = null;
-			await invalidateAll();
+
+			if (currentPage > 1 && localServices.length === 1) {
+				currentPage -= 1;
+			} else {
+				void loadServices();
+			}
 		}
 	}
 
@@ -259,9 +279,9 @@
 			</Table.Header>
 
 			<Table.Body>
-				{#each paginatedServices as service (service.id)}
+				{#each localServices as service (service.id)}
 					<Table.Row class="group border-zinc-800 transition-all duration-200 hover:bg-zinc-900/30">
-						<!-- Service & Clickable Incident Detail -->
+						<!-- Service & Clickable Status Details -->
 						<Table.Cell class="py-3">
 							<div class="flex flex-col gap-1.5">
 								<div class="flex flex-col">
@@ -270,33 +290,48 @@
 									</span>
 								</div>
 
-								<!-- Clickable Recent Incident info directly under Service Info -->
-								<a
-									href={`/statuspages/${service.slug}/events`}
-									class="group/link flex w-fit cursor-pointer items-center gap-2 text-xs text-zinc-400 transition-all hover:text-white"
-								>
-									{#if service.lastIncident}
+								<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+									<!-- Clickable Recent Incident info -->
+									<a
+										href={`/statuspages/${service.slug}/events`}
+										class="group/link flex w-fit cursor-pointer items-center gap-1.5 text-xs text-zinc-400 transition-all hover:text-white"
+									>
+										{#if service.last_incident}
+											<span
+												class="flex items-center gap-1 font-medium text-amber-400 group-hover/link:underline"
+												title={service.last_incident}
+											>
+												<AlertTriangle class="size-3.5 shrink-0 text-amber-500" />
+												{service.last_incident}
+											</span>
+										{:else}
+											<span
+												class="flex items-center gap-1 text-zinc-500 group-hover/link:underline"
+											>
+												<CheckCircle class="size-3.5 shrink-0 text-emerald-500/70" />
+												No recent incidents
+											</span>
+										{/if}
+									</a>
+
+									<!-- Upcoming Maintenance info -->
+									{#if service.monitor_scheduled_maintenances && service.upcoming_maintenance}
 										<span
-											class="flex items-center gap-1 font-medium text-amber-400 group-hover/link:underline"
-											title={service.lastIncident}
+											class="flex items-center gap-1 text-xs font-medium text-blue-400"
+											title={service.upcoming_maintenance}
 										>
-											<AlertTriangle class="size-3.5 shrink-0 text-amber-500" />
-											{service.lastIncident}
-										</span>
-									{:else}
-										<span class="flex items-center gap-1 text-zinc-500 group-hover/link:underline">
-											<CheckCircle class="size-3.5 shrink-0 text-emerald-500/70" />
-											No recent incidents
+											<Calendar class="size-3.5 shrink-0 text-blue-500" />
+											Maintenance: {service.upcoming_maintenance}
 										</span>
 									{/if}
-								</a>
+								</div>
 							</div>
 						</Table.Cell>
 
 						<!-- Status Badge -->
 						<Table.Cell class="py-3">
 							<div class="flex items-center">
-								{#if service.status === 'operational'}
+								{#if service.status === 'up'}
 									<span
 										class="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400"
 									>
@@ -355,14 +390,14 @@
 	>
 		<div>
 			Showing <span class="font-medium text-white"
-				>{filteredServices.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</span
+				>{totalServicesCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}</span
 			>
 			to
 			<span class="font-medium text-white"
-				>{Math.min(currentPage * itemsPerPage, filteredServices.length)}</span
+				>{Math.min(currentPage * itemsPerPage, totalServicesCount)}</span
 			>
 			of
-			<span class="font-medium text-white">{filteredServices.length}</span> services
+			<span class="font-medium text-white">{totalServicesCount}</span> services
 		</div>
 		<div class="flex gap-2">
 			<Button

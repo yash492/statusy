@@ -42,12 +42,17 @@ type viewDto struct {
 
 // viewServiceDto maps a row joining view_services → services.
 type viewServiceDto struct {
-	ID                   uint       `db:"id"`
-	Name                 string     `db:"name"`
-	Slug                 string     `db:"slug"`
-	IncludeAllComponents bool       `db:"include_all_components"`
-	UpdatedAt            time.Time  `db:"updated_at"`
-	DeletedAt            *time.Time `db:"deleted_at"`
+	ID                           uint       `db:"id"`
+	Name                         string     `db:"name"`
+	Slug                         string     `db:"slug"`
+	IncludeAllComponents         bool       `db:"include_all_components"`
+	MonitorIncidents             bool       `db:"monitor_incidents"`
+	MonitorScheduledMaintenances bool       `db:"monitor_scheduled_maintenances"`
+	Status                       string     `db:"status"`
+	LastIncident                 string     `db:"last_incident"`
+	UpcomingMaintenance          string     `db:"upcoming_maintenance"`
+	UpdatedAt                    time.Time  `db:"updated_at"`
+	DeletedAt                    *time.Time `db:"deleted_at"`
 }
 
 // viewServiceFullDto maps a full row from the view_services table.

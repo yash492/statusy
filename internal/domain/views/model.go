@@ -13,12 +13,15 @@ type View struct {
 }
 
 type ViewServiceStatus struct {
-	ID                   uint
-	Name                 string
-	Slug                 string
-	Status               string
-	LastIncident         string
-	IncludeAllComponents bool
+	ID                           uint
+	Name                         string
+	Slug                         string
+	Status                       string
+	LastIncident                 string
+	IncludeAllComponents         bool
+	MonitorIncidents             bool
+	MonitorScheduledMaintenances bool
+	UpcomingMaintenance          string
 }
 
 type ViewService struct {

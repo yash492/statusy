@@ -22,7 +22,44 @@ model ViewServiceStatus {
 
   @doc("Whether all components of this service are included in the view")
   include_all_components: boolean;
+
+  @doc("Whether to monitor incidents for the service")
+  monitor_incidents: boolean;
+
+  @doc("Whether to monitor scheduled maintenances for the service")
+  monitor_scheduled_maintenances: boolean;
+
+  @doc("Upcoming scheduled maintenance description (empty string if none)")
+  upcoming_maintenance: string;
 }
+
+model PaginatedViewServices {
+  services: ViewServiceStatus[];
+  total_count: integer;
+  up_count: integer;
+  down_count: integer;
+}
+
+@doc("Get configured services in a view with pagination and search")
+@get
+@route("/views/{publicId}/view-services")
+op getViewServices(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @doc("Page number for paginated results (default: 1)")
+  @query
+  page_number?: integer,
+
+  @doc("Number of items per page (default: 20)")
+  @query
+  page_size?: integer,
+
+  @doc("Optional search term to filter services by name or slug")
+  @query
+  search?: string,
+): PaginatedViewServices | StandardErrors;
 
 model View {
   @doc("Display name of the view")

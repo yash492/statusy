@@ -11,6 +11,7 @@ type Repository interface {
 	GetByPublicID(ctx context.Context, publicID string) (View, error)
 	Save(ctx context.Context, view View) (View, error)
 	GetServicesByViewID(ctx context.Context, viewID uint) ([]ViewServiceStatus, error)
+	GetViewServices(ctx context.Context, viewID uint, search string, limit int, offset int) ([]ViewServiceStatus, int64, int64, int64, error)
 	GetUnconfiguredServices(ctx context.Context, viewID uint, search string) ([]services.ServiceResult, error)
 	GetViewService(ctx context.Context, viewID uint, serviceID uint) (ViewService, error)
 	AddViewService(ctx context.Context, vs ViewService, componentIDs []int, componentGroupIDs []int) (ViewService, error)

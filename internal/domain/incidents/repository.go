@@ -86,6 +86,7 @@ type IncidentComponentResult struct {
 type Repository interface {
 	SaveAll(ctx context.Context, params []IncidentParams) ([]IncidentResult, error)
 	GetByService(ctx context.Context, params IncidentByServiceParams) ([]IncidentByServiceResult, error)
+	UpdateResolutionStatus(ctx context.Context, serviceIDs []uint) error
 }
 
 type UpdatesRepository interface {

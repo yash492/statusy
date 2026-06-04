@@ -25,6 +25,7 @@ type Handler struct {
 	DeleteViewServiceCmd                command.DeleteViewServiceCmd
 	EditViewCmd                         command.EditViewCmd
 	DeleteViewCmd                       command.DeleteViewCmd
+	GetViewServicesCmd                  command.GetViewServicesCmd
 }
 
 // (GET /statuspages)
@@ -433,4 +434,55 @@ func (h Handler) DeleteView(ctx context.Context, request api.DeleteViewRequestOb
 	}
 
 	return api.DeleteView204Response{}, nil
+}
+
+// (GET /views/{publicId}/view-services)
+func (h Handler) GetViewServices(ctx context.Context, request api.GetViewServicesRequestObject) (api.GetViewServicesResponseObject, error) {
+	pageNumber := 0
+	pageSize := 0
+	search := ""
+
+	if request.Params.PageNumber != nil {
+		pageNumber = *request.Params.PageNumber
+	}
+
+	if request.Params.PageSize != nil {
+		pageSize = *request.Params.PageSize
+	}
+
+	if request.Params.Search != nil {
+		search = *request.Params.Search
+	}
+
+	result, err := h.GetViewServicesCmd.Execute(ctx, command.GetViewServicesParams{
+		PublicID:   request.PublicId,
+		Search:     search,
+		PageNumber: pageNumber,
+		PageSize:   pageSize,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	services := make([]api.ViewServiceStatus, 0, len(result.Services))
+	for _, s := range result.Services {
+		services = append(services, api.ViewServiceStatus{
+			Id:                           int(s.ID),
+			Name:                         s.Name,
+			Slug:                         s.Slug,
+			Status:                       s.Status,
+			LastIncident:                 s.LastIncident,
+			IncludeAllComponents:         s.IncludeAllComponents,
+			MonitorIncidents:             s.MonitorIncidents,
+			MonitorScheduledMaintenances: s.MonitorScheduledMaintenances,
+			UpcomingMaintenance:          s.UpcomingMaintenance,
+		})
+	}
+
+	return api.GetViewServices200JSONResponse{
+		Services:   services,
+		TotalCount: int(result.TotalCount),
+		UpCount:    int(result.UpCount),
+		DownCount:  int(result.DownCount),
+	}, nil
 }

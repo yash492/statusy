@@ -26,6 +26,7 @@ type incidentDto struct {
 	ServiceID         uint             `db:"service_id"`
 	ProviderID        string           `db:"provider_id"`
 	ProviderCreatedAt time.Time        `db:"provider_created_at"`
+	IsResolved        bool             `db:"is_resolved"`
 	CreatedAt         time.Time        `db:"created_at"`
 	UpdatedAt         time.Time        `db:"updated_at"`
 	DeletedAt         pgtype.Timestamp `db:"deleted_at"`

@@ -191,6 +191,23 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 		return err
 	}
 
+	// Update incident resolution status based on latest incident_updates
+	serviceIDSet := make(map[uint]struct{}, len(registeredServices))
+	for _, service := range registeredServices {
+		serviceIDSet[service.ID()] = struct{}{}
+	}
+	serviceIDs := make([]uint, 0, len(serviceIDSet))
+	for id := range serviceIDSet {
+		serviceIDs = append(serviceIDs, id)
+	}
+	if len(serviceIDs) > 0 {
+		err = s.incidentsRepo.UpdateResolutionStatus(ctx, serviceIDs)
+		if err != nil {
+			s.logger.ErrorContext(ctx, "error updating resolution status", slog.Any("err", err))
+			// Non-fatal: log and continue
+		}
+	}
+
 	s.logger.InfoContext(
 		ctx,
 		"scrape cycle completed",

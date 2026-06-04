@@ -13,6 +13,9 @@ export interface ViewServiceStatus {
 	status: string;
 	last_incident: string;
 	include_all_components: boolean;
+	monitor_incidents: boolean;
+	monitor_scheduled_maintenances: boolean;
+	upcoming_maintenance: string;
 }
 
 export interface View {
@@ -104,6 +107,21 @@ export class ViewsApi {
 		return ApiClient.delete(
 			`${this.basePath}/${encodeURIComponent(viewPublicId)}/services/${serviceId}`
 		);
+	}
+
+	getViewServices(viewPublicId: string, pageNumber?: number, pageSize?: number, search?: string) {
+		return ApiClient.get<{
+			services: ViewServiceStatus[];
+			total_count: number;
+			up_count: number;
+			down_count: number;
+		}>(`${this.basePath}/${encodeURIComponent(viewPublicId)}/view-services`, {
+			searchParams: {
+				...(pageNumber !== undefined ? { page_number: pageNumber } : {}),
+				...(pageSize !== undefined ? { page_size: pageSize } : {}),
+				...(search ? { search } : {})
+			}
+		});
 	}
 
 	createOrGetDefaultView() {
