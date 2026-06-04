@@ -1,7 +1,7 @@
 UPDATE incidents i
 SET is_resolved = COALESCE(
   (
-    SELECT iu.status = 'resolved'
+    SELECT iu.status IN ('resolved', 'postmortem')
     FROM incident_updates iu
     WHERE iu.incident_id = i.id AND iu.deleted_at IS NULL
     ORDER BY iu.status_time DESC, iu.id DESC
