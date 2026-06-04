@@ -176,7 +176,7 @@
 	<meta name="description" content={viewDescription} />
 </svelte:head>
 
-<div class="mx-auto w-3/5 pt-4">
+<div class="mx-auto w-11/12">
 	<!-- Header and Subtitle -->
 	<div class="mb-6">
 		<div class="flex items-center gap-3">
@@ -307,13 +307,13 @@
 												title={service.last_incident}
 											>
 												<AlertTriangle class="size-3.5 shrink-0 text-amber-500" />
-												{service.last_incident.length > 50 ? service.last_incident.slice(0, 50) + '...' : service.last_incident}
+												{service.last_incident.length > 50
+													? service.last_incident.slice(0, 50) + '...'
+													: service.last_incident}
 											</span>
 										</a>
 									{:else}
-										<span
-											class="flex items-center gap-1.5 text-xs text-zinc-500"
-										>
+										<span class="flex items-center gap-1.5 text-xs text-zinc-500">
 											<CheckCircle class="size-3.5 shrink-0 text-emerald-500/70" />
 											No recent incidents
 										</span>
@@ -332,7 +332,9 @@
 												title={service.upcoming_maintenance}
 											>
 												<Calendar class="size-3.5 shrink-0 text-blue-500" />
-												Maintenance: {service.upcoming_maintenance.length > 50 ? service.upcoming_maintenance.slice(0, 50) + '...' : service.upcoming_maintenance}
+												Maintenance: {service.upcoming_maintenance.length > 50
+													? service.upcoming_maintenance.slice(0, 50) + '...'
+													: service.upcoming_maintenance}
 											</span>
 										</a>
 									{/if}

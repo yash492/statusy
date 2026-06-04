@@ -1,16 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
 	import ScheduledMaintenancesTable, {
 		type ScheduledMaintenanceDisplay
 	} from '$lib/derivedcomponents/ScheduledMaintenancesTable.svelte';
-	import CheckIcon from '@lucide/svelte/icons/check';
-	import ClipboardIcon from '@lucide/svelte/icons/clipboard';
-	import RssIcon from '@lucide/svelte/icons/rss';
 	import type { PaginationState } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
@@ -129,11 +124,11 @@
 	}
 </script>
 
-<div class="mx-auto w-4/5">
+<div class="mx-auto w-11/12">
 	<div class="w-full">
 		<div class="mb-6 flex justify-between md:mb-4">
 			<div class="mb-4 flex w-fit flex-col gap-3 md:flex-row md:items-center">
-				<p class="text-xl font-bold">{data.resp.statuspage.name}</p>
+				<p class="text-3xl font-bold">{data.resp.statuspage.name}</p>
 				{#if data.resp.statuspage.url}
 					<a
 						href={data.resp.statuspage.url}
@@ -144,146 +139,6 @@
 						<span>Visit Status Page</span>
 					</a>
 				{/if}
-			</div>
-			<div>
-				<Dialog.Root open={isSubscribeDialogOpen} onOpenChange={onSubscribeDialogOpenChange}>
-					<Button class="cursor-pointer" onclick={() => (isSubscribeDialogOpen = true)}>
-						Subscribe to Updates
-					</Button>
-					<Dialog.Content class="sm:max-w-2xl">
-						<div class="grid gap-4">
-							<Dialog.Header>
-								<Dialog.Title>Subscribe to Updates</Dialog.Title>
-							</Dialog.Header>
-
-							<Tabs.Root
-								value={subscribeTab}
-								onValueChange={(value) => (subscribeTab = value as SubscribeTab)}
-							>
-								<Tabs.List class="grid w-full grid-cols-2 sm:w-[30%]">
-									<Tabs.Trigger class="cursor-pointer gap-1.5" value="rss">
-										<RssIcon class="size-4" />
-										RSS
-									</Tabs.Trigger>
-									<Tabs.Trigger class="cursor-pointer gap-1.5" value="slack">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="16"
-											height="16"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											class="size-4"
-											><rect width="3" height="8" x="13" y="2" rx="1.5" /><path
-												d="M19 8.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"
-											/><rect width="3" height="8" x="8" y="14" rx="1.5" /><path
-												d="M5 15.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0z"
-											/><rect width="8" height="3" x="2" y="8" rx="1.5" /><path
-												d="M8.5 5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"
-											/><rect width="8" height="3" x="14" y="13" rx="1.5" /><path
-												d="M15.5 19a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"
-											/></svg
-										>
-										Slack
-									</Tabs.Trigger>
-								</Tabs.List>
-
-								<Tabs.Content value="rss" class="grid gap-3 pt-2">
-									<div class="rounded-md border p-3">
-										<p class="mb-2 text-sm font-medium">RSS Feed</p>
-										<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-											<code class="block rounded bg-muted px-2 py-1 text-xs break-all"
-												>{feedRssPath}</code
-											>
-											<Button
-												type="button"
-												variant="outline"
-												class="h-9 w-9 shrink-0 cursor-pointer p-0"
-												onclick={() => copyText(feedRssPath, 'rss')}
-												title={copiedKey === 'rss' ? 'Copied' : 'Copy RSS URL'}
-												aria-label={copiedKey === 'rss' ? 'Copied RSS URL' : 'Copy RSS URL'}
-											>
-												{#if copiedKey === 'rss'}
-													<CheckIcon class="size-4" />
-												{:else}
-													<ClipboardIcon class="size-4" />
-												{/if}
-												<span class="sr-only"
-													>{copiedKey === 'rss' ? 'Copied RSS URL' : 'Copy RSS URL'}</span
-												>
-											</Button>
-										</div>
-									</div>
-
-									<div class="rounded-md border p-3">
-										<p class="mb-2 text-sm font-medium">Atom Feed</p>
-										<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-											<code class="block rounded bg-muted px-2 py-1 text-xs break-all"
-												>{feedAtomPath}</code
-											>
-											<Button
-												type="button"
-												variant="outline"
-												class="h-9 w-9 shrink-0 cursor-pointer p-0"
-												onclick={() => copyText(feedAtomPath, 'atom')}
-												title={copiedKey === 'atom' ? 'Copied' : 'Copy Atom URL'}
-												aria-label={copiedKey === 'atom' ? 'Copied Atom URL' : 'Copy Atom URL'}
-											>
-												{#if copiedKey === 'atom'}
-													<CheckIcon class="size-4" />
-												{:else}
-													<ClipboardIcon class="size-4" />
-												{/if}
-												<span class="sr-only"
-													>{copiedKey === 'atom' ? 'Copied Atom URL' : 'Copy Atom URL'}</span
-												>
-											</Button>
-										</div>
-									</div>
-								</Tabs.Content>
-
-								<Tabs.Content value="slack" class="grid gap-3 pt-2">
-									<p class="text-sm text-muted-foreground">
-										To receive live status updates in Slack, copy and paste the text below into the
-										Slack channel of your choice.
-									</p>
-									<div></div>
-									<div class="flex items-center justify-between rounded-md border p-3">
-										<code class="block rounded bg-muted px-2 py-1 text-xs break-all"
-											>{slackSnippet}</code
-										>
-										<div class="flex justify-end">
-											<Button
-												type="button"
-												variant="outline"
-												class="h-9 w-9 shrink-0 cursor-pointer p-0"
-												onclick={() => copyText(slackSnippet, 'slack')}
-												title={copiedKey === 'slack' ? 'Copied' : 'Copy Slack snippet'}
-												aria-label={copiedKey === 'slack'
-													? 'Copied Slack snippet'
-													: 'Copy Slack snippet'}
-											>
-												{#if copiedKey === 'slack'}
-													<CheckIcon class="size-4" />
-												{:else}
-													<ClipboardIcon class="size-4" />
-												{/if}
-												<span class="sr-only"
-													>{copiedKey === 'slack'
-														? 'Copied Slack snippet'
-														: 'Copy Slack snippet'}</span
-												>
-											</Button>
-										</div>
-									</div>
-								</Tabs.Content>
-							</Tabs.Root>
-						</div>
-					</Dialog.Content>
-				</Dialog.Root>
 			</div>
 		</div>
 
