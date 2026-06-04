@@ -3,13 +3,10 @@
 	import { ViewsApi } from '$lib/api/views/views';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import * as Table from '$lib/components/ui/table';
-	import { Textarea } from '$lib/components/ui/textarea';
+	import ViewForm from '$lib/components/ViewForm.svelte';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
 	import Calendar from '@lucide/svelte/icons/calendar';
-	import CheckCircle from '@lucide/svelte/icons/check-circle';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Search from '@lucide/svelte/icons/search';
@@ -326,20 +323,17 @@
 											class="group/link flex w-fit cursor-pointer items-center gap-1.5 text-xs text-zinc-400 transition-all hover:text-white"
 										>
 											<span
-												class="flex items-center gap-1 font-medium text-amber-400 group-hover/link:underline"
+												class="flex items-center gap-1 font-medium text-red-400 group-hover/link:underline"
 												title={service.last_incident}
 											>
-												<AlertTriangle class="size-3.5 shrink-0 text-amber-500" />
+												<AlertTriangle class="size-3.5 shrink-0 text-red-500" />
 												{service.last_incident.length > 50
 													? service.last_incident.slice(0, 50) + '...'
 													: service.last_incident}
 											</span>
 										</a>
 									{:else}
-										<span class="flex items-center gap-1.5 text-xs text-zinc-500">
-											<CheckCircle class="size-3.5 shrink-0 text-emerald-500/70" />
-											No recent incidents
-										</span>
+										<span class="text-xs text-zinc-500">No recent incidents</span>
 									{/if}
 
 									<!-- Upcoming Maintenance info -->
@@ -517,54 +511,20 @@
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<div class="grid gap-4 py-4">
-			<div class="grid gap-2">
-				<Label for="view-name" class="text-sm font-semibold text-zinc-300">Name</Label>
-				<Input
-					id="view-name"
-					bind:value={editViewName}
-					placeholder="Payment Gateways"
-					class="border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700"
-				/>
-			</div>
-			<div class="grid gap-2">
-				<Label for="view-description" class="text-sm font-semibold text-zinc-300">Description</Label
-				>
-				<Textarea
-					id="view-description"
-					bind:value={editViewDescription}
-					placeholder="Track statuses of Payment APIs and web portals"
-					class="border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700"
-				/>
-			</div>
-
-			<label class="mt-2 flex cursor-pointer items-center gap-2 select-none">
-				<input
-					type="checkbox"
-					bind:checked={editViewIsDefault}
-					class="size-4 rounded border-zinc-800 bg-zinc-900 text-white accent-zinc-300 transition-colors focus:ring-0"
-				/>
-				<span class="text-sm text-zinc-300">Make this the default view</span>
-			</label>
-		</div>
-
-		<Dialog.Footer class="gap-2">
-			<Button
-				variant="outline"
-				class="cursor-pointer border-zinc-800 hover:bg-zinc-900 hover:text-white"
-				onclick={() => {
-					isEditViewOpen = false;
-				}}
-			>
-				Cancel
-			</Button>
-			<Button
-				class="cursor-pointer bg-zinc-100 text-zinc-950 hover:bg-zinc-200"
-				onclick={saveViewMeta}
-			>
-				Save Changes
-			</Button>
-		</Dialog.Footer>
+		<ViewForm
+			bind:name={editViewName}
+			bind:description={editViewDescription}
+			bind:isDefault={editViewIsDefault}
+			showDefaultCheckbox={true}
+			submitText="Save Changes"
+			cancelText="Cancel"
+			namePlaceholder="Payment Gateways"
+			descriptionPlaceholder="Track statuses of Payment APIs and web portals"
+			onsubmit={saveViewMeta}
+			oncancel={() => {
+				isEditViewOpen = false;
+			}}
+		/>
 	</Dialog.Content>
 </Dialog.Root>
 
