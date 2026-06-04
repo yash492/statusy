@@ -22,17 +22,23 @@ func NewEditViewServiceCmd(logger *slog.Logger, viewsRepo views.Repository) Edit
 }
 
 type EditViewServiceParams struct {
-	ViewPublicID         string
-	ServiceID            int
-	IncludeAllComponents bool
-	ComponentIDs         []int
-	ComponentGroupIDs    []int
+	ViewPublicID                 string
+	ServiceID                    int
+	IncludeAllComponents         bool
+	MonitorIncidents             bool
+	MonitorScheduledMaintenances bool
+	ComponentIDs                 []int
+	ComponentGroupIDs            []int
 }
 
 func (c EditViewServiceCmd) Execute(ctx context.Context, params EditViewServiceParams) (views.ViewService, error) {
 	publicID := strings.TrimSpace(params.ViewPublicID)
 	if publicID == "" {
 		return views.ViewService{}, apperrors.InvalidInputError("public_id cannot be empty", nil)
+	}
+
+	if !params.MonitorIncidents && !params.MonitorScheduledMaintenances {
+		return views.ViewService{}, apperrors.InvalidInputError("at least one alert type (Incidents or Scheduled Maintenances) must be monitored", nil)
 	}
 
 	view, err := c.viewsRepo.GetByPublicID(ctx, publicID)
@@ -46,10 +52,12 @@ func (c EditViewServiceCmd) Execute(ctx context.Context, params EditViewServiceP
 	}
 
 	vs, err := c.viewsRepo.UpdateViewService(ctx, views.ViewService{
-		ID:                   existingVS.ID,
-		ViewID:               existingVS.ViewID,
-		ServiceID:            existingVS.ServiceID,
-		IncludeAllComponents: params.IncludeAllComponents,
+		ID:                           existingVS.ID,
+		ViewID:                       existingVS.ViewID,
+		ServiceID:                    existingVS.ServiceID,
+		IncludeAllComponents:         params.IncludeAllComponents,
+		MonitorIncidents:             params.MonitorIncidents,
+		MonitorScheduledMaintenances: params.MonitorScheduledMaintenances,
 	}, params.ComponentIDs, params.ComponentGroupIDs)
 	if err != nil {
 		return views.ViewService{}, err

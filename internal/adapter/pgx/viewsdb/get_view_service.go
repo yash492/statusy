@@ -45,13 +45,15 @@ func (r *PostgresViewsRepository) GetViewService(ctx context.Context, viewID uin
 	}
 
 	return views.ViewService{
-		ID:                   dto.ID,
-		ViewID:               dto.ViewID,
-		ServiceID:            dto.ServiceID,
-		IncludeAllComponents: dto.IncludeAllComponents,
-		ComponentIDs:         compIDs,
-		ComponentGroupIDs:    compGrpIDs,
-		CreatedAt:            dto.CreatedAt,
-		UpdatedAt:            dto.UpdatedAt,
+		ID:                           dto.ID,
+		ViewID:                       dto.ViewID,
+		ServiceID:                    dto.ServiceID,
+		IncludeAllComponents:         dto.IncludeAllComponents,
+		MonitorIncidents:             dto.MonitorIncidents,
+		MonitorScheduledMaintenances: dto.MonitorScheduledMaintenances,
+		ComponentIDs:                 compIDs,
+		ComponentGroupIDs:            compGrpIDs,
+		CreatedAt:                    dto.CreatedAt,
+		UpdatedAt:                    dto.UpdatedAt,
 	}, nil
 }

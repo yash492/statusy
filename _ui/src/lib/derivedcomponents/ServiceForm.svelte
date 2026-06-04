@@ -56,6 +56,9 @@
 	let errorMessage = $state<string | null>(null);
 	let saving = $state(false);
 
+	let monitorIncidents = $state(true);
+	let monitorMaintenances = $state(true);
+
 	let configuringService = $state<{
 		service_name: string;
 		grouped_components: ServiceComponentGroup[];
@@ -121,6 +124,8 @@
 		}
 		if (res) {
 			componentMode = res.include_all_components ? 'all' : 'custom';
+			monitorIncidents = res.monitor_incidents;
+			monitorMaintenances = res.monitor_scheduled_maintenances;
 			if (!res.include_all_components) {
 				selectedComponentIds = res.component_ids ?? [];
 				selectedComponentGroupIds = res.component_group_ids ?? [];
@@ -263,6 +268,8 @@
 			const [_, err] = await viewsApi.addViewService(publicId, {
 				service_id: selectedServiceId,
 				include_all_components: includeAllComponents,
+				monitor_incidents: monitorIncidents,
+				monitor_scheduled_maintenances: monitorMaintenances,
 				component_ids: componentIds,
 				component_group_ids: componentGroupIds
 			});
@@ -287,6 +294,8 @@
 
 			const [_, err] = await viewsApi.editViewService(publicId, activeService.id, {
 				include_all_components: includeAllComponents,
+				monitor_incidents: monitorIncidents,
+				monitor_scheduled_maintenances: monitorMaintenances,
 				component_ids: componentIds,
 				component_group_ids: componentGroupIds
 			});
@@ -372,6 +381,33 @@
 						</div>
 					{/if}
 				</div>
+
+				<!-- Alert Types to Monitor -->
+				{#if configuringService}
+					<div class="grid gap-4 pt-5">
+						<Label class="text-base font-bold text-zinc-200">Alert Types to Monitor</Label>
+						<div class="flex flex-col gap-3 rounded-lg bg-zinc-900/20 p-4">
+							<label class="flex cursor-pointer items-center gap-3 select-none">
+								<ControlledCheckbox
+									id="monitor-incidents"
+									checked={monitorIncidents}
+									onchange={() => monitorIncidents = !monitorIncidents}
+									class="size-5 shrink-0 cursor-pointer"
+								/>
+								<span class="text-sm font-semibold text-zinc-200">Monitor Incidents</span>
+							</label>
+							<label class="flex cursor-pointer items-center gap-3 select-none">
+								<ControlledCheckbox
+									id="monitor-maintenances"
+									checked={monitorMaintenances}
+									onchange={() => monitorMaintenances = !monitorMaintenances}
+									class="size-5 shrink-0 cursor-pointer"
+								/>
+								<span class="text-sm font-semibold text-zinc-200">Monitor Scheduled Maintenances</span>
+							</label>
+						</div>
+					</div>
+				{/if}
 
 				<!-- Component Checklist with Hierarchical groups -->
 				{#if configuringService}
@@ -544,6 +580,7 @@
 					class="cursor-pointer px-6"
 					disabled={saving ||
 						(mode === 'add' && !selectedServiceId) ||
+						(!monitorIncidents && !monitorMaintenances) ||
 						(componentMode === 'custom' &&
 							selectedComponentIds.length === 0 &&
 							selectedComponentGroupIds.length === 0)}

@@ -22,12 +22,14 @@ type ViewServiceStatus struct {
 }
 
 type ViewService struct {
-	ID                   uint
-	ViewID               uint
-	ServiceID            uint
-	IncludeAllComponents bool
-	ComponentIDs         []int
-	ComponentGroupIDs    []int
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
+	ID                           uint
+	ViewID                       uint
+	ServiceID                    uint
+	IncludeAllComponents         bool
+	MonitorIncidents             bool
+	MonitorScheduledMaintenances bool
+	ComponentIDs                 []int
+	ComponentGroupIDs            []int
+	CreatedAt                    time.Time
+	UpdatedAt                    time.Time
 }

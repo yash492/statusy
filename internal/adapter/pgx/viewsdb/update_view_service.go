@@ -29,8 +29,10 @@ func (r *PostgresViewsRepository) UpdateViewService(ctx context.Context, vs view
 
 	// Update the view_services row
 	rows, err := tx.Query(ctx, updateViewServiceQuery, pgx.NamedArgs{
-		"id":                     vs.ID,
-		"include_all_components": vs.IncludeAllComponents,
+		"id":                             vs.ID,
+		"include_all_components":         vs.IncludeAllComponents,
+		"monitor_incidents":              vs.MonitorIncidents,
+		"monitor_scheduled_maintenances": vs.MonitorScheduledMaintenances,
 	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error updating view service", slog.Uint64("id", uint64(vs.ID)), slog.Any("err", err))
@@ -102,13 +104,15 @@ func (r *PostgresViewsRepository) UpdateViewService(ctx context.Context, vs view
  	}
  
 	return views.ViewService{
-		ID:                   dto.ID,
-		ViewID:               dto.ViewID,
-		ServiceID:            dto.ServiceID,
-		IncludeAllComponents: dto.IncludeAllComponents,
-		ComponentIDs:         compIDs,
-		ComponentGroupIDs:    compGrpIDs,
-		CreatedAt:            dto.CreatedAt,
-		UpdatedAt:            dto.UpdatedAt,
+		ID:                           dto.ID,
+		ViewID:                       dto.ViewID,
+		ServiceID:                    dto.ServiceID,
+		IncludeAllComponents:         dto.IncludeAllComponents,
+		MonitorIncidents:             dto.MonitorIncidents,
+		MonitorScheduledMaintenances: dto.MonitorScheduledMaintenances,
+		ComponentIDs:                 compIDs,
+		ComponentGroupIDs:            compGrpIDs,
+		CreatedAt:                    dto.CreatedAt,
+		UpdatedAt:                    dto.UpdatedAt,
 	}, nil
 }

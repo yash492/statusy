@@ -3,6 +3,8 @@ SELECT
   vs.view_id,
   vs.service_id,
   vs.include_all_components,
+  vs.monitor_incidents,
+  vs.monitor_scheduled_maintenances,
   vs.created_at,
   vs.updated_at,
   COALESCE((

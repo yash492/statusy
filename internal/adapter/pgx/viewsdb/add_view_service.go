@@ -27,11 +27,12 @@ func (r *PostgresViewsRepository) AddViewService(ctx context.Context, vs views.V
 	}
 	defer tx.Rollback(ctx)
 
-	// Insert the view_services row
 	rows, err := tx.Query(ctx, insertViewServiceQuery, pgx.NamedArgs{
-		"view_id":                vs.ViewID,
-		"service_id":             vs.ServiceID,
-		"include_all_components": vs.IncludeAllComponents,
+		"view_id":                        vs.ViewID,
+		"service_id":                     vs.ServiceID,
+		"include_all_components":         vs.IncludeAllComponents,
+		"monitor_incidents":              vs.MonitorIncidents,
+		"monitor_scheduled_maintenances": vs.MonitorScheduledMaintenances,
 	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error inserting view service", slog.Uint64("view_id", uint64(vs.ViewID)), slog.Uint64("service_id", uint64(vs.ServiceID)), slog.Any("err", err))
@@ -86,13 +87,15 @@ func (r *PostgresViewsRepository) AddViewService(ctx context.Context, vs views.V
 	}
 
 	return views.ViewService{
-		ID:                   dto.ID,
-		ViewID:               dto.ViewID,
-		ServiceID:            dto.ServiceID,
-		IncludeAllComponents: dto.IncludeAllComponents,
-		ComponentIDs:         compIDs,
-		ComponentGroupIDs:    compGrpIDs,
-		CreatedAt:            dto.CreatedAt,
-		UpdatedAt:            dto.UpdatedAt,
+		ID:                           dto.ID,
+		ViewID:                       dto.ViewID,
+		ServiceID:                    dto.ServiceID,
+		IncludeAllComponents:         dto.IncludeAllComponents,
+		MonitorIncidents:             dto.MonitorIncidents,
+		MonitorScheduledMaintenances: dto.MonitorScheduledMaintenances,
+		ComponentIDs:                 compIDs,
+		ComponentGroupIDs:            compGrpIDs,
+		CreatedAt:                    dto.CreatedAt,
+		UpdatedAt:                    dto.UpdatedAt,
 	}, nil
 }

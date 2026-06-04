@@ -280,11 +280,13 @@ func (h Handler) AddViewService(ctx context.Context, request api.AddViewServiceR
 	}
 
 	result, err := h.AddViewServiceCmd.Execute(ctx, command.AddViewServiceParams{
-		ViewPublicID:         request.PublicId,
-		ServiceID:            request.Body.ServiceId,
-		IncludeAllComponents: request.Body.IncludeAllComponents,
-		ComponentIDs:         componentIDs,
-		ComponentGroupIDs:    componentGroupIDs,
+		ViewPublicID:                 request.PublicId,
+		ServiceID:                    request.Body.ServiceId,
+		IncludeAllComponents:         request.Body.IncludeAllComponents,
+		MonitorIncidents:             request.Body.MonitorIncidents,
+		MonitorScheduledMaintenances: request.Body.MonitorScheduledMaintenances,
+		ComponentIDs:                 componentIDs,
+		ComponentGroupIDs:            componentGroupIDs,
 	})
 	if err != nil {
 		return nil, err
@@ -301,11 +303,13 @@ func (h Handler) AddViewService(ctx context.Context, request api.AddViewServiceR
 	}
 
 	return api.AddViewService200JSONResponse{
-		Id:                   int(result.ID),
-		ServiceId:            int(result.ServiceID),
-		IncludeAllComponents: result.IncludeAllComponents,
-		ComponentIds:         &compIDs,
-		ComponentGroupIds:    &compGrpIDs,
+		Id:                           int(result.ID),
+		ServiceId:                    int(result.ServiceID),
+		IncludeAllComponents:         result.IncludeAllComponents,
+		MonitorIncidents:             result.MonitorIncidents,
+		MonitorScheduledMaintenances: result.MonitorScheduledMaintenances,
+		ComponentIds:                 &compIDs,
+		ComponentGroupIds:            &compGrpIDs,
 	}, nil
 }
 
@@ -330,11 +334,13 @@ func (h Handler) GetViewService(ctx context.Context, request api.GetViewServiceR
 	}
 
 	return api.GetViewService200JSONResponse{
-		Id:                   int(result.ID),
-		ServiceId:            int(result.ServiceID),
-		IncludeAllComponents: result.IncludeAllComponents,
-		ComponentIds:         &compIDs,
-		ComponentGroupIds:    &compGrpIDs,
+		Id:                           int(result.ID),
+		ServiceId:                    int(result.ServiceID),
+		IncludeAllComponents:         result.IncludeAllComponents,
+		MonitorIncidents:             result.MonitorIncidents,
+		MonitorScheduledMaintenances: result.MonitorScheduledMaintenances,
+		ComponentIds:                 &compIDs,
+		ComponentGroupIds:            &compGrpIDs,
 	}, nil
 }
 
@@ -351,11 +357,13 @@ func (h Handler) EditViewService(ctx context.Context, request api.EditViewServic
 	}
 
 	result, err := h.EditViewServiceCmd.Execute(ctx, command.EditViewServiceParams{
-		ViewPublicID:         request.PublicId,
-		ServiceID:            request.ServiceId,
-		IncludeAllComponents: request.Body.IncludeAllComponents,
-		ComponentIDs:         componentIDs,
-		ComponentGroupIDs:    componentGroupIDs,
+		ViewPublicID:                 request.PublicId,
+		ServiceID:                    request.ServiceId,
+		IncludeAllComponents:         request.Body.IncludeAllComponents,
+		MonitorIncidents:             request.Body.MonitorIncidents,
+		MonitorScheduledMaintenances: request.Body.MonitorScheduledMaintenances,
+		ComponentIDs:                 componentIDs,
+		ComponentGroupIDs:            componentGroupIDs,
 	})
 	if err != nil {
 		return nil, err
@@ -372,11 +380,13 @@ func (h Handler) EditViewService(ctx context.Context, request api.EditViewServic
 	}
 
 	return api.EditViewService200JSONResponse{
-		Id:                   int(result.ID),
-		ServiceId:            int(result.ServiceID),
-		IncludeAllComponents: result.IncludeAllComponents,
-		ComponentIds:         &compIDs,
-		ComponentGroupIds:    &compGrpIDs,
+		Id:                           int(result.ID),
+		ServiceId:                    int(result.ServiceID),
+		IncludeAllComponents:         result.IncludeAllComponents,
+		MonitorIncidents:             result.MonitorIncidents,
+		MonitorScheduledMaintenances: result.MonitorScheduledMaintenances,
+		ComponentIds:                 &compIDs,
+		ComponentGroupIds:            &compGrpIDs,
 	}, nil
 }
 

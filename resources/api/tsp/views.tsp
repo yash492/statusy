@@ -115,6 +115,12 @@ model AddViewServiceRequest {
   @doc("Whether to include all components of the service")
   include_all_components: boolean;
 
+  @doc("Whether to monitor incidents for the service")
+  monitor_incidents: boolean;
+
+  @doc("Whether to monitor scheduled maintenances for the service")
+  monitor_scheduled_maintenances: boolean;
+
   @doc("List of specific component IDs to include (ignored if include_all_components is true)")
   component_ids?: integer[];
 
@@ -125,6 +131,12 @@ model AddViewServiceRequest {
 model EditViewServiceRequest {
   @doc("Whether to include all components of the service")
   include_all_components: boolean;
+
+  @doc("Whether to monitor incidents for the service")
+  monitor_incidents: boolean;
+
+  @doc("Whether to monitor scheduled maintenances for the service")
+  monitor_scheduled_maintenances: boolean;
 
   @doc("List of specific component IDs to include (ignored if include_all_components is true)")
   component_ids?: integer[];
@@ -142,6 +154,12 @@ model ViewServiceResponse {
 
   @doc("Whether all components of this service are included")
   include_all_components: boolean;
+
+  @doc("Whether to monitor incidents for the service")
+  monitor_incidents: boolean;
+
+  @doc("Whether to monitor scheduled maintenances for the service")
+  monitor_scheduled_maintenances: boolean;
 
   @doc("List of specific component IDs to include (ignored if include_all_components is true)")
   component_ids?: integer[];

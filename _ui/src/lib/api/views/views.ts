@@ -26,12 +26,16 @@ export interface View {
 export interface AddViewServiceRequest {
 	service_id: number;
 	include_all_components: boolean;
+	monitor_incidents: boolean;
+	monitor_scheduled_maintenances: boolean;
 	component_ids?: number[];
 	component_group_ids?: number[];
 }
 
 export interface EditViewServiceRequest {
 	include_all_components: boolean;
+	monitor_incidents: boolean;
+	monitor_scheduled_maintenances: boolean;
 	component_ids?: number[];
 	component_group_ids?: number[];
 }
@@ -40,6 +44,8 @@ export interface ViewServiceResponse {
 	id: number;
 	service_id: number;
 	include_all_components: boolean;
+	monitor_incidents: boolean;
+	monitor_scheduled_maintenances: boolean;
 	component_ids?: number[];
 	component_group_ids?: number[];
 }
