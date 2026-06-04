@@ -58,6 +58,10 @@ export interface ViewServiceResponse {
 export class ViewsApi {
 	private readonly basePath = 'views';
 
+	get(publicId: string) {
+		return ApiClient.get<View>(`${this.basePath}/${encodeURIComponent(publicId)}`);
+	}
+
 	edit(publicId: string, body: EditViewRequest) {
 		return ApiClient.put<View>(`${this.basePath}/${encodeURIComponent(publicId)}`, {
 			json: body
@@ -128,5 +132,17 @@ export class ViewsApi {
 
 	createOrGetDefaultView() {
 		return ApiClient.post<View>(`${this.basePath}/default`);
+	}
+
+	list(search?: string) {
+		return ApiClient.get<View[]>(`${this.basePath}`, {
+			searchParams: search ? { search } : undefined
+		});
+	}
+
+	create(body: { name: string; description: string }) {
+		return ApiClient.post<View>(`${this.basePath}`, {
+			json: body
+		});
 	}
 }

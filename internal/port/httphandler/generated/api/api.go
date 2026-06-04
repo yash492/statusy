@@ -71,6 +71,15 @@ type ComponentGroup struct {
 	ProviderId string `json:"provider_id"`
 }
 
+// CreateViewRequest defines model for CreateViewRequest.
+type CreateViewRequest struct {
+	// Description Description of the view
+	Description string `json:"description"`
+
+	// Name Display name of the view
+	Name string `json:"name"`
+}
+
 // EditViewRequest defines model for EditViewRequest.
 type EditViewRequest struct {
 	// Description Description of the view
@@ -324,6 +333,12 @@ type ScheduledMaintenanceByStatuspageParams struct {
 	ComponentGroupIds *string `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
 }
 
+// ListViewsParams defines parameters for ListViews.
+type ListViewsParams struct {
+	// Search Optional search term to filter views by name or description
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+}
+
 // GetUnconfiguredServicesParams defines parameters for GetUnconfiguredServices.
 type GetUnconfiguredServicesParams struct {
 	// Search Search term to filter services by name or slug
@@ -341,6 +356,9 @@ type GetViewServicesParams struct {
 	// Search Optional search term to filter services by name or slug
 	Search *string `form:"search,omitempty" json:"search,omitempty"`
 }
+
+// CreateViewJSONRequestBody defines body for CreateView for application/json ContentType.
+type CreateViewJSONRequestBody = CreateViewRequest
 
 // EditViewJSONRequestBody defines body for EditView for application/json ContentType.
 type EditViewJSONRequestBody = EditViewRequest
@@ -375,11 +393,20 @@ type ServerInterface interface {
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r *http.Request, statuspageSlug string, params ScheduledMaintenanceByStatuspageParams)
 
+	// (GET /api/views)
+	ListViews(w http.ResponseWriter, r *http.Request, params ListViewsParams)
+
+	// (POST /api/views)
+	CreateView(w http.ResponseWriter, r *http.Request)
+
 	// (POST /api/views/default)
 	CreateOrGetDefaultView(w http.ResponseWriter, r *http.Request)
 
 	// (DELETE /api/views/{publicId})
 	DeleteView(w http.ResponseWriter, r *http.Request, publicId string)
+
+	// (GET /api/views/{publicId})
+	GetView(w http.ResponseWriter, r *http.Request, publicId string)
 
 	// (PUT /api/views/{publicId})
 	EditView(w http.ResponseWriter, r *http.Request, publicId string)
@@ -442,6 +469,16 @@ func (_ Unimplemented) ScheduledMaintenanceByStatuspage(w http.ResponseWriter, r
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// (GET /api/views)
+func (_ Unimplemented) ListViews(w http.ResponseWriter, r *http.Request, params ListViewsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /api/views)
+func (_ Unimplemented) CreateView(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // (POST /api/views/default)
 func (_ Unimplemented) CreateOrGetDefaultView(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
@@ -449,6 +486,11 @@ func (_ Unimplemented) CreateOrGetDefaultView(w http.ResponseWriter, r *http.Req
 
 // (DELETE /api/views/{publicId})
 func (_ Unimplemented) DeleteView(w http.ResponseWriter, r *http.Request, publicId string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /api/views/{publicId})
+func (_ Unimplemented) GetView(w http.ResponseWriter, r *http.Request, publicId string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -743,6 +785,47 @@ func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.Respo
 	handler.ServeHTTP(w, r)
 }
 
+// ListViews operation middleware
+func (siw *ServerInterfaceWrapper) ListViews(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListViewsParams
+
+	// ------------- Optional query parameter "search" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "search", r.URL.Query(), &params.Search, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "search", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListViews(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateView operation middleware
+func (siw *ServerInterfaceWrapper) CreateView(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateView(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // CreateOrGetDefaultView operation middleware
 func (siw *ServerInterfaceWrapper) CreateOrGetDefaultView(w http.ResponseWriter, r *http.Request) {
 
@@ -773,6 +856,31 @@ func (siw *ServerInterfaceWrapper) DeleteView(w http.ResponseWriter, r *http.Req
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteView(w, r, publicId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetView operation middleware
+func (siw *ServerInterfaceWrapper) GetView(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetView(w, r, publicId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1157,10 +1265,19 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/api/statuspages/{statuspageSlug}/schedule-maintenances", wrapper.ScheduledMaintenanceByStatuspage)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views", wrapper.ListViews)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/views", wrapper.CreateView)
+	})
+	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/views/default", wrapper.CreateOrGetDefaultView)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/api/views/{publicId}", wrapper.DeleteView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views/{publicId}", wrapper.GetView)
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/api/views/{publicId}", wrapper.EditView)
@@ -1747,6 +1864,162 @@ func (response ScheduledMaintenanceByStatuspage500JSONResponse) VisitScheduledMa
 	return err
 }
 
+type ListViewsRequestObject struct {
+	Params ListViewsParams
+}
+
+type ListViewsResponseObject interface {
+	VisitListViewsResponse(w http.ResponseWriter) error
+}
+
+type ListViews200JSONResponse []View
+
+func (response ListViews200JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViews400JSONResponse ErrorResponse
+
+func (response ListViews400JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViews404JSONResponse ErrorResponse
+
+func (response ListViews404JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViews409JSONResponse ErrorResponse
+
+func (response ListViews409JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViews500JSONResponse ErrorResponse
+
+func (response ListViews500JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateViewRequestObject struct {
+	Body *CreateViewJSONRequestBody
+}
+
+type CreateViewResponseObject interface {
+	VisitCreateViewResponse(w http.ResponseWriter) error
+}
+
+type CreateView200JSONResponse View
+
+func (response CreateView200JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateView400JSONResponse ErrorResponse
+
+func (response CreateView400JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateView404JSONResponse ErrorResponse
+
+func (response CreateView404JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateView409JSONResponse ErrorResponse
+
+func (response CreateView409JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type CreateView500JSONResponse ErrorResponse
+
+func (response CreateView500JSONResponse) VisitCreateViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type CreateOrGetDefaultViewRequestObject struct {
 }
 
@@ -1885,6 +2158,84 @@ func (response DeleteView409JSONResponse) VisitDeleteViewResponse(w http.Respons
 type DeleteView500JSONResponse ErrorResponse
 
 func (response DeleteView500JSONResponse) VisitDeleteViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetViewRequestObject struct {
+	PublicId string `json:"publicId"`
+}
+
+type GetViewResponseObject interface {
+	VisitGetViewResponse(w http.ResponseWriter) error
+}
+
+type GetView200JSONResponse View
+
+func (response GetView200JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetView400JSONResponse ErrorResponse
+
+func (response GetView400JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetView404JSONResponse ErrorResponse
+
+func (response GetView404JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetView409JSONResponse ErrorResponse
+
+func (response GetView409JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetView500JSONResponse ErrorResponse
+
+func (response GetView500JSONResponse) VisitGetViewResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -2468,11 +2819,20 @@ type StrictServerInterface interface {
 	// (GET /api/statuspages/{statuspageSlug}/schedule-maintenances)
 	ScheduledMaintenanceByStatuspage(ctx context.Context, request ScheduledMaintenanceByStatuspageRequestObject) (ScheduledMaintenanceByStatuspageResponseObject, error)
 
+	// (GET /api/views)
+	ListViews(ctx context.Context, request ListViewsRequestObject) (ListViewsResponseObject, error)
+
+	// (POST /api/views)
+	CreateView(ctx context.Context, request CreateViewRequestObject) (CreateViewResponseObject, error)
+
 	// (POST /api/views/default)
 	CreateOrGetDefaultView(ctx context.Context, request CreateOrGetDefaultViewRequestObject) (CreateOrGetDefaultViewResponseObject, error)
 
 	// (DELETE /api/views/{publicId})
 	DeleteView(ctx context.Context, request DeleteViewRequestObject) (DeleteViewResponseObject, error)
+
+	// (GET /api/views/{publicId})
+	GetView(ctx context.Context, request GetViewRequestObject) (GetViewResponseObject, error)
 
 	// (PUT /api/views/{publicId})
 	EditView(ctx context.Context, request EditViewRequestObject) (EditViewResponseObject, error)
@@ -2709,6 +3069,63 @@ func (sh *strictHandler) ScheduledMaintenanceByStatuspage(w http.ResponseWriter,
 	}
 }
 
+// ListViews operation middleware
+func (sh *strictHandler) ListViews(w http.ResponseWriter, r *http.Request, params ListViewsParams) {
+	var request ListViewsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListViews(ctx, request.(ListViewsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListViews")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListViewsResponseObject); ok {
+		if err := validResponse.VisitListViewsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateView operation middleware
+func (sh *strictHandler) CreateView(w http.ResponseWriter, r *http.Request) {
+	var request CreateViewRequestObject
+
+	var body CreateViewJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateView(ctx, request.(CreateViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateViewResponseObject); ok {
+		if err := validResponse.VisitCreateViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // CreateOrGetDefaultView operation middleware
 func (sh *strictHandler) CreateOrGetDefaultView(w http.ResponseWriter, r *http.Request) {
 	var request CreateOrGetDefaultViewRequestObject
@@ -2752,6 +3169,32 @@ func (sh *strictHandler) DeleteView(w http.ResponseWriter, r *http.Request, publ
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(DeleteViewResponseObject); ok {
 		if err := validResponse.VisitDeleteViewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetView operation middleware
+func (sh *strictHandler) GetView(w http.ResponseWriter, r *http.Request, publicId string) {
+	var request GetViewRequestObject
+
+	request.PublicId = publicId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetView(ctx, request.(GetViewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetView")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetViewResponseObject); ok {
+		if err := validResponse.VisitGetViewResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -2970,50 +3413,52 @@ func (sh *strictHandler) GetViewServices(w http.ResponseWriter, r *http.Request,
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"f77+XwAAAP//APW7ww1+AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

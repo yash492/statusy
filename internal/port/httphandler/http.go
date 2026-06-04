@@ -28,6 +28,9 @@ type Handler struct {
 	EditViewCmd                         command.EditViewCmd
 	DeleteViewCmd                       command.DeleteViewCmd
 	GetViewServicesCmd                  command.GetViewServicesCmd
+	ListViewsCmd                        command.ListViewsCmd
+	CreateViewCmd                       command.CreateViewCmd
+	GetViewCmd                          command.GetViewCmd
 }
 
 // (GET /statuspages)
@@ -442,6 +445,23 @@ func (h Handler) DeleteView(ctx context.Context, request api.DeleteViewRequestOb
 	return api.DeleteView204Response{}, nil
 }
 
+// (GET /views/{public_id})
+func (h Handler) GetView(ctx context.Context, request api.GetViewRequestObject) (api.GetViewResponseObject, error) {
+	result, err := h.GetViewCmd.Execute(ctx, command.GetViewParams{
+		PublicID: request.PublicId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.GetView200JSONResponse{
+		Name:        result.Name,
+		PublicId:    result.PublicID,
+		Description: result.Description,
+		IsDefault:   result.IsDefault,
+	}, nil
+}
+
 // (GET /views/{publicId}/view-services)
 func (h Handler) GetViewServices(ctx context.Context, request api.GetViewServicesRequestObject) (api.GetViewServicesResponseObject, error) {
 	pageNumber := 0
@@ -515,4 +535,47 @@ func parseCommaSeparatedInts(s *string) []int {
 		}
 	}
 	return res
+}
+
+// (GET /views)
+func (h Handler) ListViews(ctx context.Context, request api.ListViewsRequestObject) (api.ListViewsResponseObject, error) {
+	search := ""
+	if request.Params.Search != nil {
+		search = *request.Params.Search
+	}
+
+	result, err := h.ListViewsCmd.Execute(ctx, search)
+	if err != nil {
+		return nil, err
+	}
+
+	viewsList := make(api.ListViews200JSONResponse, 0, len(result))
+	for _, v := range result {
+		viewsList = append(viewsList, api.View{
+			Name:        v.Name,
+			PublicId:    v.PublicID,
+			Description: v.Description,
+			IsDefault:   v.IsDefault,
+		})
+	}
+
+	return viewsList, nil
+}
+
+// (POST /views)
+func (h Handler) CreateView(ctx context.Context, request api.CreateViewRequestObject) (api.CreateViewResponseObject, error) {
+	result, err := h.CreateViewCmd.Execute(ctx, command.CreateViewParams{
+		Name:        request.Body.Name,
+		Description: request.Body.Description,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.CreateView200JSONResponse{
+		Name:        result.Name,
+		PublicId:    result.PublicID,
+		Description: result.Description,
+		IsDefault:   result.IsDefault,
+	}, nil
 }

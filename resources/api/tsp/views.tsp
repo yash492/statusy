@@ -302,3 +302,37 @@ op deleteView(
   @path
   publicId: string,
 ): void | StandardErrors;
+
+@doc("Get a view's details")
+@get
+@route("/views/{publicId}")
+op getView(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+): View | StandardErrors;
+
+model CreateViewRequest {
+  @doc("Display name of the view")
+  name: string;
+
+  @doc("Description of the view")
+  description: string;
+}
+
+@doc("Get all views")
+@get
+@route("/views")
+op listViews(
+  @doc("Optional search term to filter views by name or description")
+  @query
+  search?: string,
+): View[] | StandardErrors;
+
+@doc("Create a new view")
+@post
+@route("/views")
+op createView(
+  @body
+  body: CreateViewRequest,
+): View | StandardErrors;

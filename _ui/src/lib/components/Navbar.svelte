@@ -4,6 +4,10 @@
 	import ViewForm from '$lib/components/ViewForm.svelte';
 	import { ChevronsUpDown, Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import { ViewsApi, type View } from '$lib/api/views/views';
+	import { invalidateAll } from '$app/navigation';
+
+	const viewsApi = new ViewsApi();
 
 	const defaultView = $derived(page.data.defaultView);
 	const viewUrl = $derived(defaultView ? `/views/${defaultView.public_id}` : '/');
@@ -16,48 +20,43 @@
 	let isAddingView = $state(false);
 	let newName = $state('');
 	let newDescription = $state('');
+	let searchQuery = $state('');
 
-	let mockViews = $state([
-		{
-			id: 1,
-			public_id: 'default-view',
-			name: 'Default View',
-			description: 'Main view tracking all services'
-		},
-		{
-			id: 2,
-			public_id: 'payment-gateways',
-			name: 'Payment Gateways',
-			description: 'Track payment APIs and web portals'
-		},
-		{
-			id: 3,
-			public_id: 'internal-infrastructure',
-			name: 'Internal Infra',
-			description: 'Internal databases, cache, and servers'
-		}
-	]);
+	let viewsList = $state<View[]>([]);
 
-	function addView() {
+	$effect(() => {
+		// Reactive dependency on page.data.views and searchQuery
+		const _trigger = page.data.views;
+		const q = searchQuery;
+
+		viewsApi.list(q).then(([res, err]) => {
+			if (!err && res) {
+				viewsList = res;
+			}
+		});
+	});
+
+	async function addView() {
 		if (!newName.trim()) {
 			toast.error('View name is required');
 			return;
 		}
-		const newId = mockViews.length > 0 ? Math.max(...mockViews.map((v) => v.id)) + 1 : 1;
-		const newSlug = newName
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/(^-|-$)/g, '');
-		mockViews.push({
-			id: newId,
-			public_id: newSlug,
+
+		const [_, err] = await viewsApi.create({
 			name: newName,
 			description: newDescription
 		});
+
+		if (err) {
+			toast.error(err.message || 'Failed to create view');
+			return;
+		}
+
 		toast.success(`Created view "${newName}"`);
 		newName = '';
 		newDescription = '';
 		isAddingView = false;
+		await invalidateAll();
 	}
 </script>
 
@@ -125,6 +124,7 @@
 			isAddingView = false;
 			newName = '';
 			newDescription = '';
+			searchQuery = '';
 		}
 	}}
 >
@@ -162,9 +162,19 @@
 				/>
 			</div>
 		{:else}
+			<!-- Search Bar -->
+			<div class="relative mt-4">
+				<input
+					type="text"
+					bind:value={searchQuery}
+					placeholder="Search views..."
+					class="w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-xs text-white placeholder-zinc-500 outline-none focus:border-zinc-700"
+				/>
+			</div>
+
 			<!-- Views list -->
 			<div class="mt-4 space-y-2">
-				{#each mockViews as view (view.id)}
+				{#each viewsList as view (view.public_id)}
 					<a
 						href={`/views/${view.public_id}`}
 						onclick={() => {
@@ -175,7 +185,7 @@
 						<div class="min-w-0 flex-1">
 							<div class="flex items-center gap-1.5">
 								<h4 class="truncate text-xs font-bold text-white">{view.name}</h4>
-								{#if view.public_id === defaultView?.public_id}
+								{#if view.is_default}
 									<span
 										class="py-0.2 rounded border border-zinc-700/55 bg-zinc-800 px-1 text-[8px] font-medium tracking-wider text-zinc-400 uppercase select-none"
 										>Default</span
@@ -187,6 +197,12 @@
 							</p>
 						</div>
 					</a>
+				{:else}
+					<div
+						class="py-8 text-center text-xs text-zinc-500 border border-zinc-900 bg-zinc-950/20 rounded-lg"
+					>
+						No views match your search.
+					</div>
 				{/each}
 			</div>
 		{/if}
