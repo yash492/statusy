@@ -22,6 +22,8 @@ type ViewServiceStatus struct {
 	MonitorIncidents             bool
 	MonitorScheduledMaintenances bool
 	UpcomingMaintenance          string
+	LastIncidentLink             string
+	UpcomingMaintenanceLink      string
 }
 
 type ViewService struct {

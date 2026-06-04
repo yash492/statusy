@@ -55,10 +55,12 @@ func (r *PostgresViewsRepository) GetViewServices(ctx context.Context, viewID ui
 			Slug:                         dto.Slug,
 			Status:                       dto.Status,
 			LastIncident:                 dto.LastIncident,
+			LastIncidentLink:             dto.LastIncidentLink,
 			IncludeAllComponents:         dto.IncludeAllComponents,
 			MonitorIncidents:             dto.MonitorIncidents,
 			MonitorScheduledMaintenances: dto.MonitorScheduledMaintenances,
 			UpcomingMaintenance:          dto.UpcomingMaintenance,
+			UpcomingMaintenanceLink:      dto.UpcomingMaintenanceLink,
 		}
 	}
 

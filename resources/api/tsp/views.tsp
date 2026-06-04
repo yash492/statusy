@@ -31,6 +31,12 @@ model ViewServiceStatus {
 
   @doc("Upcoming scheduled maintenance description (empty string if none)")
   upcoming_maintenance: string;
+
+  @doc("Link to the active incident on the provider's status page (empty string if none)")
+  last_incident_link: string;
+
+  @doc("Link to the upcoming scheduled maintenance on the provider's status page (empty string if none)")
+  upcoming_maintenance_link: string;
 }
 
 model PaginatedViewServices {

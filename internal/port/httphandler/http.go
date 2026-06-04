@@ -472,10 +472,12 @@ func (h Handler) GetViewServices(ctx context.Context, request api.GetViewService
 			Slug:                         s.Slug,
 			Status:                       s.Status,
 			LastIncident:                 s.LastIncident,
+			LastIncidentLink:             s.LastIncidentLink,
 			IncludeAllComponents:         s.IncludeAllComponents,
 			MonitorIncidents:             s.MonitorIncidents,
 			MonitorScheduledMaintenances: s.MonitorScheduledMaintenances,
 			UpcomingMaintenance:          s.UpcomingMaintenance,
+			UpcomingMaintenanceLink:      s.UpcomingMaintenanceLink,
 		})
 	}
 

@@ -16,6 +16,8 @@ export interface ViewServiceStatus {
 	monitor_incidents: boolean;
 	monitor_scheduled_maintenances: boolean;
 	upcoming_maintenance: string;
+	last_incident_link: string;
+	upcoming_maintenance_link: string;
 }
 
 export interface View {

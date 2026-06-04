@@ -285,18 +285,23 @@
 						<Table.Cell class="py-3">
 							<div class="flex flex-col gap-1.5">
 								<div class="flex flex-col">
-									<span class="font-bold text-white transition-colors group-hover:text-zinc-200">
+									<a
+										href={`/statuspages/${service.slug}/events`}
+										class="font-bold text-white transition-colors hover:text-zinc-300 hover:underline"
+									>
 										{service.name}
-									</span>
+									</a>
 								</div>
 
 								<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
-									<!-- Clickable Recent Incident info -->
-									<a
-										href={`/statuspages/${service.slug}/events`}
-										class="group/link flex w-fit cursor-pointer items-center gap-1.5 text-xs text-zinc-400 transition-all hover:text-white"
-									>
-										{#if service.last_incident}
+									<!-- Incident/Status info -->
+									{#if service.last_incident}
+										<a
+											href={service.last_incident_link || '#'}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="group/link flex w-fit cursor-pointer items-center gap-1.5 text-xs text-zinc-400 transition-all hover:text-white"
+										>
 											<span
 												class="flex items-center gap-1 font-medium text-amber-400 group-hover/link:underline"
 												title={service.last_incident}
@@ -304,25 +309,32 @@
 												<AlertTriangle class="size-3.5 shrink-0 text-amber-500" />
 												{service.last_incident.length > 50 ? service.last_incident.slice(0, 50) + '...' : service.last_incident}
 											</span>
-										{:else}
-											<span
-												class="flex items-center gap-1 text-zinc-500 group-hover/link:underline"
-											>
-												<CheckCircle class="size-3.5 shrink-0 text-emerald-500/70" />
-												No recent incidents
-											</span>
-										{/if}
-									</a>
+										</a>
+									{:else}
+										<span
+											class="flex items-center gap-1.5 text-xs text-zinc-500"
+										>
+											<CheckCircle class="size-3.5 shrink-0 text-emerald-500/70" />
+											No recent incidents
+										</span>
+									{/if}
 
 									<!-- Upcoming Maintenance info -->
 									{#if service.monitor_scheduled_maintenances && service.upcoming_maintenance}
-										<span
-											class="flex items-center gap-1 text-xs font-medium text-blue-400"
-											title={service.upcoming_maintenance}
+										<a
+											href={service.upcoming_maintenance_link || '#'}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="group/link flex w-fit cursor-pointer items-center gap-1 text-xs text-blue-400 transition-all hover:text-white"
 										>
-											<Calendar class="size-3.5 shrink-0 text-blue-500" />
-											Maintenance: {service.upcoming_maintenance.length > 50 ? service.upcoming_maintenance.slice(0, 50) + '...' : service.upcoming_maintenance}
-										</span>
+											<span
+												class="flex items-center gap-1 font-medium group-hover/link:underline"
+												title={service.upcoming_maintenance}
+											>
+												<Calendar class="size-3.5 shrink-0 text-blue-500" />
+												Maintenance: {service.upcoming_maintenance.length > 50 ? service.upcoming_maintenance.slice(0, 50) + '...' : service.upcoming_maintenance}
+											</span>
+										</a>
 									{/if}
 								</div>
 							</div>

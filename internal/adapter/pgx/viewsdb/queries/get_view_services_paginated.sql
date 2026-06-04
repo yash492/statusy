@@ -10,12 +10,14 @@ SELECT
     ELSE 'up'
   END AS status,
   COALESCE(ai.title, '') AS last_incident,
-  COALESCE(um.title, '') AS upcoming_maintenance
+  COALESCE(ai.link, '') AS last_incident_link,
+  COALESCE(um.title, '') AS upcoming_maintenance,
+  COALESCE(um.link, '') AS upcoming_maintenance_link
 FROM view_services vs
 JOIN views v ON v.id = vs.view_id
 JOIN services s ON s.id = vs.service_id
 LEFT JOIN LATERAL (
-  SELECT i.id, i.title
+  SELECT i.id, i.title, i.link
   FROM incidents i
   WHERE i.service_id = s.id
     AND i.deleted_at IS NULL
@@ -40,7 +42,7 @@ LEFT JOIN LATERAL (
   LIMIT 1
 ) ai ON true
 LEFT JOIN LATERAL (
-  SELECT sm.id, sm.title
+  SELECT sm.id, sm.title, sm.link
   FROM scheduled_maintenances sm
   WHERE sm.service_id = s.id
     AND sm.deleted_at IS NULL

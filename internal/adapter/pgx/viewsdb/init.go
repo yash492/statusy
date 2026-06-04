@@ -50,7 +50,9 @@ type viewServiceDto struct {
 	MonitorScheduledMaintenances bool       `db:"monitor_scheduled_maintenances"`
 	Status                       string     `db:"status"`
 	LastIncident                 string     `db:"last_incident"`
+	LastIncidentLink             string     `db:"last_incident_link"`
 	UpcomingMaintenance          string     `db:"upcoming_maintenance"`
+	UpcomingMaintenanceLink      string     `db:"upcoming_maintenance_link"`
 	UpdatedAt                    time.Time  `db:"updated_at"`
 	DeletedAt                    *time.Time `db:"deleted_at"`
 }
