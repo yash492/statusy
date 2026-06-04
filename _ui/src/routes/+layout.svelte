@@ -1,7 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
-	import AppSidebar from '$lib/components/app-sidebar.svelte';
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import Navbar from '$lib/components/Navbar.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
 	import './layout.css';
@@ -12,9 +11,9 @@
 <ModeWatcher />
 <Toaster />
 
-<Sidebar.Provider>
-	<AppSidebar />
-	<main class="mx-12 mt-10 w-5/6">
+<div class="flex min-h-screen flex-col bg-zinc-950">
+	<Navbar />
+	<main class="mx-auto mt-4 mb-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
 		{@render children?.()}
 	</main>
-</Sidebar.Provider>
+</div>

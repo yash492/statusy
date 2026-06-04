@@ -331,8 +331,8 @@
 		</h1>
 		<p class="mt-2 text-sm text-zinc-400">
 			{mode === 'add'
-				? 'Choose a service and select which components to subscribe to for this dashboard.'
-				: 'Customize the component subscriptions for this service dashboard view.'}
+				? 'Choose a service and select which components to subscribe to for this view.'
+				: 'Customize the component subscriptions for this service.'}
 		</p>
 	</div>
 

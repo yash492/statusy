@@ -5,11 +5,14 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Table from '$lib/components/ui/table';
 	import ViewForm from '$lib/components/ViewForm.svelte';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
 	import Calendar from '@lucide/svelte/icons/calendar';
+	import Bell from '@lucide/svelte/icons/bell';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Search from '@lucide/svelte/icons/search';
+	import Settings from '@lucide/svelte/icons/settings';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
@@ -167,6 +170,10 @@
 		await invalidateAll();
 	}
 
+	function openNotificationConfig() {
+		toast.info('Notification configuration coming soon');
+	}
+
 	function getEventsUrl(service: any) {
 		const params = new URLSearchParams();
 		if (!service.include_all_components) {
@@ -190,36 +197,53 @@
 <div class="mx-auto">
 	<!-- Header and Subtitle -->
 	<div class="mb-6">
-		<div class="flex items-center gap-3">
-			<h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-				{viewName}
-			</h1>
+		<div class="flex items-center justify-between">
+			<div class="flex items-center gap-3">
+				<h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+					{viewName}
+				</h1>
 
-			{#if isDefaultView}
-				<span
-					class="rounded border border-zinc-700/50 bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium tracking-wider text-zinc-400 uppercase"
+				{#if isDefaultView}
+					<span
+						class="rounded border border-zinc-700/50 bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium tracking-wider text-zinc-400 uppercase"
+					>
+						Default
+					</span>
+				{/if}
+			</div>
+
+			<div class="flex items-center gap-2.5">
+				<button
+					onclick={openNotificationConfig}
+					class="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+					title="Configure Notifications"
+					aria-label="Configure notifications"
 				>
-					Default
-				</span>
-			{/if}
+					<Bell class="size-3.5" />
+					<span>Configure Notifications</span>
+				</button>
 
-			<button
-				onclick={openEditViewDialog}
-				class="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
-				title="Edit View Settings"
-				aria-label="Edit view settings"
-			>
-				<Pencil class="size-4" />
-			</button>
-
-			<button
-				onclick={openDeleteViewDialog}
-				class="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-red-500/20 bg-red-950/20 text-red-400 transition-colors hover:bg-red-900/40 hover:text-red-300"
-				title="Delete View"
-				aria-label="Delete view"
-			>
-				<Trash2 class="size-4" />
-			</button>
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger
+						class="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+						title="View Actions"
+						aria-label="View actions"
+					>
+						<Settings class="size-4" />
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="end" class="border-zinc-800 bg-zinc-950 text-white min-w-45">
+						<DropdownMenu.Item onclick={openEditViewDialog} class="cursor-pointer hover:bg-zinc-900/50">
+							<Pencil class="mr-2 size-3.5" />
+							<span>Edit View Settings</span>
+						</DropdownMenu.Item>
+						<DropdownMenu.Separator class="bg-zinc-900" />
+						<DropdownMenu.Item onclick={openDeleteViewDialog} variant="destructive" class="cursor-pointer hover:bg-red-950/20">
+							<Trash2 class="mr-2 size-3.5 text-red-500" />
+							<span>Delete View</span>
+						</DropdownMenu.Item>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+			</div>
 		</div>
 		<p class="mt-2 max-w-2xl text-zinc-400">
 			{viewDescription}
@@ -333,7 +357,7 @@
 											</span>
 										</a>
 									{:else}
-										<span class="text-xs text-zinc-500">No recent incidents</span>
+										<span class="text-xs text-emerald-400">No recent incidents</span>
 									{/if}
 
 									<!-- Upcoming Maintenance info -->
