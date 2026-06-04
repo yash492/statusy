@@ -302,7 +302,7 @@
 												title={service.last_incident}
 											>
 												<AlertTriangle class="size-3.5 shrink-0 text-amber-500" />
-												{service.last_incident}
+												{service.last_incident.length > 50 ? service.last_incident.slice(0, 50) + '...' : service.last_incident}
 											</span>
 										{:else}
 											<span
@@ -321,7 +321,7 @@
 											title={service.upcoming_maintenance}
 										>
 											<Calendar class="size-3.5 shrink-0 text-blue-500" />
-											Maintenance: {service.upcoming_maintenance}
+											Maintenance: {service.upcoming_maintenance.length > 50 ? service.upcoming_maintenance.slice(0, 50) + '...' : service.upcoming_maintenance}
 										</span>
 									{/if}
 								</div>
