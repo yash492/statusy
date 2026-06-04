@@ -87,7 +87,7 @@
 				<img src="/logos/statusy.svg" class="size-5" alt="Statusy Logo" />
 			</div>
 			<span
-				class="bg-linear-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-xl font-bold tracking-tight text-transparent"
+				class="text-xl font-bold tracking-tight text-white"
 				>Statusy</span
 			>
 		</a>
@@ -153,7 +153,6 @@
 			>
 			<span>GitHub</span>
 		</a>
-		<span class="text-[10px] font-medium text-zinc-600 select-none">v2.0.0</span>
 	</Sidebar.Footer>
 </Sidebar.Root>
 

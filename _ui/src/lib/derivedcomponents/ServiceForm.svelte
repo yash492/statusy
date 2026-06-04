@@ -338,6 +338,22 @@
 
 	<!-- Form Card (Borderless & Background Merged) -->
 	<div class="max-w-xl">
+		{#if mode === 'add'}
+			<div class="mb-6 rounded-lg border border-zinc-800 bg-zinc-900/30 p-4 text-sm text-zinc-300">
+				<p class="font-medium text-white">Can't find a status page?</p>
+				<p class="mt-1 text-xs text-zinc-400">
+					If the service you want to track is not listed, you can
+					<a
+						href="https://github.com/yash492/statusy/issues/new"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-zinc-200 underline hover:text-white"
+						>request it by creating an issue here</a
+					>.
+				</p>
+			</div>
+		{/if}
+
 		{#if errorMessage}
 			<div class="mb-4 rounded-lg border border-red-500/20 bg-red-950/20 p-3 text-sm text-red-400">
 				{errorMessage}
@@ -373,6 +389,7 @@
 										</span>
 									{/if}
 								</div>
+
 							</Select>
 						</div>
 					{:else if activeService}
