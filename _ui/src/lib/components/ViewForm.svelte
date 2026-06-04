@@ -61,13 +61,13 @@
 
 	<div class="flex justify-end gap-2 pt-2">
 		<button
-			class="border-zinc-850 cursor-pointer rounded-lg border bg-zinc-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-zinc-800"
+			class="border-zinc-850 cursor-pointer rounded-lg border bg-zinc-900 px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
 			onclick={oncancel}
 		>
 			{cancelText}
 		</button>
 		<button
-			class="cursor-pointer rounded-lg bg-white px-4 py-2 text-xs font-bold text-zinc-950 transition-colors hover:bg-zinc-200"
+			class="cursor-pointer rounded-lg bg-white px-4 py-2 text-base font-bold text-zinc-950 transition-colors hover:bg-zinc-200"
 			onclick={onsubmit}
 		>
 			{submitText}
