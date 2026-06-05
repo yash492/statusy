@@ -234,7 +234,7 @@
 					<DropdownMenu.Content align="end" class="border-zinc-800 bg-zinc-950 text-white min-w-45">
 						<DropdownMenu.Item onclick={openEditViewDialog} class="cursor-pointer hover:bg-zinc-900/50">
 							<Pencil class="mr-2 size-3.5" />
-							<span>Edit View Settings</span>
+							<span>Edit View</span>
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator class="bg-zinc-900" />
 						<DropdownMenu.Item onclick={openDeleteViewDialog} variant="destructive" class="cursor-pointer hover:bg-red-950/20">
@@ -529,7 +529,7 @@
 >
 	<Dialog.Content class="border-zinc-800 bg-zinc-950 text-white shadow-xl sm:max-w-[425px]">
 		<Dialog.Header>
-			<Dialog.Title class="text-lg font-bold text-white">Edit View Settings</Dialog.Title>
+			<Dialog.Title class="text-lg font-bold text-white">Edit View</Dialog.Title>
 			<Dialog.Description class="text-zinc-400">
 				Make changes to the view title, description, and settings. Click save when you're done.
 			</Dialog.Description>

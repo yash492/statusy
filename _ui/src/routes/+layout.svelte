@@ -13,7 +13,7 @@
 
 <div class="flex min-h-screen flex-col bg-zinc-950">
 	<Navbar />
-	<main class="mx-auto mt-4 mb-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+	<main class="mx-auto mt-4 mb-10 w-full max-w-7xl px-4 sm:px-6 lg:px-24">
 		{@render children?.()}
 	</main>
 </div>

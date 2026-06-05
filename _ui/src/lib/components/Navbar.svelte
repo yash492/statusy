@@ -17,7 +17,7 @@
 	let isViewsModalOpen = $state(false);
 
 	// Add view modal state
-	let isAddingView = $state(false);
+	let isAddViewDialogOpen = $state(false);
 	let newName = $state('');
 	let newDescription = $state('');
 	let searchQuery = $state('');
@@ -34,6 +34,19 @@
 				viewsList = res;
 			}
 		});
+	});
+
+	$effect(() => {
+		if (!isViewsModalOpen) {
+			searchQuery = '';
+		}
+	});
+
+	$effect(() => {
+		if (!isAddViewDialogOpen) {
+			newName = '';
+			newDescription = '';
+		}
 	});
 
 	async function addView() {
@@ -55,8 +68,7 @@
 		toast.success(`Created view "${newName}"`);
 		newName = '';
 		newDescription = '';
-		isAddingView = false;
-		isViewsModalOpen = false;
+		isAddViewDialogOpen = false;
 		await invalidateAll();
 		if (view?.public_id) {
 			await goto(`/views/${view.public_id}`);
@@ -120,96 +132,69 @@
 </header>
 
 <!-- Views list dialog -->
-<Dialog.Root
-	open={isViewsModalOpen}
-	onOpenChange={(open) => {
-		isViewsModalOpen = open;
-		if (!open) {
-			isAddingView = false;
-			newName = '';
-			newDescription = '';
-			searchQuery = '';
-		}
-	}}
->
+<Dialog.Root bind:open={isViewsModalOpen}>
 	<Dialog.Content
 		class="rounded-xl border-zinc-800 bg-zinc-950 p-6 text-white shadow-xl sm:max-w-120"
 	>
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-3 text-xl font-bold text-white">
 				<span>Views</span>
-				{#if !isAddingView}
-					<button
-						onclick={() => (isAddingView = true)}
-						class="flex cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
-						title="Add View"
-					>
-						<Plus class="size-3.5" />
-					</button>
-				{/if}
+				<button
+					onclick={() => {
+						isViewsModalOpen = false;
+						isAddViewDialogOpen = true;
+					}}
+					class="flex cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+					title="Add View"
+				>
+					<Plus class="size-3.5" />
+				</button>
 			</Dialog.Title>
 		</Dialog.Header>
 
-		{#if isAddingView}
-			<!-- Add View Form -->
-			<div class="mt-4 space-y-3.5 rounded-lg border border-zinc-800 bg-zinc-900/20 p-4">
-				<h4 class="text-base font-bold tracking-wider text-zinc-300 uppercase">New View</h4>
-				<ViewForm
-					bind:name={newName}
-					bind:description={newDescription}
-					namePlaceholder="e.g. API Services"
-					descriptionPlaceholder="Describe the services in this view"
-					submitText="Create"
-					cancelText="Cancel"
-					onsubmit={addView}
-					oncancel={() => (isAddingView = false)}
-				/>
-			</div>
-		{:else}
-			<!-- Search Bar -->
-			<div class="relative mt-4">
-				<input
-					type="text"
-					bind:value={searchQuery}
-					placeholder="Search views..."
-					class="w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-base text-white placeholder-zinc-500 outline-none focus:border-zinc-700"
-				/>
-			</div>
+		<!-- Search Bar -->
+		<div class="relative mt-4">
+			<input
+				type="text"
+				bind:value={searchQuery}
+				placeholder="Search views..."
+				class="w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-base text-white placeholder-zinc-500 outline-none focus:border-zinc-700"
+			/>
+		</div>
 
-			<!-- Views list -->
-			<div class="mt-4 space-y-2">
-				{#each viewsList as view (view.public_id)}
-					<a
-						href={`/views/${view.public_id}`}
-						onclick={() => {
-							isViewsModalOpen = false;
-						}}
-						class="flex items-start justify-between gap-3 rounded-lg border border-zinc-900 bg-zinc-950/40 p-3 text-left transition-colors hover:border-zinc-800 hover:bg-zinc-900/40"
-					>
-						<div class="min-w-0 flex-1">
-							<div class="flex items-center gap-1.5">
-								<h4 class="truncate text-base font-bold text-white">{view.name}</h4>
-								{#if view.is_default}
-									<span
-										class="py-0.2 rounded border border-zinc-700/55 bg-zinc-800 px-1.5 text-[10px] font-medium tracking-wider text-zinc-400 uppercase select-none"
-										>Default</span
-									>
-								{/if}
-							</div>
-							<p class="text-zinc-550 mt-0.5 truncate text-xs">
-								{view.description || 'No description'}
-							</p>
+		<!-- Views list -->
+		<div class="mt-4 space-y-2">
+			{#each viewsList as view (view.public_id)}
+				<a
+					href={`/views/${view.public_id}`}
+					onclick={() => {
+						isViewsModalOpen = false;
+					}}
+					class="flex items-start justify-between gap-3 rounded-lg border border-zinc-900 bg-zinc-950/40 p-3 text-left transition-colors hover:border-zinc-800 hover:bg-zinc-900/40"
+				>
+					<div class="min-w-0 flex-1">
+						<div class="flex items-center gap-1.5">
+							<h4 class="truncate text-base font-bold text-white">{view.name}</h4>
+							{#if view.is_default}
+								<span
+									class="py-0.2 rounded border border-zinc-700/55 bg-zinc-800 px-1.5 text-[10px] font-medium tracking-wider text-zinc-400 uppercase select-none"
+									>Default</span
+								>
+							{/if}
 						</div>
-					</a>
-				{:else}
-					<div
-						class="py-8 text-center text-base text-zinc-500 border border-zinc-900 bg-zinc-950/20 rounded-lg"
-					>
-						No views match your search.
+						<p class="text-zinc-550 mt-0.5 truncate text-xs">
+							{view.description || 'No description'}
+						</p>
 					</div>
-				{/each}
-			</div>
-		{/if}
+				</a>
+			{:else}
+				<div
+					class="py-8 text-center text-base text-zinc-500 border border-zinc-900 bg-zinc-950/20 rounded-lg"
+				>
+					No views match your search.
+				</div>
+			{/each}
+		</div>
 
 		<Dialog.Footer class="mt-6 flex justify-end border-t border-zinc-900 pt-4">
 			<button
@@ -221,5 +206,25 @@
 				Close
 			</button>
 		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Add view dialog popup -->
+<Dialog.Root bind:open={isAddViewDialogOpen}>
+	<Dialog.Content class="border-zinc-800 bg-zinc-950 text-white shadow-xl sm:max-w-120">
+		<Dialog.Header>
+			<Dialog.Title class="text-xl font-bold text-white">New View</Dialog.Title>
+		</Dialog.Header>
+
+		<ViewForm
+			bind:name={newName}
+			bind:description={newDescription}
+			namePlaceholder="e.g. API Services"
+			descriptionPlaceholder="Describe the services in this view"
+			submitText="Create"
+			cancelText="Cancel"
+			onsubmit={addView}
+			oncancel={() => (isAddViewDialogOpen = false)}
+		/>
 	</Dialog.Content>
 </Dialog.Root>
