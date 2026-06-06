@@ -4,27 +4,30 @@
 	import Bell from '@lucide/svelte/icons/bell';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import Search from '@lucide/svelte/icons/search';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	let notificationConfigs = $state<Array<{
-		id: string;
-		type: 'slack' | 'discord' | 'msteams' | 'pagerduty' | 'squadcast' | 'webhook';
-		name: string;
-		config: Record<string, any>;
-	}>>([]);
+	let notificationConfigs = $state<
+		Array<{
+			id: string;
+			type: 'slack' | 'discord' | 'msteams' | 'pagerduty' | 'squadcast' | 'webhook';
+			name: string;
+			config: Record<string, any>;
+		}>
+	>([]);
 
 	// Search State
 	let searchQuery = $state('');
-	
+
 	const filteredConfigs = $derived(
-		notificationConfigs.filter(config => 
-			config.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-			config.type.toLowerCase().includes(searchQuery.toLowerCase())
+		notificationConfigs.filter(
+			(config) =>
+				config.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				config.type.toLowerCase().includes(searchQuery.toLowerCase())
 		)
 	);
 
@@ -46,7 +49,9 @@
 	// Modal and Form State
 	let isFormModalOpen = $state(false);
 	let editingConfigId = $state<string | null>(null);
-	let newConfigType = $state<'slack' | 'discord' | 'msteams' | 'pagerduty' | 'squadcast' | 'webhook'>('slack');
+	let newConfigType = $state<
+		'slack' | 'discord' | 'msteams' | 'pagerduty' | 'squadcast' | 'webhook'
+	>('slack');
 	let newConfigName = $state('');
 	let newConfigValue = $state('');
 	let newConfigHeaders = $state<Array<{ id: string; key: string; value: string }>>([]);
@@ -59,7 +64,7 @@
 	}
 
 	function deleteHeaderField(id: string) {
-		newConfigHeaders = newConfigHeaders.filter(h => h.id !== id);
+		newConfigHeaders = newConfigHeaders.filter((h) => h.id !== id);
 	}
 
 	$effect(() => {
@@ -74,7 +79,7 @@
 						id: 'mock-1',
 						type: 'slack',
 						name: 'Production Slack Alerts',
-						config: { webhook_url: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX' }
+						config: { webhook_url: '' }
 					},
 					{
 						id: 'mock-2',
@@ -101,7 +106,10 @@
 	});
 
 	function saveConfigs() {
-		localStorage.setItem(`notifications_config_${data.view.public_id}`, JSON.stringify(notificationConfigs));
+		localStorage.setItem(
+			`notifications_config_${data.view.public_id}`,
+			JSON.stringify(notificationConfigs)
+		);
 	}
 
 	function startAddNew() {
@@ -117,7 +125,7 @@
 		editingConfigId = conf.id;
 		newConfigType = conf.type;
 		newConfigName = conf.name;
-		
+
 		if (conf.config.headers) {
 			newConfigHeaders = Object.entries(conf.config.headers).map(([key, value]) => ({
 				id: `hdr-${Date.now()}-${Math.random()}`,
@@ -153,9 +161,9 @@
 			configFields.routing_key = newConfigValue;
 		} else if (newConfigType === 'webhook') {
 			configFields.url = newConfigValue;
-			
+
 			const headersObj: Record<string, string> = {};
-			newConfigHeaders.forEach(h => {
+			newConfigHeaders.forEach((h) => {
 				if (h.key.trim()) {
 					headersObj[h.key.trim()] = h.value;
 				}
@@ -166,12 +174,16 @@
 		}
 
 		if (editingConfigId) {
-			notificationConfigs = notificationConfigs.map(c => c.id === editingConfigId ? {
-				...c,
-				type: newConfigType,
-				name: newConfigName,
-				config: configFields
-			} : c);
+			notificationConfigs = notificationConfigs.map((c) =>
+				c.id === editingConfigId
+					? {
+							...c,
+							type: newConfigType,
+							name: newConfigName,
+							config: configFields
+						}
+					: c
+			);
 			toast.success('Notification updated');
 		} else {
 			notificationConfigs = [
@@ -192,7 +204,7 @@
 	}
 
 	function deleteConfig(id: string) {
-		notificationConfigs = notificationConfigs.filter(c => c.id !== id);
+		notificationConfigs = notificationConfigs.filter((c) => c.id !== id);
 		saveConfigs();
 		toast.success('Notification removed');
 		if (editingConfigId === id) {
@@ -204,7 +216,6 @@
 			currentPage -= 1;
 		}
 	}
-
 </script>
 
 <svelte:head>
@@ -215,12 +226,15 @@
 	<!-- Navigation and Header -->
 	<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div class="flex flex-col gap-1">
-			<h1 class="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+			<h1
+				class="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-white sm:text-3xl"
+			>
 				<Bell class="size-7 text-indigo-400" />
 				Configure Notifications
 			</h1>
-			<p class="text-zinc-400 text-sm max-w-xl">
-				Manage notification settings for <strong>{data.view.name}</strong>. Alerts will only be dispatched for the specific services and components monitored by this view.
+			<p class="max-w-xl text-sm text-zinc-400">
+				Manage notification settings for <strong>{data.view.name}</strong>. Alerts will only be
+				dispatched for the specific services and components monitored by this view.
 			</p>
 		</div>
 	</div>
@@ -228,11 +242,13 @@
 	<!-- Subscribed Notifications Section -->
 	<div class="space-y-4">
 		<div class="border-b border-zinc-900 pb-3">
-			<h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Subscribed Notifications</h2>
+			<h2 class="text-sm font-semibold tracking-wider text-zinc-500 uppercase">
+				Subscribed Notifications
+			</h2>
 		</div>
 
 		<!-- Search & Add Bar -->
-		<div class="flex items-center justify-between gap-3 mb-4">
+		<div class="mb-4 flex items-center justify-between gap-3">
 			<div class="relative w-full max-w-sm">
 				<input
 					type="text"
@@ -249,7 +265,7 @@
 				variant="outline"
 				size="sm"
 				onclick={startAddNew}
-				class="h-9 border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-white cursor-pointer px-4 font-semibold shrink-0"
+				class="h-9 shrink-0 cursor-pointer border-zinc-800 bg-zinc-900/50 px-4 font-semibold text-white hover:bg-zinc-800"
 			>
 				<Plus class="mr-1.5 size-4" />
 				Add Notification
@@ -259,27 +275,31 @@
 		<!-- List of configurations -->
 		<div class="grid grid-cols-1 gap-3">
 			{#each paginatedConfigs as config (config.id)}
-				<div class="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/10 p-4 transition-all hover:bg-zinc-900/30">
-					<div class="flex flex-col gap-1 min-w-0 pr-4">
+				<div
+					class="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/10 p-4 transition-all hover:bg-zinc-900/30"
+				>
+					<div class="flex min-w-0 flex-col gap-1 pr-4">
 						<div class="flex items-center gap-2.5">
-							<span class="font-bold text-white text-base truncate">{config.name}</span>
-							<span class="rounded-full bg-zinc-800/80 px-2 py-0.5 text-[10px] font-bold tracking-wider text-zinc-400 uppercase border border-zinc-700/30">
+							<span class="truncate text-base font-bold text-white">{config.name}</span>
+							<span
+								class="rounded-full border border-zinc-700/30 bg-zinc-800/80 px-2 py-0.5 text-[10px] font-bold tracking-wider text-zinc-400 uppercase"
+							>
 								{config.type}
 							</span>
 						</div>
 					</div>
 
-					<div class="flex items-center gap-2 shrink-0">
+					<div class="flex shrink-0 items-center gap-2">
 						<button
 							onclick={() => startEdit(config)}
-							class="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all"
+							class="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 transition-all hover:border-zinc-700 hover:text-white"
 							title="Edit Notification"
 						>
 							<Pencil class="size-3.5" />
 						</button>
 						<button
 							onclick={() => deleteConfig(config.id)}
-							class="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-red-500/10 bg-red-950/10 text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-all"
+							class="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-red-500/10 bg-red-950/10 text-red-400 transition-all hover:bg-red-900/20 hover:text-red-300"
 							title="Delete Notification"
 						>
 							<Trash2 class="size-3.5" />
@@ -287,10 +307,14 @@
 					</div>
 				</div>
 			{:else}
-				<div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-800 py-16 text-center text-zinc-500">
+				<div
+					class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-800 py-16 text-center text-zinc-500"
+				>
 					<Bell class="size-8 text-zinc-600 mb-3" />
 					<p class="text-sm font-medium">No notification configurations found.</p>
-					<p class="text-xs text-zinc-600 mt-1">Add a Slack webhook or try a different search query.</p>
+					<p class="text-xs text-zinc-600 mt-1">
+						Add a Slack webhook or try a different search query.
+					</p>
 					{#if searchQuery === ''}
 						<Button
 							variant="outline"
@@ -308,10 +332,15 @@
 
 		<!-- Pagination Footer -->
 		{#if totalConfigsCount > 0}
-			<div class="mt-6 flex items-center justify-between border-t border-zinc-900 pt-4 text-sm text-zinc-400">
+			<div
+				class="mt-6 flex items-center justify-between border-t border-zinc-900 pt-4 text-sm text-zinc-400"
+			>
 				<div>
 					Showing <span class="font-medium text-white">{(currentPage - 1) * itemsPerPage + 1}</span>
-					to <span class="font-medium text-white">{Math.min(currentPage * itemsPerPage, totalConfigsCount)}</span>
+					to
+					<span class="font-medium text-white"
+						>{Math.min(currentPage * itemsPerPage, totalConfigsCount)}</span
+					>
 					of <span class="font-medium text-white">{totalConfigsCount}</span> notifications
 				</div>
 				<div class="flex gap-2">
@@ -361,11 +390,13 @@
 
 		<div class="mt-4 space-y-4">
 			<div class="flex flex-col gap-1.5">
-				<label for="channel-type" class="text-xs font-semibold text-zinc-400">Notification Type</label>
+				<label for="channel-type" class="text-xs font-semibold text-zinc-400"
+					>Notification Type</label
+				>
 				<select
 					id="channel-type"
 					bind:value={newConfigType}
-					class="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-zinc-700 cursor-pointer"
+					class="cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-zinc-700"
 				>
 					<option value="slack">Slack Webhook</option>
 					<option value="discord">Discord Webhook</option>
@@ -383,7 +414,7 @@
 					type="text"
 					placeholder="e.g. Engineering Slack Alerts"
 					bind:value={newConfigName}
-					class="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-zinc-700 placeholder:text-zinc-650"
+					class="placeholder:text-zinc-650 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-zinc-700"
 				/>
 			</div>
 
@@ -402,7 +433,7 @@
 						<button
 							disabled
 							type="button"
-							class="absolute left-2.5 rounded bg-zinc-800/80 px-2 py-0.5 text-[10px] font-bold text-zinc-400 border border-zinc-700/50 cursor-not-allowed select-none"
+							class="absolute left-2.5 cursor-not-allowed rounded border border-zinc-700/50 bg-zinc-800/80 px-2 py-0.5 text-[10px] font-bold text-zinc-400 select-none"
 						>
 							POST
 						</button>
@@ -412,7 +443,10 @@
 						type="text"
 						placeholder={newConfigType === 'pagerduty' ? 'pd-service-key-xxx' : 'https://...'}
 						bind:value={newConfigValue}
-						class="w-full rounded-lg border border-zinc-800 bg-zinc-900 py-2 text-sm text-white outline-none focus:border-zinc-700 placeholder:text-zinc-650 {newConfigType === 'webhook' ? 'pl-16 pr-3' : 'px-3'}"
+						class="placeholder:text-zinc-650 w-full rounded-lg border border-zinc-800 bg-zinc-900 py-2 text-sm text-white outline-none focus:border-zinc-700 {newConfigType ===
+						'webhook'
+							? 'pr-3 pl-16'
+							: 'px-3'}"
 					/>
 				</div>
 			</div>
@@ -420,12 +454,12 @@
 			{#if newConfigType === 'webhook'}
 				<!-- Custom Headers -->
 				<div class="flex flex-col gap-2">
-					<div class="flex items-center justify-between border-t border-zinc-900 pt-3 mt-1">
+					<div class="mt-1 flex items-center justify-between border-t border-zinc-900 pt-3">
 						<span class="text-xs font-semibold text-zinc-400">Custom HTTP Headers</span>
 						<button
 							type="button"
 							onclick={addHeaderField}
-							class="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1 cursor-pointer"
+							class="flex cursor-pointer items-center gap-1 text-[11px] font-semibold text-indigo-400 transition-colors hover:text-indigo-300"
 						>
 							<Plus class="size-3" />
 							Add Header
@@ -435,25 +469,25 @@
 					{#if newConfigHeaders.length === 0}
 						<p class="text-[11px] text-zinc-600 italic">No custom headers added yet.</p>
 					{:else}
-						<div class="space-y-2 max-h-36 overflow-y-auto pr-1">
+						<div class="max-h-36 space-y-2 overflow-y-auto pr-1">
 							{#each newConfigHeaders as header (header.id)}
 								<div class="flex items-center gap-2">
 									<input
 										type="text"
 										placeholder="Header-Name"
 										bind:value={header.key}
-										class="w-1/2 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs text-white outline-none focus:border-zinc-700 placeholder:text-zinc-600 font-mono"
+										class="w-1/2 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 font-mono text-xs text-white outline-none placeholder:text-zinc-600 focus:border-zinc-700"
 									/>
 									<input
 										type="text"
 										placeholder="value"
 										bind:value={header.value}
-										class="w-1/2 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 text-xs text-white outline-none focus:border-zinc-700 placeholder:text-zinc-600 font-mono"
+										class="w-1/2 rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1.5 font-mono text-xs text-white outline-none placeholder:text-zinc-600 focus:border-zinc-700"
 									/>
 									<button
 										type="button"
 										onclick={() => deleteHeaderField(header.id)}
-										class="text-zinc-500 hover:text-red-400 transition-colors p-1 cursor-pointer"
+										class="cursor-pointer p-1 text-zinc-500 transition-colors hover:text-red-400"
 										title="Remove Header"
 									>
 										<Trash2 class="size-3.5" />
@@ -469,7 +503,7 @@
 		<div class="mt-6 flex justify-end gap-2.5 border-t border-zinc-900 pt-4">
 			<Button
 				variant="outline"
-				class="border-zinc-800 hover:bg-zinc-900 text-zinc-300 cursor-pointer"
+				class="cursor-pointer border-zinc-800 text-zinc-300 hover:bg-zinc-900"
 				onclick={() => {
 					isFormModalOpen = false;
 					editingConfigId = null;
@@ -478,7 +512,7 @@
 				Cancel
 			</Button>
 			<Button
-				class="bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer"
+				class="cursor-pointer bg-indigo-600 text-white hover:bg-indigo-500"
 				onclick={saveConfig}
 			>
 				Save Notification
