@@ -170,10 +170,6 @@
 		await invalidateAll();
 	}
 
-	function openNotificationConfig() {
-		toast.info('Notification configuration coming soon');
-	}
-
 	function getEventsUrl(service: any) {
 		const params = new URLSearchParams();
 		if (!service.include_all_components) {
@@ -213,15 +209,15 @@
 			</div>
 
 			<div class="flex items-center gap-2.5">
-				<button
-					onclick={openNotificationConfig}
+				<a
+					href="/views/{data.view.public_id}/notifications"
 					class="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
 					title="Configure Notifications"
 					aria-label="Configure notifications"
 				>
 					<Bell class="size-3.5" />
 					<span>Configure Notifications</span>
-				</button>
+				</a>
 
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger
@@ -592,3 +588,5 @@
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
+
+
