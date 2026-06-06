@@ -9,7 +9,9 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/yash492/statusy/internal/adapter/pgx/notificationsdb"
 	"github.com/yash492/statusy/internal/applications"
+	"github.com/yash492/statusy/internal/common/queue"
 	"github.com/yash492/statusy/internal/config"
 	"github.com/yash492/statusy/schema"
 	"golang.org/x/sync/errgroup"
@@ -59,6 +61,10 @@ func main() {
 	scrapperDeps := applications.NewScrapperDeps(logger, readDB, writeDB)
 	scrapperApp := applications.NewScrapperApplication(scrapperDeps)
 
+	notificationsRepo := notificationsdb.NewPostgresNotificationsRepository(logger, readDB, writeDB)
+	q := queue.NewPGMQQueue(writeDB)
+	dispatcherApp := applications.NewDispatcherApplication(q, notificationsRepo, logger)
+
 	errGroup := new(errgroup.Group)
 
 	errGroup.Go(func() error {
@@ -69,8 +75,12 @@ func main() {
 		return scrapperApp.Start(ctx, cfg.ScrappingInterval)
 	})
 
+	errGroup.Go(func() error {
+		return dispatcherApp.Start(ctx)
+	})
+
 	if err := errGroup.Wait(); err != nil {
-		logger.Error("server or scrapper stopped with error", slog.Any("err", err))
+		logger.Error("server, scrapper, or dispatcher stopped with error", slog.Any("err", err))
 		os.Exit(1)
 	}
 

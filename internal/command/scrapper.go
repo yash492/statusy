@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"sort"
 	"time"
 
 	"github.com/yash492/statusy/internal/common/nullable"
@@ -267,6 +268,11 @@ func (s ScrapperCmd) saveIncidents(
 	for _, incident := range scrappedIncidents {
 		saved := savedIncidentsByProviderID[incident.ProviderID]
 
+		// Sort updates in chronological order (oldest first) so they are enqueued and notified in order.
+		sort.Slice(incident.Updates, func(i, j int) bool {
+			return incident.Updates[i].StatusTime.Before(incident.Updates[j].StatusTime)
+		})
+
 		for _, update := range incident.Updates {
 			updateParams = append(updateParams, incidents.IncidentUpdateParams{
 				IncidentID:     saved.ID,
@@ -361,6 +367,11 @@ func (s ScrapperCmd) saveScheduledMaintenance(
 
 	for _, sm := range scrappedScheduledMaintenances {
 		saved := savedSMsByProviderID[sm.ProviderID]
+
+		// Sort updates in chronological order (oldest first) so they are enqueued and notified in order.
+		sort.Slice(sm.Updates, func(i, j int) bool {
+			return sm.Updates[i].StatusTime.Before(sm.Updates[j].StatusTime)
+		})
 
 		for _, update := range sm.Updates {
 			updateParams = append(updateParams, scheduledmaintenance.ScheduledMaintenanceUpdateParams{

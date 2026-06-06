@@ -3,8 +3,8 @@ package notificationsdb
 import (
 	"context"
 	_ "embed"
-	"fmt"
 
+	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/notifications"
 )
 
@@ -15,7 +15,7 @@ var getNotificationConfigsForMaintenanceUpdateQuery string
 func (r *PostgresNotificationsRepository) GetNotificationConfigsForMaintenanceUpdate(ctx context.Context, updateID uint) ([]notifications.ViewNotification, error) {
 	rows, err := r.readDB.Query(ctx, getNotificationConfigsForMaintenanceUpdateQuery, updateID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get notification configs for maintenance update: %w", err)
+		return nil, apperrors.InternalError("failed to get notification configs for maintenance update", err)
 	}
 	defer rows.Close()
 
@@ -24,7 +24,7 @@ func (r *PostgresNotificationsRepository) GetNotificationConfigsForMaintenanceUp
 		var vn notifications.ViewNotification
 		err := rows.Scan(&vn.ID, &vn.ViewID, &vn.Type, &vn.Config, &vn.CreatedAt, &vn.UpdatedAt)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan resolved view notification config: %w", err)
+			return nil, apperrors.InternalError("failed to scan resolved view notification config", err)
 		}
 		list = append(list, vn)
 	}
