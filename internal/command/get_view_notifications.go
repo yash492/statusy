@@ -12,6 +12,9 @@ import (
 
 type GetViewNotifications struct {
 	ViewPublicID string
+	Search       string
+	PageNumber   int
+	PageSize     int
 }
 
 type GetViewNotificationsHandler struct {
@@ -28,17 +31,29 @@ func NewGetViewNotificationsHandler(lg *slog.Logger, repo notifications.Notifica
 	}
 }
 
-func (h GetViewNotificationsHandler) Handle(ctx context.Context, cmd GetViewNotifications) ([]notifications.ViewNotification, error) {
+func (h GetViewNotificationsHandler) Handle(ctx context.Context, cmd GetViewNotifications) ([]notifications.ViewNotification, int64, error) {
 	publicID := strings.TrimSpace(cmd.ViewPublicID)
 	if publicID == "" {
-		return nil, apperrors.InvalidInputError("public_id cannot be empty", nil)
+		return nil, 0, apperrors.InvalidInputError("public_id cannot be empty", nil)
 	}
 
 	view, err := h.viewsRepo.GetByPublicID(ctx, publicID)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	h.lg.Info("Fetching notification destinations for view", slog.Uint64("view_id", uint64(view.ID)))
-	return h.repo.GetByViewID(ctx, view.ID)
+
+	page := cmd.PageNumber
+	if page <= 0 {
+		page = 1
+	}
+	pageSize := cmd.PageSize
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	limit := pageSize
+	offset := (page - 1) * pageSize
+
+	return h.repo.GetByViewID(ctx, view.ID, cmd.Search, limit, offset)
 }

@@ -68,7 +68,7 @@ type MaintenanceNotificationDetails struct {
 
 type NotificationsRepository interface {
 	Save(ctx context.Context, vn ViewNotification) (ViewNotification, error)
-	GetByViewID(ctx context.Context, viewID uint) ([]ViewNotification, error)
+	GetByViewID(ctx context.Context, viewID uint, search string, limit int, offset int) ([]ViewNotification, int64, error)
 	Delete(ctx context.Context, id uint) error
 	Update(ctx context.Context, vn ViewNotification) (ViewNotification, error)
 

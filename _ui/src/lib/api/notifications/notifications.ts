@@ -14,13 +14,25 @@ export interface ViewNotificationRequest {
 	config: Record<string, unknown>;
 }
 
+export interface PaginatedViewNotifications {
+	notifications: ViewNotification[];
+	total_count: number;
+}
+
 export class NotificationsApi {
 	private basePath(viewPublicId: string) {
 		return `views/${encodeURIComponent(viewPublicId)}/notifications`;
 	}
 
-	list(viewPublicId: string) {
-		return ApiClient.get<ViewNotification[]>(this.basePath(viewPublicId));
+	list(viewPublicId: string, pageNumber?: number, pageSize?: number, search?: string) {
+		const params = new URLSearchParams();
+		if (pageNumber !== undefined) params.set('page_number', String(pageNumber));
+		if (pageSize !== undefined) params.set('page_size', String(pageSize));
+		if (search !== undefined && search !== '') params.set('search', search);
+
+		const queryString = params.toString();
+		const path = this.basePath(viewPublicId) + (queryString ? `?${queryString}` : '');
+		return ApiClient.get<PaginatedViewNotifications>(path);
 	}
 
 	create(viewPublicId: string, body: ViewNotificationRequest) {

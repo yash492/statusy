@@ -608,7 +608,7 @@ paths:
   /api/views/{publicId}/notifications:
     get:
       operationId: listViewNotifications
-      description: List all notification configurations for a view
+      description: List all notification configurations for a view with search and pagination
       parameters:
         - name: publicId
           in: path
@@ -616,15 +616,34 @@ paths:
           description: The view public ID
           schema:
             type: string
+        - name: page_number
+          in: query
+          required: false
+          description: 'Page number for paginated results (default: 1)'
+          schema:
+            type: integer
+          explode: false
+        - name: page_size
+          in: query
+          required: false
+          description: 'Number of items per page (default: 20)'
+          schema:
+            type: integer
+          explode: false
+        - name: search
+          in: query
+          required: false
+          description: Optional search term to filter notifications by name or type
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ViewNotificationResponse'
+                $ref: '#/components/schemas/PaginatedViewNotifications'
         '400':
           description: The server could not understand the request due to invalid syntax.
           content:
@@ -1260,6 +1279,18 @@ components:
           type: string
           format: date-time
           description: Timestamp when the incident was created by the provider
+    PaginatedViewNotifications:
+      type: object
+      required:
+        - notifications
+        - total_count
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewNotificationResponse'
+        total_count:
+          type: integer
     PaginatedViewServices:
       type: object
       required:

@@ -27,8 +27,8 @@ type mockNotificationsRepo struct {
 func (m *mockNotificationsRepo) Save(ctx context.Context, vn notifications.ViewNotification) (notifications.ViewNotification, error) {
 	return vn, nil
 }
-func (m *mockNotificationsRepo) GetByViewID(ctx context.Context, viewID uint) ([]notifications.ViewNotification, error) {
-	return nil, nil
+func (m *mockNotificationsRepo) GetByViewID(ctx context.Context, viewID uint, search string, limit int, offset int) ([]notifications.ViewNotification, int64, error) {
+	return nil, 0, nil
 }
 func (m *mockNotificationsRepo) Delete(ctx context.Context, id uint) error {
 	return nil

@@ -365,14 +365,31 @@ model ViewNotificationResponse {
   created_at: utcDateTime;
 }
 
-@doc("List all notification configurations for a view")
+model PaginatedViewNotifications {
+  notifications: ViewNotificationResponse[];
+  total_count: integer;
+}
+
+@doc("List all notification configurations for a view with search and pagination")
 @get
 @route("/views/{publicId}/notifications")
 op listViewNotifications(
   @doc("The view public ID")
   @path
   publicId: string,
-): ViewNotificationResponse[] | StandardErrors;
+
+  @doc("Page number for paginated results (default: 1)")
+  @query
+  page_number?: integer,
+
+  @doc("Number of items per page (default: 20)")
+  @query
+  page_size?: integer,
+
+  @doc("Optional search term to filter notifications by name or type")
+  @query
+  search?: string,
+): PaginatedViewNotifications | StandardErrors;
 
 @doc("Add a notification configuration to a view")
 @post

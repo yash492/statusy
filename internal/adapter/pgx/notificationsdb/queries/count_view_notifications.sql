@@ -1,4 +1,4 @@
-SELECT id, view_id, name, type, config, created_at, updated_at
+SELECT COUNT(*)
 FROM view_notifications
 WHERE view_id = @view_id
   AND deleted_at IS NULL
@@ -6,7 +6,4 @@ WHERE view_id = @view_id
     @search::text = ''
     OR name ILIKE '%' || @search || '%'
     OR type ILIKE '%' || @search || '%'
-  )
-ORDER BY id DESC
-LIMIT @limit
-OFFSET @offset;
+  );

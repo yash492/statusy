@@ -588,14 +588,33 @@ func (h Handler) CreateView(ctx context.Context, request api.CreateViewRequestOb
 
 // (GET /views/{publicId}/notifications)
 func (h Handler) ListViewNotifications(ctx context.Context, request api.ListViewNotificationsRequestObject) (api.ListViewNotificationsResponseObject, error) {
-	result, err := h.GetViewNotificationsCmd.Handle(ctx, command.GetViewNotifications{
+	pageNumber := 1
+	pageSize := 20
+	search := ""
+
+	if request.Params.PageNumber != nil {
+		pageNumber = *request.Params.PageNumber
+	}
+
+	if request.Params.PageSize != nil {
+		pageSize = *request.Params.PageSize
+	}
+
+	if request.Params.Search != nil {
+		search = *request.Params.Search
+	}
+
+	result, totalCount, err := h.GetViewNotificationsCmd.Handle(ctx, command.GetViewNotifications{
 		ViewPublicID: request.PublicId,
+		Search:       search,
+		PageNumber:   pageNumber,
+		PageSize:     pageSize,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	list := make(api.ListViewNotifications200JSONResponse, 0, len(result))
+	list := make([]api.ViewNotificationResponse, 0, len(result))
 	for _, vn := range result {
 		configMap, err := rawJSONToMap(vn.Config)
 		if err != nil {
@@ -610,7 +629,10 @@ func (h Handler) ListViewNotifications(ctx context.Context, request api.ListView
 		})
 	}
 
-	return list, nil
+	return api.ListViewNotifications200JSONResponse{
+		Notifications: list,
+		TotalCount:    int(totalCount),
+	}, nil
 }
 
 // (POST /views/{publicId}/notifications)

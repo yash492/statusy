@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto, invalidateAll } from '$app/navigation';
 	import {
 		NotificationsApi,
 		type ViewNotification,
@@ -18,32 +19,21 @@
 
 	const notificationsApi = new NotificationsApi();
 
-	let notificationConfigs = $state<ViewNotification[]>(data.notifications);
+	let notificationConfigs = $state<ViewNotification[]>([]);
+	$effect(() => {
+		notificationConfigs = data.notifications;
+	});
 
 	// Search State
-	let searchQuery = $state('');
-
-	const filteredConfigs = $derived(
-		notificationConfigs.filter(
-			(config) =>
-				config.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				config.type.toLowerCase().includes(searchQuery.toLowerCase())
-		)
-	);
+	let searchQuery = $state(data.search);
+	$effect(() => {
+		searchQuery = data.search;
+	});
 
 	// Pagination State
 	const itemsPerPage = 5;
-	let currentPage = $state(1);
-
-	$effect(() => {
-		const _ = searchQuery;
-		currentPage = 1;
-	});
-
-	const paginatedConfigs = $derived(
-		filteredConfigs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-	);
-	const totalConfigsCount = $derived(filteredConfigs.length);
+	let currentPage = $derived(data.page);
+	const totalConfigsCount = $derived(data.totalCount);
 	const totalPages = $derived(Math.ceil(totalConfigsCount / itemsPerPage) || 1);
 
 	// Modal and Form State
@@ -64,6 +54,11 @@
 
 	function deleteHeaderField(id: string) {
 		newConfigHeaders = newConfigHeaders.filter((h) => h.id !== id);
+	}
+
+	function handleTypeChange() {
+		newConfigValue = '';
+		newConfigHeaders = [];
 	}
 
 	function startAddNew() {
@@ -122,6 +117,47 @@
 		return configFields;
 	}
 
+	async function changePage(newPage: number) {
+		const params = new URLSearchParams(window.location.search);
+		params.set('page', String(newPage));
+		params.set('page_size', String(itemsPerPage));
+		if (searchQuery) {
+			params.set('search', searchQuery);
+		} else {
+			params.delete('search');
+		}
+		await goto(`?${params.toString()}`, {
+			replaceState: true,
+			keepFocus: true,
+			noScroll: true
+		});
+	}
+
+	// Debounce search update to URL query parameter
+	let debounceTimer: ReturnType<typeof setTimeout>;
+	$effect(() => {
+		const q = searchQuery;
+		if (q === data.search) return;
+
+		clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(async () => {
+			const params = new URLSearchParams(window.location.search);
+			if (q) {
+				params.set('search', q);
+			} else {
+				params.delete('search');
+			}
+			params.set('page', '1');
+			params.set('page_size', String(itemsPerPage));
+
+			await goto(`?${params.toString()}`, {
+				replaceState: true,
+				keepFocus: true,
+				noScroll: true
+			});
+		}, 300);
+	});
+
 	async function saveConfig() {
 		if (!newConfigName.trim()) {
 			toast.error('Display Name is required');
@@ -140,27 +176,24 @@
 		};
 
 		if (editingConfigId) {
-			const [result, err] = await notificationsApi.edit(data.view.public_id, editingConfigId, body);
+			const [, err] = await notificationsApi.edit(data.view.public_id, editingConfigId, body);
 			if (err) {
 				toast.error(err.message || 'Failed to update notification');
 				isSaving = false;
 				return;
 			}
-			notificationConfigs = notificationConfigs.map((c) =>
-				c.id === editingConfigId ? result! : c
-			);
 			toast.success('Notification updated');
 		} else {
-			const [result, err] = await notificationsApi.create(data.view.public_id, body);
+			const [, err] = await notificationsApi.create(data.view.public_id, body);
 			if (err) {
 				toast.error(err.message || 'Failed to add notification');
 				isSaving = false;
 				return;
 			}
-			notificationConfigs = [...notificationConfigs, result!];
 			toast.success('Notification added');
 		}
 
+		await invalidateAll();
 		isSaving = false;
 		isFormModalOpen = false;
 		editingConfigId = null;
@@ -172,15 +205,16 @@
 			toast.error(err.message || 'Failed to delete notification');
 			return;
 		}
-		notificationConfigs = notificationConfigs.filter((c) => c.id !== id);
 		toast.success('Notification removed');
 		if (editingConfigId === id) {
 			isFormModalOpen = false;
 			editingConfigId = null;
 		}
-		// Adjust page number if the current page becomes empty
-		if (currentPage > 1 && paginatedConfigs.length === 0) {
-			currentPage -= 1;
+		
+		if (currentPage > 1 && notificationConfigs.length === 1) {
+			await changePage(currentPage - 1);
+		} else {
+			await invalidateAll();
 		}
 	}
 </script>
@@ -241,7 +275,7 @@
 
 		<!-- List of configurations -->
 		<div class="grid grid-cols-1 gap-3">
-			{#each paginatedConfigs as config (config.id)}
+			{#each notificationConfigs as config (config.id)}
 				<div
 					class="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/10 p-4 transition-all hover:bg-zinc-900/30"
 				>
@@ -302,7 +336,7 @@
 						size="sm"
 						class="cursor-pointer border-zinc-800 hover:bg-zinc-900 hover:text-white"
 						disabled={currentPage === 1 || totalPages <= 1}
-						onclick={() => (currentPage -= 1)}
+						onclick={() => changePage(currentPage - 1)}
 					>
 						Previous
 					</Button>
@@ -311,7 +345,7 @@
 						size="sm"
 						class="cursor-pointer border-zinc-800 hover:bg-zinc-900 hover:text-white"
 						disabled={currentPage === totalPages || totalPages <= 1}
-						onclick={() => (currentPage += 1)}
+						onclick={() => changePage(currentPage + 1)}
 					>
 						Next
 					</Button>
@@ -349,6 +383,7 @@
 				<select
 					id="channel-type"
 					bind:value={newConfigType}
+					onchange={handleTypeChange}
 					class="cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-zinc-700"
 				>
 					<option value="slack">Slack Webhook</option>
