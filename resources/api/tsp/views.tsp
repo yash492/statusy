@@ -336,3 +336,81 @@ op createView(
   @body
   body: CreateViewRequest,
 ): View | StandardErrors;
+
+model ViewNotificationRequest {
+  @doc("Display name for this notification destination")
+  name: string;
+
+  @doc("Notification channel type")
+  type: "slack" | "discord" | "msteams" | "pagerduty" | "solarwinds_incident_response" | "webhook";
+
+  @doc("Channel-specific configuration (webhook URL, routing key, headers, etc.)")
+  config: Record<unknown>;
+}
+
+model ViewNotificationResponse {
+  @doc("Unique identifier")
+  id: integer;
+
+  @doc("Display name")
+  name: string;
+
+  @doc("Notification channel type")
+  type: string;
+
+  @doc("Channel-specific configuration")
+  config: Record<unknown>;
+
+  @doc("Creation timestamp")
+  created_at: utcDateTime;
+}
+
+@doc("List all notification configurations for a view")
+@get
+@route("/views/{publicId}/notifications")
+op listViewNotifications(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+): ViewNotificationResponse[] | StandardErrors;
+
+@doc("Add a notification configuration to a view")
+@post
+@route("/views/{publicId}/notifications")
+op addViewNotification(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @body
+  body: ViewNotificationRequest,
+): ViewNotificationResponse | StandardErrors;
+
+@doc("Edit a notification configuration")
+@put
+@route("/views/{publicId}/notifications/{notificationId}")
+op editViewNotification(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @doc("The notification config ID")
+  @path
+  notificationId: integer,
+
+  @body
+  body: ViewNotificationRequest,
+): ViewNotificationResponse | StandardErrors;
+
+@doc("Delete a notification configuration")
+@delete
+@route("/views/{publicId}/notifications/{notificationId}")
+op deleteViewNotification(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @doc("The notification config ID")
+  @path
+  notificationId: integer,
+): void | StandardErrors;

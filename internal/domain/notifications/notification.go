@@ -9,17 +9,18 @@ import (
 type NotificationType string
 
 const (
-	NotificationTypeSlack     NotificationType = "slack"
-	NotificationTypeDiscord   NotificationType = "discord"
-	NotificationTypeMsTeams   NotificationType = "msteams"
-	NotificationTypePagerDuty NotificationType = "pagerduty"
-	NotificationTypeSquadcast NotificationType = "squadcast"
-	NotificationTypeWebhook   NotificationType = "webhook"
+	NotificationTypeSlack                      NotificationType = "slack"
+	NotificationTypeDiscord                    NotificationType = "discord"
+	NotificationTypeMsTeams                    NotificationType = "msteams"
+	NotificationTypePagerDuty                  NotificationType = "pagerduty"
+	NotificationTypeSolarwindsIncidentResponse NotificationType = "solarwinds_incident_response"
+	NotificationTypeWebhook                    NotificationType = "webhook"
 )
 
 type ViewNotification struct {
 	ID        uint             `json:"id"`
 	ViewID    uint             `json:"view_id"`
+	Name      string           `json:"name"`
 	Type      NotificationType `json:"type"`
 	Config    json.RawMessage  `json:"config"`
 	CreatedAt time.Time        `json:"created_at"`
@@ -69,6 +70,7 @@ type NotificationsRepository interface {
 	Save(ctx context.Context, vn ViewNotification) (ViewNotification, error)
 	GetByViewID(ctx context.Context, viewID uint) ([]ViewNotification, error)
 	Delete(ctx context.Context, id uint) error
+	Update(ctx context.Context, vn ViewNotification) (ViewNotification, error)
 
 	GetDelivery(ctx context.Context, channelID uint, alertType string, alertID uint) (NotificationDelivery, error)
 	SaveDelivery(ctx context.Context, delivery NotificationDelivery) error

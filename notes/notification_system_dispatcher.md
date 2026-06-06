@@ -8,7 +8,7 @@ Design and implement a notification subsystem using PostgreSQL Message Queue (`p
    - When a new update is saved, we push a single message referencing that update to the queue: `{"event_type": "incident_update", "update_id": 123}` or `{"event_type": "maintenance_update", "update_id": 456}`.
    - The background dispatcher worker reads this message, queries the database to resolve the target views/integrations, and posts to each destination channel.
 2. **Polymorphic Delivery Mapping**:
-   - To update/edit existing chat messages (Slack, Discord) and resolve incidents (PagerDuty, Squadcast), we map local alerts to external message keys.
+   - To update/edit existing chat messages (Slack, Discord) and resolve incidents (PagerDuty, SolarwindsIncidentResponse), we map local alerts to external message keys.
    - We will use a polymorphic `notification_deliveries` table with `alert_type` ('incident' or 'sm'), `alert_id`, and `last_update_id` columns.
 3. **Queue Payload**: Enqueue specific update IDs: `incident_updates.id` and `scheduled_maintenance_updates.id`. This inherently covers both brand new incidents (first update) and subsequent updates.
 4. **Normalized Database Storage**: Store integration configurations in a `view_notifications` table linked to `views`.
@@ -198,7 +198,7 @@ const (
 	NotificationTypeDiscord   NotificationType = "discord"
 	NotificationTypeMsTeams   NotificationType = "msteams"
 	NotificationTypePagerDuty NotificationType = "pagerduty"
-	NotificationTypeSquadcast NotificationType = "squadcast"
+	NotificationTypeSolarwindsIncidentResponse NotificationType = "solarwinds_incident_response"
 	NotificationTypeWebhook   NotificationType = "webhook"
 )
 

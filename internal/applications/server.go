@@ -16,6 +16,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/componentgroupsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
+	"github.com/yash492/statusy/internal/adapter/pgx/notificationsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenancesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/viewsdb"
@@ -80,6 +81,11 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 		deps.readDB,
 		deps.writeDB,
 	)
+	notificationsRepo := notificationsdb.NewPostgresNotificationsRepository(
+		lg,
+		deps.readDB,
+		deps.writeDB,
+	)
 	handler := httphandler.Handler{
 		ListStatuspageCmd:                   command.NewListStatuspageCmd(lg, servicesRepo),
 		StatuspageBySlugCmd:                 command.NewStatuspageBySlugCmd(lg, servicesRepo),
@@ -98,6 +104,10 @@ func NewServerApplication(deps ServerDeps) ServerApplication {
 		ListViewsCmd:                        command.NewListViewsCmd(lg, viewsRepo),
 		CreateViewCmd:                       command.NewCreateViewCmd(lg, viewsRepo),
 		GetViewCmd:                          command.NewGetViewCmd(lg, viewsRepo),
+		AddViewNotificationCmd:              command.NewAddViewNotificationHandler(lg, notificationsRepo, viewsRepo),
+		GetViewNotificationsCmd:             command.NewGetViewNotificationsHandler(lg, notificationsRepo, viewsRepo),
+		EditViewNotificationCmd:             command.NewEditViewNotificationHandler(lg, notificationsRepo),
+		DeleteViewNotificationCmd:           command.NewDeleteViewNotificationHandler(lg, notificationsRepo),
 	}
 	return ServerApplication{
 		HttpHandler: handler,

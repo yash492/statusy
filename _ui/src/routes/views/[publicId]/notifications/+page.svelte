@@ -1,4 +1,9 @@
 <script lang="ts">
+	import {
+		NotificationsApi,
+		type ViewNotification,
+		type ViewNotificationRequest
+	} from '$lib/api/notifications/notifications';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import Bell from '@lucide/svelte/icons/bell';
@@ -11,14 +16,9 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let notificationConfigs = $state<
-		Array<{
-			id: string;
-			type: 'slack' | 'discord' | 'msteams' | 'pagerduty' | 'squadcast' | 'webhook';
-			name: string;
-			config: Record<string, any>;
-		}>
-	>([]);
+	const notificationsApi = new NotificationsApi();
+
+	let notificationConfigs = $state<ViewNotification[]>(data.notifications);
 
 	// Search State
 	let searchQuery = $state('');
@@ -48,13 +48,12 @@
 
 	// Modal and Form State
 	let isFormModalOpen = $state(false);
-	let editingConfigId = $state<string | null>(null);
-	let newConfigType = $state<
-		'slack' | 'discord' | 'msteams' | 'pagerduty' | 'squadcast' | 'webhook'
-	>('slack');
+	let editingConfigId = $state<number | null>(null);
+	let newConfigType = $state<ViewNotificationRequest['type']>('slack');
 	let newConfigName = $state('');
 	let newConfigValue = $state('');
 	let newConfigHeaders = $state<Array<{ id: string; key: string; value: string }>>([]);
+	let isSaving = $state(false);
 
 	function addHeaderField() {
 		newConfigHeaders = [
@@ -67,50 +66,6 @@
 		newConfigHeaders = newConfigHeaders.filter((h) => h.id !== id);
 	}
 
-	$effect(() => {
-		if (typeof window !== 'undefined') {
-			const saved = localStorage.getItem(`notifications_config_${data.view.public_id}`);
-			if (saved) {
-				notificationConfigs = JSON.parse(saved);
-			} else {
-				// Default mock configurations
-				notificationConfigs = [
-					{
-						id: 'mock-1',
-						type: 'slack',
-						name: 'Production Slack Alerts',
-						config: { webhook_url: '' }
-					},
-					{
-						id: 'mock-2',
-						type: 'pagerduty',
-						name: 'Ops PagerDuty Incident Alert',
-						config: { routing_key: 'pd-service-integration-key-goes-here' }
-					},
-					{
-						id: 'mock-3',
-						type: 'webhook',
-						name: 'Custom Internal Webhook',
-						config: {
-							url: 'https://api.internal.company.com/v1/alerts',
-							headers: {
-								'Content-Type': 'application/json'
-							}
-						}
-					}
-				];
-				saveConfigs();
-			}
-		}
-	});
-
-	function saveConfigs() {
-		localStorage.setItem(
-			`notifications_config_${data.view.public_id}`,
-			JSON.stringify(notificationConfigs)
-		);
-	}
-
 	function startAddNew() {
 		editingConfigId = null;
 		newConfigType = 'slack';
@@ -120,13 +75,15 @@
 		isFormModalOpen = true;
 	}
 
-	function startEdit(conf: any) {
+	function startEdit(conf: ViewNotification) {
 		editingConfigId = conf.id;
-		newConfigType = conf.type;
+		newConfigType = conf.type as ViewNotificationRequest['type'];
 		newConfigName = conf.name;
 
-		if (conf.config.headers) {
-			newConfigHeaders = Object.entries(conf.config.headers).map(([key, value]) => ({
+		const config = conf.config as Record<string, any>;
+
+		if (config.headers) {
+			newConfigHeaders = Object.entries(config.headers).map(([key, value]) => ({
 				id: `hdr-${Date.now()}-${Math.random()}`,
 				key,
 				value: String(value)
@@ -136,25 +93,16 @@
 		}
 
 		if (conf.type === 'pagerduty') {
-			newConfigValue = conf.config.routing_key || '';
+			newConfigValue = config.routing_key || '';
 		} else if (conf.type === 'webhook') {
-			newConfigValue = conf.config.url || '';
+			newConfigValue = config.url || '';
 		} else {
-			newConfigValue = conf.config.webhook_url || '';
+			newConfigValue = config.webhook_url || '';
 		}
 		isFormModalOpen = true;
 	}
 
-	function saveConfig() {
-		if (!newConfigName.trim()) {
-			toast.error('Display Name is required');
-			return;
-		}
-		if (!newConfigValue.trim()) {
-			toast.error('Configuration value is required');
-			return;
-		}
-
+	function buildConfigFields(): Record<string, any> {
 		const configFields: Record<string, any> = {};
 		if (newConfigType === 'pagerduty') {
 			configFields.routing_key = newConfigValue;
@@ -171,40 +119,60 @@
 		} else {
 			configFields.webhook_url = newConfigValue;
 		}
+		return configFields;
+	}
+
+	async function saveConfig() {
+		if (!newConfigName.trim()) {
+			toast.error('Display Name is required');
+			return;
+		}
+		if (!newConfigValue.trim()) {
+			toast.error('Configuration value is required');
+			return;
+		}
+
+		isSaving = true;
+		const body: ViewNotificationRequest = {
+			name: newConfigName.trim(),
+			type: newConfigType,
+			config: buildConfigFields()
+		};
 
 		if (editingConfigId) {
+			const [result, err] = await notificationsApi.edit(data.view.public_id, editingConfigId, body);
+			if (err) {
+				toast.error(err.message || 'Failed to update notification');
+				isSaving = false;
+				return;
+			}
 			notificationConfigs = notificationConfigs.map((c) =>
-				c.id === editingConfigId
-					? {
-							...c,
-							type: newConfigType,
-							name: newConfigName,
-							config: configFields
-						}
-					: c
+				c.id === editingConfigId ? result! : c
 			);
 			toast.success('Notification updated');
 		} else {
-			notificationConfigs = [
-				...notificationConfigs,
-				{
-					id: `mock-${Date.now()}`,
-					type: newConfigType,
-					name: newConfigName,
-					config: configFields
-				}
-			];
+			const [result, err] = await notificationsApi.create(data.view.public_id, body);
+			if (err) {
+				toast.error(err.message || 'Failed to add notification');
+				isSaving = false;
+				return;
+			}
+			notificationConfigs = [...notificationConfigs, result!];
 			toast.success('Notification added');
 		}
 
-		saveConfigs();
+		isSaving = false;
 		isFormModalOpen = false;
 		editingConfigId = null;
 	}
 
-	function deleteConfig(id: string) {
+	async function deleteConfig(id: number) {
+		const [, err] = await notificationsApi.delete(data.view.public_id, id);
+		if (err) {
+			toast.error(err.message || 'Failed to delete notification');
+			return;
+		}
 		notificationConfigs = notificationConfigs.filter((c) => c.id !== id);
-		saveConfigs();
 		toast.success('Notification removed');
 		if (editingConfigId === id) {
 			isFormModalOpen = false;
@@ -311,20 +279,6 @@
 				>
 					<Bell class="size-8 text-zinc-600 mb-3" />
 					<p class="text-sm font-medium">No notification configurations found.</p>
-					<p class="text-xs text-zinc-600 mt-1">
-						Add a Slack webhook or try a different search query.
-					</p>
-					{#if searchQuery === ''}
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={startAddNew}
-							class="mt-4 border-zinc-800 bg-zinc-900/30 hover:bg-zinc-800 text-zinc-200 cursor-pointer"
-						>
-							<Plus class="mr-1 size-3.5" />
-							Create First Notification
-						</Button>
-					{/if}
 				</div>
 			{/each}
 		</div>
@@ -401,7 +355,7 @@
 					<option value="discord">Discord Webhook</option>
 					<option value="msteams">MS Teams Webhook</option>
 					<option value="pagerduty">PagerDuty Event v2</option>
-					<option value="squadcast">Squadcast Webhook</option>
+					<option value="solarwinds_incident_response">Solarwinds Incident Response Webhook</option>
 					<option value="webhook">Custom Webhook</option>
 				</select>
 			</div>
@@ -513,8 +467,9 @@
 			<Button
 				class="cursor-pointer bg-indigo-600 text-white hover:bg-indigo-500"
 				onclick={saveConfig}
+				disabled={isSaving}
 			>
-				Save Notification
+				{isSaving ? 'Saving...' : 'Save Notification'}
 			</Button>
 		</div>
 	</Dialog.Content>

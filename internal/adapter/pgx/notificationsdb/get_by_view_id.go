@@ -22,7 +22,7 @@ func (r *PostgresNotificationsRepository) GetByViewID(ctx context.Context, viewI
 	var list []notifications.ViewNotification
 	for rows.Next() {
 		var vn notifications.ViewNotification
-		err := rows.Scan(&vn.ID, &vn.ViewID, &vn.Type, &vn.Config, &vn.CreatedAt, &vn.UpdatedAt)
+		err := rows.Scan(&vn.ID, &vn.ViewID, &vn.Name, &vn.Type, &vn.Config, &vn.CreatedAt, &vn.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan view notification: %w", err)
 		}

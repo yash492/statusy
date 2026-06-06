@@ -605,6 +605,194 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/views/{publicId}/notifications:
+    get:
+      operationId: listViewNotifications
+      description: List all notification configurations for a view
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ViewNotificationResponse'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: addViewNotification
+      description: Add a notification configuration to a view
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewNotificationResponse'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewNotificationRequest'
+  /api/views/{publicId}/notifications/{notificationId}:
+    put:
+      operationId: editViewNotification
+      description: Edit a notification configuration
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+        - name: notificationId
+          in: path
+          required: true
+          description: The notification config ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewNotificationResponse'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewNotificationRequest'
+    delete:
+      operationId: deleteViewNotification
+      description: Delete a notification configuration
+      parameters:
+        - name: publicId
+          in: path
+          required: true
+          description: The view public ID
+          schema:
+            type: string
+        - name: notificationId
+          in: path
+          required: true
+          description: The notification config ID
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/views/{publicId}/services:
     post:
       operationId: addViewService
@@ -1232,6 +1420,56 @@ components:
         is_default:
           type: boolean
           description: Whether this is the default view
+    ViewNotificationRequest:
+      type: object
+      required:
+        - name
+        - type
+        - config
+      properties:
+        name:
+          type: string
+          description: Display name for this notification destination
+        type:
+          type: string
+          enum:
+            - slack
+            - discord
+            - msteams
+            - pagerduty
+            - solarwinds_incident_response
+            - webhook
+          description: Notification channel type
+        config:
+          type: object
+          additionalProperties: {}
+          description: Channel-specific configuration (webhook URL, routing key, headers, etc.)
+    ViewNotificationResponse:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - config
+        - created_at
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        name:
+          type: string
+          description: Display name
+        type:
+          type: string
+          description: Notification channel type
+        config:
+          type: object
+          additionalProperties: {}
+          description: Channel-specific configuration
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
     ViewServiceResponse:
       type: object
       required:

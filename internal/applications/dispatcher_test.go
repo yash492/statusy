@@ -33,6 +33,9 @@ func (m *mockNotificationsRepo) GetByViewID(ctx context.Context, viewID uint) ([
 func (m *mockNotificationsRepo) Delete(ctx context.Context, id uint) error {
 	return nil
 }
+func (m *mockNotificationsRepo) Update(ctx context.Context, vn notifications.ViewNotification) (notifications.ViewNotification, error) {
+	return vn, nil
+}
 func (m *mockNotificationsRepo) GetDelivery(ctx context.Context, channelID uint, alertType string, alertID uint) (notifications.NotificationDelivery, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
