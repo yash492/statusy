@@ -54,7 +54,7 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-<ModeWatcher />
+<ModeWatcher defaultMode="dark" />
 <Toaster />
 
 <div class="flex min-h-screen flex-col bg-zinc-950 text-white">
