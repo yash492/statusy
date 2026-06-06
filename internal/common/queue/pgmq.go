@@ -93,7 +93,7 @@ func (q *PGMQQueue) Delete(ctx context.Context, queueName string, messageID stri
 	}
 
 	var deleted bool
-	err = q.db.QueryRow(ctx, "SELECT pgmq.delete($1, $2);", queueName, msgID).Scan(&deleted)
+	err = q.db.QueryRow(ctx, "SELECT pgmq.delete($1::text, $2::bigint);", queueName, msgID).Scan(&deleted)
 	if err != nil {
 		return fmt.Errorf("failed to delete message %d: %w", msgID, err)
 	}
