@@ -1,3 +1,5 @@
+export const ssr = false;
+
 import { ViewsApi } from '$lib/api/views/views';
 
 export async function load() {
