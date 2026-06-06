@@ -383,7 +383,7 @@ func (d *DispatcherApplication) processBatch(ctx context.Context) (int, error) {
 }
 
 func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, updateID uint) error {
-	channels, err := d.viewsRepo.ResolveChannelsForIncidentUpdate(ctx, updateID)
+	channels, err := d.viewsRepo.GetNotificationConfigsForIncidentUpdate(ctx, updateID)
 	if err != nil {
 		return fmt.Errorf("failed to resolve view channels: %w", err)
 	}

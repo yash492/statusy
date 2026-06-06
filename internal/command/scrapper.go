@@ -2,10 +2,12 @@ package command
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"time"
 
 	"github.com/yash492/statusy/internal/common/nullable"
+	"github.com/yash492/statusy/internal/common/queue"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
@@ -24,6 +26,7 @@ type ScrapperCmd struct {
 	scheduledMaintenanceComponentsRepo scheduledmaintenance.ComponentsRepository
 	componentsRepo                     components.Repository
 	componentGroupsRepo                components.GroupRepository
+	queue                              queue.Queue
 	logger                             *slog.Logger
 }
 
@@ -37,6 +40,7 @@ func NewScrapperCmd(
 	scheduledMaintenanceComponentsRepo scheduledmaintenance.ComponentsRepository,
 	componentsRepo components.Repository,
 	componentGroupsRepo components.GroupRepository,
+	queue queue.Queue,
 	logger *slog.Logger,
 ) ScrapperCmd {
 	return ScrapperCmd{
@@ -49,12 +53,14 @@ func NewScrapperCmd(
 		scheduledMaintenanceComponentsRepo: scheduledMaintenanceComponentsRepo,
 		componentsRepo:                     componentsRepo,
 		componentGroupsRepo:                componentGroupsRepo,
+		queue:                              queue,
 		logger:                             logger,
 	}
 }
 
 type ScrapperParams struct {
-	Services []services.ServiceResult
+	Services    []services.ServiceResult
+	SkipEnqueue bool
 }
 
 func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
@@ -181,12 +187,12 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 		return err
 	}
 
-	err = s.saveIncidents(ctx, scrappedIncidents, componentsProviderMap)
+	err = s.saveIncidents(ctx, scrappedIncidents, componentsProviderMap, params.SkipEnqueue)
 	if err != nil {
 		return err
 	}
 
-	err = s.saveScheduledMaintenance(ctx, scrappedScheduledMaintenances, componentsProviderMap)
+	err = s.saveScheduledMaintenance(ctx, scrappedScheduledMaintenances, componentsProviderMap, params.SkipEnqueue)
 	if err != nil {
 		return err
 	}
@@ -221,7 +227,8 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 func (s ScrapperCmd) saveIncidents(
 	ctx context.Context,
 	scrappedIncidents []incidents.Incident,
-	componentsProviderMap map[string]uint) error {
+	componentsProviderMap map[string]uint,
+	skipEnqueue bool) error {
 	s.logger.InfoContext(
 		ctx,
 		"saving incidents",
@@ -283,23 +290,38 @@ func (s ScrapperCmd) saveIncidents(
 		}
 	}
 
-	_, err = s.incidentUpdatesRepo.SaveAll(ctx, updateParams)
+	savedUpdates, err := s.incidentUpdatesRepo.SaveAll(ctx, updateParams)
 	if err != nil {
 		return err
 	}
-	s.logger.InfoContext(ctx, "incident updates saved", slog.Int("updates_count", len(updateParams)))
+	s.logger.InfoContext(ctx, "incident updates saved", slog.Int("updates_count", len(savedUpdates)))
 
 	_, err = s.incidentComponentsRepo.SaveAll(ctx, componentParams)
 	if err == nil {
 		s.logger.InfoContext(ctx, "incident components saved", slog.Int("incident_components_count", len(componentParams)))
 	}
+	if !skipEnqueue && len(savedUpdates) > 0 {
+		updateIDs := make([]uint, len(savedUpdates))
+		for idx, update := range savedUpdates {
+			updateIDs[idx] = update.ID
+		}
+
+		if len(updateIDs) > 0 {
+			err := s.enqueueUpdates(ctx, updateIDs, queue.EventTypeIncidentUpdate)
+			if err != nil {
+				s.logger.Error("error enqueing incident update ID", slog.Any("ids", updateIDs))
+			}
+		}
+	}
+
 	return err
 }
 
 func (s ScrapperCmd) saveScheduledMaintenance(
 	ctx context.Context,
 	scrappedScheduledMaintenances []scheduledmaintenance.ScheduledMaintenance,
-	componentsProviderMap map[string]uint) error {
+	componentsProviderMap map[string]uint,
+	skipEnqueue bool) error {
 	s.logger.InfoContext(
 		ctx,
 		"saving scheduled maintenances",
@@ -363,17 +385,55 @@ func (s ScrapperCmd) saveScheduledMaintenance(
 		}
 	}
 
-	_, err = s.scheduledMaintenanceUpdatesRepo.SaveAll(ctx, updateParams)
+	savedUpdates, err := s.scheduledMaintenanceUpdatesRepo.SaveAll(ctx, updateParams)
 	if err != nil {
 		return err
 	}
-	s.logger.InfoContext(ctx, "scheduled maintenance updates saved", slog.Int("updates_count", len(updateParams)))
+	s.logger.InfoContext(ctx, "scheduled maintenance updates saved", slog.Int("updates_count", len(savedUpdates)))
+
+	if !skipEnqueue && len(savedUpdates) > 0 {
+		updateIDs := make([]uint, len(savedUpdates))
+		for idx, update := range savedUpdates {
+			updateIDs[idx] = update.ID
+		}
+
+		if len(updateIDs) > 0 {
+			err := s.enqueueUpdates(ctx, updateIDs, queue.EventTypeMaintenanceUpdate)
+			if err != nil {
+				s.logger.Error("error enqueing scheduled maintenance updates ID", slog.Any("ids", updateIDs))
+			}
+		}
+	}
 
 	_, err = s.scheduledMaintenanceComponentsRepo.SaveAll(ctx, componentParams)
 	if err == nil {
 		s.logger.InfoContext(ctx, "scheduled maintenance components saved", slog.Int("components_count", len(componentParams)))
 	}
 	return err
+}
+
+func (s ScrapperCmd) enqueueUpdates(ctx context.Context, updateIDs []uint, eventType queue.EventType) error {
+
+	payloads := make([]json.RawMessage, len(updateIDs))
+	for idx, id := range updateIDs {
+		payload := queue.AlertPayload{
+			EventType: eventType,
+			EventID:   id,
+		}
+		bytes, err := json.Marshal(payload)
+		if err != nil {
+			s.logger.ErrorContext(ctx, "failed to marshal alert payload", slog.String("event_type", string(eventType)), slog.Any("err", err))
+			continue
+		}
+		payloads[idx] = json.RawMessage(bytes)
+	}
+
+	_, err := s.queue.SendBatch(ctx, "notifications", payloads)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s ScrapperCmd) saveComponents(ctx context.Context, scrappedComponents []components.AggregateComponents) (map[string]uint, error) {

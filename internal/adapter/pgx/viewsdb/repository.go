@@ -62,8 +62,8 @@ func (r *PostgresViewsRepository) Save(ctx context.Context, view views.View) (vi
 	}
 
 	rows, err := r.writeDB.Query(ctx, insertViewQuery, pgx.NamedArgs{
-		"name":      view.Name,
-		"public_id": view.PublicID,
+		"name":        view.Name,
+		"public_id":   view.PublicID,
 		"description": view.Description,
 		"is_default":  view.IsDefault,
 	})

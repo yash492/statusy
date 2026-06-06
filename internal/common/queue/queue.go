@@ -31,10 +31,17 @@ func UnmarshalMessage[T any](msg Message) (MessageEnvelope[T], error) {
 	}, nil
 }
 
+type EventType string
+
+const (
+	EventTypeIncidentUpdate    EventType = "incident_update"
+	EventTypeMaintenanceUpdate EventType = "maintenance_update"
+)
+
 // AlertPayload represents the payload enqueued for notification dispatch.
 type AlertPayload struct {
-	EventType string `json:"event_type"` // "incident_update" or "maintenance_update"
-	EventID   uint   `json:"event_id"`
+	EventType EventType `json:"event_type"`
+	EventID   uint      `json:"event_id"`
 }
 
 // Queue defines the interface for interacting with the message queue.

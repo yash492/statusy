@@ -14,8 +14,27 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/schedulemaintenancecomponentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/domain/services"
+	"github.com/yash492/statusy/internal/common/queue"
+	"encoding/json"
 	"resty.dev/v3"
 )
+
+type mockQueue struct{}
+func (mockQueue) Send(ctx context.Context, queueName string, payload json.RawMessage) (string, error) {
+	return "1", nil
+}
+func (mockQueue) SendBatch(ctx context.Context, queueName string, payloads []json.RawMessage) ([]string, error) {
+	return []string{"1"}, nil
+}
+func (mockQueue) Read(ctx context.Context, queueName string, vt int, limit int) ([]queue.Message, error) {
+	return nil, nil
+}
+func (mockQueue) Delete(ctx context.Context, queueName string, messageID string) error {
+	return nil
+}
+func (mockQueue) Archive(ctx context.Context, queueName string, messageID string) error {
+	return nil
+}
 
 func (t *TestSuite) TestOrchestrate() {
 
@@ -60,10 +79,12 @@ func (t *TestSuite) TestOrchestrate() {
 		scheduledMaintenanceComponentsRepo,
 		componentsRepo,
 		componentGroupsRepo,
+		mockQueue{},
 		logger,
 	)
 	err = orchestrator.Execute(ctx, ScrapperParams{
-		Services: servicesResult,
+		Services:    servicesResult,
+		SkipEnqueue: true,
 	})
 	if err != nil {
 		t.T().Fatalf("orchestrate failed: %s", err)

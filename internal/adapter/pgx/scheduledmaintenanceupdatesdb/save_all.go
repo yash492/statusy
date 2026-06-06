@@ -47,13 +47,13 @@ func (r *PostgresScheduledMaintenanceUpdatesRepository) SaveAll(ctx context.Cont
 		preparedQuery := batchInserts.Queue(insertScheduledMaintenanceUpdatesQuery, queryArgs)
 
 		preparedQuery.Query(func(rows pgx.Rows) error {
-			updateRow, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[scheduledMaintenanceUpdateDto])
+			rowsList, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[scheduledMaintenanceUpdateDto])
 			if err != nil {
 				r.lg.ErrorContext(ctx, "error collecting scheduled maintenance update from batch", slog.Any("err", err))
 				return apperrors.InternalError("failed to collect scheduled maintenance update from batch", err)
 			}
 
-			updatesResponse = append(updatesResponse, updateRow)
+			updatesResponse = append(updatesResponse, rowsList...)
 			return nil
 		})
 	}
