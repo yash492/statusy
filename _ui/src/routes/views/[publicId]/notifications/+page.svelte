@@ -94,8 +94,7 @@
 						config: {
 							url: 'https://api.internal.company.com/v1/alerts',
 							headers: {
-								'Content-Type': 'application/json',
-								'X-Custom-Auth': 'Token abc-123-xyz'
+								'Content-Type': 'application/json'
 							}
 						}
 					}
