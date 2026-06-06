@@ -142,7 +142,10 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 				return nil
 			})
 
-			_ = subGroup.Wait()
+			err := subGroup.Wait()
+			if err != nil {
+				return err
+			}
 
 			sc.Service.ID = service.ID()
 			for idx := range si {
@@ -168,7 +171,10 @@ func (s ScrapperCmd) Execute(ctx context.Context, params ScrapperParams) error {
 		})
 	}
 
-	_ = limitGroup.Wait()
+	err := limitGroup.Wait()
+	if err != nil {
+		return err
+	}
 
 	for _, result := range scrapedResults {
 		scrappedComponents = append(scrappedComponents, result.Component)
