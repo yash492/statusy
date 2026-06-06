@@ -375,9 +375,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/View'
+                $ref: '#/components/schemas/PaginatedViews'
         '400':
           description: The server could not understand the request due to invalid syntax.
           content:
@@ -1308,6 +1306,18 @@ components:
         up_count:
           type: integer
         down_count:
+          type: integer
+    PaginatedViews:
+      type: object
+      required:
+        - views
+        - total_count
+      properties:
+        views:
+          type: array
+          items:
+            $ref: '#/components/schemas/View'
+        total_count:
           type: integer
     PaginationQuery:
       type: object

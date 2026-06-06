@@ -320,6 +320,11 @@ model CreateViewRequest {
   description: string;
 }
 
+model PaginatedViews {
+  views: View[];
+  total_count: integer;
+}
+
 @doc("Get all views")
 @get
 @route("/views")
@@ -327,7 +332,7 @@ op listViews(
   @doc("Optional search term to filter views by name or description")
   @query
   search?: string,
-): View[] | StandardErrors;
+): PaginatedViews | StandardErrors;
 
 @doc("Create a new view")
 @post

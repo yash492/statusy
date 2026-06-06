@@ -550,12 +550,12 @@ func (h Handler) ListViews(ctx context.Context, request api.ListViewsRequestObje
 		search = *request.Params.Search
 	}
 
-	result, err := h.ListViewsCmd.Execute(ctx, search)
+	result, totalCount, err := h.ListViewsCmd.Execute(ctx, search)
 	if err != nil {
 		return nil, err
 	}
 
-	viewsList := make(api.ListViews200JSONResponse, 0, len(result))
+	viewsList := make([]api.View, 0, len(result))
 	for _, v := range result {
 		viewsList = append(viewsList, api.View{
 			Name:        v.Name,
@@ -565,7 +565,10 @@ func (h Handler) ListViews(ctx context.Context, request api.ListViewsRequestObje
 		})
 	}
 
-	return viewsList, nil
+	return api.ListViews200JSONResponse{
+		Views:      viewsList,
+		TotalCount: int(totalCount),
+	}, nil
 }
 
 // (POST /views)

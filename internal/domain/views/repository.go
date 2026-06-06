@@ -8,7 +8,7 @@ import (
 
 type Repository interface {
 	GetDefault(ctx context.Context) (View, error)
-	GetAll(ctx context.Context, search string) ([]View, error)
+	GetAll(ctx context.Context, search string, limit int) ([]View, int64, error)
 	GetByPublicID(ctx context.Context, publicID string) (View, error)
 	Save(ctx context.Context, view View) (View, error)
 	GetServicesByViewID(ctx context.Context, viewID uint) ([]ViewServiceStatus, error)

@@ -13,18 +13,31 @@ import (
 //go:embed queries/get_all_views.sql
 var getAllViewsQuery string
 
-func (r *PostgresViewsRepository) GetAll(ctx context.Context, search string) ([]views.View, error) {
-	rows, err := r.readDB.Query(ctx, getAllViewsQuery, pgx.NamedArgs{"search": search})
+//go:embed queries/count_views_with_filter.sql
+var countViewsWithFilterQuery string
+
+func (r *PostgresViewsRepository) GetAll(ctx context.Context, search string, limit int) ([]views.View, int64, error) {
+	rows, err := r.readDB.Query(ctx, getAllViewsQuery, pgx.NamedArgs{
+		"search": search,
+		"limit":  limit,
+	})
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error querying all views", slog.Any("err", err))
-		return nil, apperrors.InternalError("failed to query all views", err)
+		return nil, 0, apperrors.InternalError("failed to query all views", err)
 	}
 	defer rows.Close()
 
 	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[viewDto])
 	if err != nil {
 		r.lg.ErrorContext(ctx, "error collecting all views rows", slog.Any("err", err))
-		return nil, apperrors.InternalError("failed to collect all views rows", err)
+		return nil, 0, apperrors.InternalError("failed to collect all views rows", err)
+	}
+
+	var totalCount int64
+	err = r.readDB.QueryRow(ctx, countViewsWithFilterQuery, pgx.NamedArgs{"search": search}).Scan(&totalCount)
+	if err != nil {
+		r.lg.ErrorContext(ctx, "error counting views", slog.Any("err", err))
+		return nil, 0, apperrors.InternalError("failed to count views", err)
 	}
 
 	result := make([]views.View, len(dtos))
@@ -39,5 +52,5 @@ func (r *PostgresViewsRepository) GetAll(ctx context.Context, search string) ([]
 			UpdatedAt:   dto.UpdatedAt,
 		}
 	}
-	return result, nil
+	return result, totalCount, nil
 }

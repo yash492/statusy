@@ -23,6 +23,8 @@
 	let searchQuery = $state('');
 
 	let viewsList = $state<View[]>([]);
+	let totalCount = $state(0);
+	const limitViews = $derived(viewsList);
 
 	$effect(() => {
 		// Reactive dependency on page.data.views and searchQuery
@@ -31,7 +33,8 @@
 
 		viewsApi.list(q).then(([res, err]) => {
 			if (!err && res) {
-				viewsList = res;
+				viewsList = res.views;
+				totalCount = res.total_count;
 			}
 		});
 	});
@@ -134,43 +137,43 @@
 <!-- Views list dialog -->
 <Dialog.Root bind:open={isViewsModalOpen}>
 	<Dialog.Content
-		class="rounded-xl border-zinc-800 bg-zinc-950 p-6 text-white shadow-xl sm:max-w-120"
+		class="rounded-xl border-zinc-800 bg-zinc-950 p-5 text-white shadow-xl sm:max-w-96"
 	>
 		<Dialog.Header>
-			<Dialog.Title class="flex items-center gap-3 text-xl font-bold text-white">
-				<span>Views</span>
+			<Dialog.Title class="flex items-center gap-3 text-lg font-bold text-white">
+				<span>Views ({totalCount})</span>
 				<button
 					onclick={() => {
 						isViewsModalOpen = false;
 						isAddViewDialogOpen = true;
 					}}
-					class="flex cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+					class="flex cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
 					title="Add View"
 				>
-					<Plus class="size-3.5" />
+					<Plus class="size-3" />
 				</button>
 			</Dialog.Title>
 		</Dialog.Header>
 
 		<!-- Search Bar -->
-		<div class="relative mt-4">
+		<div class="relative mt-3">
 			<input
 				type="text"
 				bind:value={searchQuery}
 				placeholder="Search views..."
-				class="w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-base text-white placeholder-zinc-500 outline-none focus:border-zinc-700"
+				class="w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-1.5 text-base text-white placeholder-zinc-555 outline-none focus:border-zinc-700"
 			/>
 		</div>
 
 		<!-- Views list -->
-		<div class="mt-4 space-y-2">
-			{#each viewsList as view (view.public_id)}
+		<div class="mt-3 space-y-1.5">
+			{#each limitViews as view (view.public_id)}
 				<a
 					href={`/views/${view.public_id}`}
 					onclick={() => {
 						isViewsModalOpen = false;
 					}}
-					class="flex items-start justify-between gap-3 rounded-lg border border-zinc-900 bg-zinc-950/40 p-3 text-left transition-colors hover:border-zinc-800 hover:bg-zinc-900/40"
+					class="flex items-start justify-between gap-3 rounded-lg border border-zinc-900 bg-zinc-950/40 p-2 text-left transition-colors hover:border-zinc-800 hover:bg-zinc-900/40"
 				>
 					<div class="min-w-0 flex-1">
 						<div class="flex items-center gap-1.5">
@@ -182,26 +185,32 @@
 								>
 							{/if}
 						</div>
-						<p class="text-zinc-550 mt-0.5 truncate text-xs">
+						<p class="text-zinc-500 mt-0.5 truncate text-xs">
 							{view.description || 'No description'}
 						</p>
 					</div>
 				</a>
 			{:else}
 				<div
-					class="py-8 text-center text-base text-zinc-500 border border-zinc-900 bg-zinc-950/20 rounded-lg"
+					class="py-6 text-center text-base text-zinc-500 border border-zinc-900 bg-zinc-950/20 rounded-lg"
 				>
 					No views match your search.
 				</div>
 			{/each}
+
+			{#if totalCount > viewsList.length}
+				<p class="text-[11px] text-zinc-500 mt-2 select-none text-center">
+					Showing {viewsList.length} of {totalCount} views. Search to filter.
+				</p>
+			{/if}
 		</div>
 
-		<Dialog.Footer class="mt-6 flex justify-end border-t border-zinc-900 pt-4">
+		<Dialog.Footer class="mt-5 flex justify-end border-t border-zinc-900 pt-3">
 			<button
 				onclick={() => {
 					isViewsModalOpen = false;
 				}}
-				class="border-zinc-850 cursor-pointer rounded-lg border bg-zinc-900 px-4 py-2 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
+				class="border-zinc-850 cursor-pointer rounded-lg border bg-zinc-900 px-3 py-1.5 text-base font-semibold text-white transition-colors hover:bg-zinc-800"
 			>
 				Close
 			</button>

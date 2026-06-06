@@ -19,6 +19,6 @@ func NewListViewsCmd(lg *slog.Logger, viewsRepo views.Repository) ListViewsCmd {
 	}
 }
 
-func (c ListViewsCmd) Execute(ctx context.Context, search string) ([]views.View, error) {
-	return c.viewsRepo.GetAll(ctx, search)
+func (c ListViewsCmd) Execute(ctx context.Context, search string) ([]views.View, int64, error) {
+	return c.viewsRepo.GetAll(ctx, search, 5)
 }

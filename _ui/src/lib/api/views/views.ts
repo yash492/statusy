@@ -28,6 +28,11 @@ export interface View {
 	is_default: boolean;
 }
 
+export interface PaginatedViews {
+	views: View[];
+	total_count: number;
+}
+
 export interface AddViewServiceRequest {
 	service_id: number;
 	include_all_components: boolean;
@@ -135,7 +140,7 @@ export class ViewsApi {
 	}
 
 	list(search?: string) {
-		return ApiClient.get<View[]>(`${this.basePath}`, {
+		return ApiClient.get<PaginatedViews>(`${this.basePath}`, {
 			searchParams: search ? { search } : undefined
 		});
 	}
