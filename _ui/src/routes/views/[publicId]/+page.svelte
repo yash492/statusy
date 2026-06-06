@@ -3,12 +3,12 @@
 	import { ViewsApi } from '$lib/api/views/views';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Table from '$lib/components/ui/table';
 	import ViewForm from '$lib/components/ViewForm.svelte';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
-	import Calendar from '@lucide/svelte/icons/calendar';
 	import Bell from '@lucide/svelte/icons/bell';
+	import Calendar from '@lucide/svelte/icons/calendar';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Search from '@lucide/svelte/icons/search';
@@ -227,13 +227,20 @@
 					>
 						<Settings class="size-4" />
 					</DropdownMenu.Trigger>
-					<DropdownMenu.Content align="end" class="border-zinc-800 bg-zinc-950 text-white min-w-45">
-						<DropdownMenu.Item onclick={openEditViewDialog} class="cursor-pointer hover:bg-zinc-900/50">
+					<DropdownMenu.Content align="end" class="min-w-45 border-zinc-800 bg-zinc-950 text-white">
+						<DropdownMenu.Item
+							onclick={openEditViewDialog}
+							class="cursor-pointer hover:bg-zinc-900/50"
+						>
 							<Pencil class="mr-2 size-3.5" />
 							<span>Edit View</span>
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator class="bg-zinc-900" />
-						<DropdownMenu.Item onclick={openDeleteViewDialog} variant="destructive" class="cursor-pointer hover:bg-red-950/20">
+						<DropdownMenu.Item
+							onclick={openDeleteViewDialog}
+							variant="destructive"
+							class="cursor-pointer hover:bg-red-950/20"
+						>
 							<Trash2 class="mr-2 size-3.5 text-red-500" />
 							<span>Delete View</span>
 						</DropdownMenu.Item>
@@ -311,8 +318,8 @@
 
 			<Table.Body>
 				{#each localServices as service (service.id)}
-					<Table.Row 
-						class="group border-zinc-800 transition-all duration-200 hover:bg-zinc-900/30 cursor-pointer"
+					<Table.Row
+						class="group cursor-pointer border-zinc-800 transition-all duration-200 hover:bg-zinc-900/30"
 						onclick={(e) => {
 							const target = e.target as HTMLElement;
 							if (target.closest('a') || target.closest('button')) {
@@ -588,5 +595,3 @@
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
-
-

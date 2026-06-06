@@ -220,7 +220,7 @@
 				Configure Notifications
 			</h1>
 			<p class="text-zinc-400 text-sm max-w-xl">
-				Manage notification settings for <strong>{data.view.name}</strong>. Receive alerts automatically for all configured services and views.
+				Manage notification settings for <strong>{data.view.name}</strong>. Alerts will only be dispatched for the specific services and components monitored by this view.
 			</p>
 		</div>
 	</div>
