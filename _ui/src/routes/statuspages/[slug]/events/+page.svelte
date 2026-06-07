@@ -4,10 +4,10 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import Search from '@lucide/svelte/icons/search';
-	import IncidentsTable, { type Incident } from '$lib/derivedcomponents/IncidentsTable.svelte';
+	import IncidentsTable, { type Incident } from '$lib/components/custom/IncidentsTable.svelte';
 	import ScheduledMaintenancesTable, {
 		type ScheduledMaintenanceDisplay
-	} from '$lib/derivedcomponents/ScheduledMaintenancesTable.svelte';
+	} from '$lib/components/custom/ScheduledMaintenancesTable.svelte';
 	import type { PaginationState } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';

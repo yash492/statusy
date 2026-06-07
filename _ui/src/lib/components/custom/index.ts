@@ -9,4 +9,4 @@ export type {
 	SortState,
 	PaginationState,
 	FilterState
-} from './types.ts';
+} from './types.ts'

@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { ViewsApi, type View } from '$lib/api/views/views';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import ViewForm from '$lib/components/ViewForm.svelte';
+	import ViewForm from '$lib/components/custom/ViewForm.svelte';
 	import { ChevronsUpDown, Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
