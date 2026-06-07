@@ -19,6 +19,15 @@
 
 	const notificationsApi = new NotificationsApi();
 
+	const logoMap: Record<string, string> = {
+		slack: '/logos/slack.svg',
+		discord: '/logos/discord.svg',
+		msteams: '/logos/msteams.svg',
+		pagerduty: '/logos/pagerduty.svg',
+		solarwinds_incident_response: '/logos/solarwinds.svg',
+		webhook: '/logos/webhook.svg'
+	};
+
 	let notificationConfigs = $state<ViewNotification[]>([]);
 	$effect(() => {
 		notificationConfigs = data.notifications;
@@ -279,15 +288,13 @@
 				<div
 					class="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/10 p-4 transition-all hover:bg-zinc-900/30"
 				>
-					<div class="flex min-w-0 flex-col gap-1 pr-4">
-						<div class="flex items-center gap-2.5">
-							<span class="truncate text-base font-bold text-white">{config.name}</span>
-							<span
-								class="rounded-full border border-zinc-700/30 bg-zinc-800/80 px-2 py-0.5 text-[10px] font-bold tracking-wider text-zinc-400 uppercase"
-							>
-								{config.type}
-							</span>
+					<div class="flex min-w-0 items-center gap-3 pr-4">
+						<!-- Logo Icon -->
+						<div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/60 shadow-sm">
+							<img src={logoMap[config.type] || '/logos/webhook.svg'} class="size-5 object-contain" alt={config.type} />
 						</div>
+
+						<span class="truncate text-base font-bold text-white">{config.name}</span>
 					</div>
 
 					<div class="flex shrink-0 items-center gap-2">
@@ -365,7 +372,7 @@
 		}
 	}}
 >
-	<Dialog.Content class="border-zinc-800 bg-zinc-950 text-white shadow-xl sm:max-w-[450px]">
+	<Dialog.Content class="border-zinc-800 bg-zinc-950 text-white shadow-xl sm:max-w-112.5">
 		<Dialog.Header>
 			<Dialog.Title class="text-lg font-bold text-white">
 				{editingConfigId ? 'Edit Notification' : 'Add Notification'}
@@ -380,19 +387,24 @@
 				<label for="channel-type" class="text-xs font-semibold text-zinc-400"
 					>Notification Type</label
 				>
-				<select
-					id="channel-type"
-					bind:value={newConfigType}
-					onchange={handleTypeChange}
-					class="cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-zinc-700"
-				>
-					<option value="slack">Slack Webhook</option>
-					<option value="discord">Discord Webhook</option>
-					<option value="msteams">MS Teams Webhook</option>
-					<option value="pagerduty">PagerDuty Event v2</option>
-					<option value="solarwinds_incident_response">Solarwinds Incident Response Webhook</option>
-					<option value="webhook">Custom Webhook</option>
-				</select>
+				<div class="flex items-center gap-3">
+					<div class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 shadow-[0_0_12px_rgba(255,255,255,0.05)]">
+						<img src={logoMap[newConfigType] || '/logos/webhook.svg'} class="size-6 object-contain" alt={newConfigType} />
+					</div>
+					<select
+						id="channel-type"
+						bind:value={newConfigType}
+						onchange={handleTypeChange}
+						class="w-full cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-sm text-white outline-none focus:border-zinc-700"
+					>
+						<option value="slack">Slack Webhook</option>
+						<option value="discord">Discord Webhook</option>
+						<option value="msteams">MS Teams Webhook</option>
+						<option value="pagerduty">PagerDuty Event v2</option>
+						<option value="solarwinds_incident_response">Solarwinds Incident Response Webhook</option>
+						<option value="webhook">Custom Webhook</option>
+					</select>
+				</div>
 			</div>
 
 			<div class="flex flex-col gap-1.5">
