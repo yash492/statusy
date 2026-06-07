@@ -174,10 +174,14 @@
 		const params = new URLSearchParams();
 		if (!service.include_all_components) {
 			if (service.component_ids && service.component_ids.length > 0) {
-				params.set('component_ids', service.component_ids.join(','));
+				for (const id of service.component_ids) {
+					params.append('component_ids', String(id));
+				}
 			}
 			if (service.component_group_ids && service.component_group_ids.length > 0) {
-				params.set('component_group_ids', service.component_group_ids.join(','));
+				for (const id of service.component_group_ids) {
+					params.append('component_group_ids', String(id));
+				}
 			}
 		}
 		const queryString = params.toString();

@@ -72,13 +72,13 @@ op incidentByStatuspage(
   @query
   page_size?: integer,
 
-  @doc("Comma-separated list of component IDs to filter by")
-  @query
-  component_ids?: string,
+  @doc("List of component IDs to filter by")
+  @query(#{ explode: true })
+  component_ids?: integer[],
 
-  @doc("Comma-separated list of component group IDs to filter by")
-  @query
-  component_group_ids?: string,
+  @doc("List of component group IDs to filter by")
+  @query(#{ explode: true })
+  component_group_ids?: integer[],
 ): StatuspageIncidents | StandardErrors;
 
 @doc("Get all scheduled maintenance windows for a status page")
@@ -97,11 +97,11 @@ op scheduledMaintenanceByStatuspage(
   @query
   page_size?: integer,
 
-  @doc("Comma-separated list of component IDs to filter by")
-  @query
-  component_ids?: string,
+  @doc("List of component IDs to filter by")
+  @query(#{ explode: true })
+  component_ids?: integer[],
 
-  @doc("Comma-separated list of component group IDs to filter by")
-  @query
-  component_group_ids?: string,
+  @doc("List of component group IDs to filter by")
+  @query(#{ explode: true })
+  component_group_ids?: integer[],
 ): StatuspageScheduledMaintenances | StandardErrors;

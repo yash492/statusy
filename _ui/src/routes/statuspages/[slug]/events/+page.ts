@@ -37,11 +37,15 @@ export async function load({ params, url }) {
 	const pageSize = parsePositiveInt(url.searchParams.get('page_size'), DEFAULT_PAGE_SIZE);
 	const type = parseType(url.searchParams.get('type'));
 
-	const componentIdsStr = url.searchParams.get('component_ids') || '';
-	const componentGroupIdsStr = url.searchParams.get('component_group_ids') || '';
+	const componentIds = url.searchParams.getAll('component_ids')
+		.flatMap(val => val.split(','))
+		.map(Number)
+		.filter(n => !isNaN(n));
 
-	const componentIds = componentIdsStr ? componentIdsStr.split(',').map(Number).filter(n => !isNaN(n)) : [];
-	const componentGroupIds = componentGroupIdsStr ? componentGroupIdsStr.split(',').map(Number).filter(n => !isNaN(n)) : [];
+	const componentGroupIds = url.searchParams.getAll('component_group_ids')
+		.flatMap(val => val.split(','))
+		.map(Number)
+		.filter(n => !isNaN(n));
 
 	// Keep URL canonical by always including normalized pagination and tab params.
 	if (rawPage !== String(page) || rawPageSize !== String(pageSize) || rawType !== type) {

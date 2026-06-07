@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
-	"strconv"
-	"strings"
 
 	"github.com/yash492/statusy/internal/command"
 	"github.com/yash492/statusy/internal/domain/notifications"
@@ -90,10 +88,20 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 		pageSize = *request.Params.PageSize
 	}
 
+	var componentIDs []int
+	if request.Params.ComponentIds != nil {
+		componentIDs = *request.Params.ComponentIds
+	}
+
+	var componentGroupIDs []int
+	if request.Params.ComponentGroupIds != nil {
+		componentGroupIDs = *request.Params.ComponentGroupIds
+	}
+
 	result, err := h.IncidentByStatuspageCmd.Execute(ctx, command.IncidentByStatuspageParams{
 		StatuspageSlug:    request.StatuspageSlug,
-		ComponentIDs:      parseCommaSeparatedInts(request.Params.ComponentIds),
-		ComponentGroupIDs: parseCommaSeparatedInts(request.Params.ComponentGroupIds),
+		ComponentIDs:      componentIDs,
+		ComponentGroupIDs: componentGroupIDs,
 		PageNumber:        pageNumber,
 		PageSize:          pageSize,
 	})
@@ -140,10 +148,20 @@ func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request a
 		pageSize = *request.Params.PageSize
 	}
 
+	var componentIDs []int
+	if request.Params.ComponentIds != nil {
+		componentIDs = *request.Params.ComponentIds
+	}
+
+	var componentGroupIDs []int
+	if request.Params.ComponentGroupIds != nil {
+		componentGroupIDs = *request.Params.ComponentGroupIds
+	}
+
 	result, err := h.ScheduledMaintenanceByStatuspageCmd.Execute(ctx, command.ScheduledMaintenanceByStatuspageParams{
 		StatuspageSlug:    request.StatuspageSlug,
-		ComponentIDs:      parseCommaSeparatedInts(request.Params.ComponentIds),
-		ComponentGroupIDs: parseCommaSeparatedInts(request.Params.ComponentGroupIds),
+		ComponentIDs:      componentIDs,
+		ComponentGroupIDs: componentGroupIDs,
 		PageNumber:        pageNumber,
 		PageSize:          pageSize,
 	})
@@ -523,24 +541,6 @@ func (h Handler) GetViewServices(ctx context.Context, request api.GetViewService
 		UpCount:    int(result.UpCount),
 		DownCount:  int(result.DownCount),
 	}, nil
-}
-
-func parseCommaSeparatedInts(s *string) []int {
-	if s == nil || *s == "" {
-		return nil
-	}
-	var res []int
-	for part := range strings.SplitSeq(*s, ",") {
-		part = strings.TrimSpace(part)
-		if part == "" {
-			continue
-		}
-		val, err := strconv.Atoi(part)
-		if err == nil {
-			res = append(res, val)
-		}
-	}
-	return res
 }
 
 // (GET /views)

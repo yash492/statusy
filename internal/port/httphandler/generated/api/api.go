@@ -386,11 +386,11 @@ type IncidentByStatuspageParams struct {
 	// PageSize Number of updates per page
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// ComponentIds Comma-separated list of component IDs to filter by
-	ComponentIds *string `form:"component_ids,omitempty" json:"component_ids,omitempty"`
+	// ComponentIds List of component IDs to filter by
+	ComponentIds *[]int `form:"component_ids,omitempty" json:"component_ids,omitempty"`
 
-	// ComponentGroupIds Comma-separated list of component group IDs to filter by
-	ComponentGroupIds *string `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
+	// ComponentGroupIds List of component group IDs to filter by
+	ComponentGroupIds *[]int `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
 }
 
 // ScheduledMaintenanceByStatuspageParams defines parameters for ScheduledMaintenanceByStatuspage.
@@ -401,11 +401,11 @@ type ScheduledMaintenanceByStatuspageParams struct {
 	// PageSize Number of updates per page
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// ComponentIds Comma-separated list of component IDs to filter by
-	ComponentIds *string `form:"component_ids,omitempty" json:"component_ids,omitempty"`
+	// ComponentIds List of component IDs to filter by
+	ComponentIds *[]int `form:"component_ids,omitempty" json:"component_ids,omitempty"`
 
-	// ComponentGroupIds Comma-separated list of component group IDs to filter by
-	ComponentGroupIds *string `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
+	// ComponentGroupIds List of component group IDs to filter by
+	ComponentGroupIds *[]int `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
 }
 
 // ListViewsParams defines parameters for ListViews.
@@ -825,7 +825,7 @@ func (siw *ServerInterfaceWrapper) IncidentByStatuspage(w http.ResponseWriter, r
 
 	// ------------- Optional query parameter "component_ids" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_ids", Err: err})
 		return
@@ -833,7 +833,7 @@ func (siw *ServerInterfaceWrapper) IncidentByStatuspage(w http.ResponseWriter, r
 
 	// ------------- Optional query parameter "component_group_ids" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_group_ids", Err: err})
 		return
@@ -885,7 +885,7 @@ func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.Respo
 
 	// ------------- Optional query parameter "component_ids" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_ids", Err: err})
 		return
@@ -893,7 +893,7 @@ func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.Respo
 
 	// ------------- Optional query parameter "component_group_ids" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_group_ids", Err: err})
 		return
@@ -4176,21 +4176,21 @@ var swaggerSpec = []string{
 	"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",
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -245,17 +245,19 @@ paths:
         - name: component_ids
           in: query
           required: false
-          description: Comma-separated list of component IDs to filter by
+          description: List of component IDs to filter by
           schema:
-            type: string
-          explode: false
+            type: array
+            items:
+              type: integer
         - name: component_group_ids
           in: query
           required: false
-          description: Comma-separated list of component group IDs to filter by
+          description: List of component group IDs to filter by
           schema:
-            type: string
-          explode: false
+            type: array
+            items:
+              type: integer
       responses:
         '200':
           description: The request has succeeded.
@@ -315,17 +317,19 @@ paths:
         - name: component_ids
           in: query
           required: false
-          description: Comma-separated list of component IDs to filter by
+          description: List of component IDs to filter by
           schema:
-            type: string
-          explode: false
+            type: array
+            items:
+              type: integer
         - name: component_group_ids
           in: query
           required: false
-          description: Comma-separated list of component group IDs to filter by
+          description: List of component group IDs to filter by
           schema:
-            type: string
-          explode: false
+            type: array
+            items:
+              type: integer
       responses:
         '200':
           description: The request has succeeded.
