@@ -68,7 +68,7 @@ func (w *WebhookDispatcher) Send(
 	}
 
 	payload := customWebhookPayload{
-		EventType:   data.AlertType,
+		EventType:   string(data.AlertType),
 		AlertID:     data.AlertID,
 		UpdateID:    data.UpdateID,
 		Title:       data.Title,

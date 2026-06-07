@@ -41,10 +41,10 @@ func (s *SolarwindsDispatcher) Send(
 ) (string, error) {
 	var cfg SolarwindsConfig
 	if err := json.Unmarshal(configRaw, &cfg); err != nil {
-		return "", fmt.Errorf("failed to parse SolarWinds config: %w", err)
+		return "", fmt.Errorf("failed to parse SolarWinds Incident Response config: %w", err)
 	}
 	if cfg.WebhookURL == "" {
-		return "", fmt.Errorf("SolarWinds webhook URL is empty")
+		return "", fmt.Errorf("SolarWinds Incident Response webhook URL is empty")
 	}
 
 	status := "trigger"

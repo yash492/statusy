@@ -64,7 +64,7 @@ type AlertData struct {
 	UpdatedAt   time.Time
 	StartTime   *time.Time
 	EndTime     *time.Time
-	AlertType   string
+	AlertType   notifications.AlertType
 }
 
 func (h *HttpNotifier) SendIncident(
@@ -84,7 +84,7 @@ func (h *HttpNotifier) SendIncident(
 		Components:  details.Components,
 		Link:        details.Link,
 		UpdatedAt:   details.UpdatedAt,
-		AlertType:   "incident",
+		AlertType:   notifications.AlertTypeIncident,
 	}
 	return h.send(ctx, ch, isFirst, data, prevExtID)
 }
@@ -108,7 +108,7 @@ func (h *HttpNotifier) SendMaintenance(
 		UpdatedAt:   details.UpdatedAt,
 		StartTime:   &details.StartTime,
 		EndTime:     &details.EndTime,
-		AlertType:   "sm",
+		AlertType:   notifications.AlertTypeScheduledMaintenance,
 	}
 	return h.send(ctx, ch, isFirst, data, prevExtID)
 }
@@ -130,8 +130,8 @@ func (h *HttpNotifier) send(
 	return dispatcher.Send(ctx, ch.Config, isFirst, isResolve, data, prevExtID)
 }
 
-func isResolve(alertType string, status string) bool {
-	if alertType == "incident" {
+func isResolve(alertType notifications.AlertType, status string) bool {
+	if alertType == notifications.AlertTypeIncident {
 		return strings.ToLower(status) == "resolved"
 	}
 	return strings.ToLower(status) == "completed"

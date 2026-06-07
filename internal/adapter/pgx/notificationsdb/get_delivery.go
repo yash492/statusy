@@ -14,7 +14,7 @@ import (
 var getNotificationDeliveryQuery string
 
 // GetDelivery gets existing notification deliveries for target and alert
-func (r *PostgresNotificationsRepository) GetDelivery(ctx context.Context, channelID uint, alertType string, alertID uint) (notifications.NotificationDelivery, error) {
+func (r *PostgresNotificationsRepository) GetDelivery(ctx context.Context, channelID uint, alertType notifications.AlertType, alertID uint) (notifications.NotificationDelivery, error) {
 	var d notifications.NotificationDelivery
 	err := r.readDB.QueryRow(ctx, getNotificationDeliveryQuery, channelID, alertType, alertID).Scan(
 		&d.ID, &d.ViewNotificationID, &d.AlertType, &d.AlertID, &d.LastUpdateID, &d.ExternalIdentifier, &d.CreatedAt, &d.UpdatedAt,

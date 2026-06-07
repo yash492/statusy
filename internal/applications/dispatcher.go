@@ -131,7 +131,7 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 	for _, channel := range channels {
 		ch := channel
 		g.Go(func() error {
-			delivery, err := d.viewsRepo.GetDelivery(gCtx, ch.ID, "incident", details.IncidentID)
+			delivery, err := d.viewsRepo.GetDelivery(gCtx, ch.ID, notifications.AlertTypeIncident, details.IncidentID)
 
 			isFirst := false
 			if err != nil {
@@ -157,7 +157,7 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 				)
 				dbErr := d.viewsRepo.SaveDeliveryFailure(gCtx, notifications.NotificationDeliveryFailure{
 					ViewNotificationID: ch.ID,
-					AlertType:          "incident",
+					AlertType:          notifications.AlertTypeIncident,
 					AlertID:            details.IncidentID,
 					UpdateID:           updateID,
 					ErrorMessage:       sendErr.Error(),
@@ -171,7 +171,7 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 			if isFirst {
 				err = d.viewsRepo.SaveDelivery(gCtx, notifications.NotificationDelivery{
 					ViewNotificationID: ch.ID,
-					AlertType:          "incident",
+					AlertType:          notifications.AlertTypeIncident,
 					AlertID:            details.IncidentID,
 					LastUpdateID:       updateID,
 					ExternalIdentifier: extID,
@@ -203,7 +203,7 @@ func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, u
 	for _, channel := range channels {
 		ch := channel
 		g.Go(func() error {
-			delivery, err := d.viewsRepo.GetDelivery(gCtx, ch.ID, "sm", details.MaintenanceID)
+			delivery, err := d.viewsRepo.GetDelivery(gCtx, ch.ID, notifications.AlertTypeScheduledMaintenance, details.MaintenanceID)
 
 			isFirst := false
 			if err != nil {
@@ -229,7 +229,7 @@ func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, u
 				)
 				dbErr := d.viewsRepo.SaveDeliveryFailure(gCtx, notifications.NotificationDeliveryFailure{
 					ViewNotificationID: ch.ID,
-					AlertType:          "scheduled_maintenance",
+					AlertType:          notifications.AlertTypeScheduledMaintenance,
 					AlertID:            details.MaintenanceID,
 					UpdateID:           updateID,
 					ErrorMessage:       sendErr.Error(),
@@ -243,7 +243,7 @@ func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, u
 			if isFirst {
 				err = d.viewsRepo.SaveDelivery(gCtx, notifications.NotificationDelivery{
 					ViewNotificationID: ch.ID,
-					AlertType:          "sm",
+					AlertType:          notifications.AlertTypeScheduledMaintenance,
 					AlertID:            details.MaintenanceID,
 					LastUpdateID:       updateID,
 					ExternalIdentifier: extID,

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/PagerDuty/go-pagerduty"
+	"github.com/yash492/statusy/internal/domain/notifications"
 	"resty.dev/v3"
 )
 
@@ -45,11 +46,11 @@ func (p *PagerDutyDispatcher) Send(
 	if isResolve {
 		eventAction = "resolve"
 	}
-	if data.AlertType == "sm" {
+	if data.AlertType == notifications.AlertTypeScheduledMaintenance {
 		severity = "info"
 	}
 
-	dedupKey := fmt.Sprintf("statusy-%s-%d", data.AlertType, data.AlertID)
+	dedupKey := fmt.Sprintf("statusy-%s-%d", string(data.AlertType), data.AlertID)
 	comps := formatComponents(data.Components)
 
 	payload := pagerduty.V2Event{
@@ -60,7 +61,7 @@ func (p *PagerDutyDispatcher) Send(
 			Summary:  fmt.Sprintf("[%s] %s", data.ServiceName, data.Title),
 			Source:   "Statusy",
 			Severity: severity,
-			Details: map[string]interface{}{
+			Details: map[string]any{
 				"status":              data.Status,
 				"description":         data.Description,
 				"affected_components": comps,

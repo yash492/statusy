@@ -17,6 +17,13 @@ const (
 	NotificationTypeWebhook                    NotificationType = "webhook"
 )
 
+type AlertType string
+
+const (
+	AlertTypeIncident             AlertType = "incident"
+	AlertTypeScheduledMaintenance AlertType = "scheduled_maintenance"
+)
+
 type ViewNotification struct {
 	ID        uint             `json:"id"`
 	ViewID    uint             `json:"view_id"`
@@ -30,7 +37,7 @@ type ViewNotification struct {
 type NotificationDelivery struct {
 	ID                 uint      `json:"id"`
 	ViewNotificationID uint      `json:"view_notification_id"`
-	AlertType          string    `json:"alert_type"` // "incident" or "scheduled_maintenance"
+	AlertType          AlertType `json:"alert_type"`
 	AlertID            uint      `json:"alert_id"`
 	LastUpdateID       uint      `json:"last_update_id"`
 	ExternalIdentifier string    `json:"external_identifier"`
@@ -46,7 +53,7 @@ type NotificationComponent struct {
 type NotificationDeliveryFailure struct {
 	ID                 uint      `json:"id"`
 	ViewNotificationID uint      `json:"view_notification_id"`
-	AlertType          string    `json:"alert_type"` // "incident" or "scheduled_maintenance"
+	AlertType          AlertType `json:"alert_type"`
 	AlertID            uint      `json:"alert_id"`
 	UpdateID           uint      `json:"update_id"`
 	ErrorMessage       string    `json:"error_message"`
@@ -89,7 +96,7 @@ type NotificationsRepository interface {
 	Delete(ctx context.Context, id uint) error
 	Update(ctx context.Context, vn ViewNotification) (ViewNotification, error)
 
-	GetDelivery(ctx context.Context, channelID uint, alertType string, alertID uint) (NotificationDelivery, error)
+	GetDelivery(ctx context.Context, channelID uint, alertType AlertType, alertID uint) (NotificationDelivery, error)
 	SaveDelivery(ctx context.Context, delivery NotificationDelivery) error
 	UpdateDelivery(ctx context.Context, deliveryID uint, lastUpdateID uint, externalIdentifier string) error
 	SaveDeliveryFailure(ctx context.Context, failure NotificationDeliveryFailure) error
@@ -104,3 +111,4 @@ type Notifier interface {
 	SendIncident(ctx context.Context, ch ViewNotification, isFirst bool, details IncidentNotificationDetails, prevExtID string) (string, error)
 	SendMaintenance(ctx context.Context, ch ViewNotification, isFirst bool, details MaintenanceNotificationDetails, prevExtID string) (string, error)
 }
+

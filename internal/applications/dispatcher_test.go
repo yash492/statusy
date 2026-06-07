@@ -36,7 +36,7 @@ func (m *mockNotificationsRepo) Delete(ctx context.Context, id uint) error {
 func (m *mockNotificationsRepo) Update(ctx context.Context, vn notifications.ViewNotification) (notifications.ViewNotification, error) {
 	return vn, nil
 }
-func (m *mockNotificationsRepo) GetDelivery(ctx context.Context, channelID uint, alertType string, alertID uint) (notifications.NotificationDelivery, error) {
+func (m *mockNotificationsRepo) GetDelivery(ctx context.Context, channelID uint, alertType notifications.AlertType, alertID uint) (notifications.NotificationDelivery, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.getDelErr != nil {
