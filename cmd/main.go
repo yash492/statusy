@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/yash492/statusy/internal/adapter/notification"
 	"github.com/yash492/statusy/internal/adapter/pgx/notificationsdb"
 	"github.com/yash492/statusy/internal/applications"
 	"github.com/yash492/statusy/internal/common/queue"
@@ -63,7 +64,8 @@ func main() {
 
 	notificationsRepo := notificationsdb.NewPostgresNotificationsRepository(logger, readDB, writeDB)
 	q := queue.NewPGMQQueue(writeDB)
-	dispatcherApp := applications.NewDispatcherApplication(q, notificationsRepo, logger)
+	notifier := notification.NewHttpNotifier(logger)
+	dispatcherApp := applications.NewDispatcherApplication(q, notificationsRepo, notifier, logger)
 
 	errGroup := new(errgroup.Group)
 

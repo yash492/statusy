@@ -56,18 +56,23 @@ func (m *mockNotificationsRepo) SaveDelivery(ctx context.Context, delivery notif
 	m.deliveries[key] = delivery
 	return nil
 }
-func (m *mockNotificationsRepo) UpdateDelivery(ctx context.Context, deliveryID uint, lastUpdateID uint) error {
+func (m *mockNotificationsRepo) UpdateDelivery(ctx context.Context, deliveryID uint, lastUpdateID uint, externalIdentifier string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for k, d := range m.deliveries {
 		if d.ID == deliveryID {
 			d.LastUpdateID = lastUpdateID
+			d.ExternalIdentifier = externalIdentifier
 			m.deliveries[k] = d
 			break
 		}
 	}
 	return nil
 }
+func (m *mockNotificationsRepo) SaveDeliveryFailure(ctx context.Context, failure notifications.NotificationDeliveryFailure) error {
+	return nil
+}
+
 func (m *mockNotificationsRepo) GetNotificationConfigsForIncidentUpdate(ctx context.Context, updateID uint) ([]notifications.ViewNotification, error) {
 	return m.incidentCfgs, nil
 }
@@ -79,6 +84,40 @@ func (m *mockNotificationsRepo) GetIncidentNotificationDetails(ctx context.Conte
 }
 func (m *mockNotificationsRepo) GetMaintenanceNotificationDetails(ctx context.Context, updateID uint) (notifications.MaintenanceNotificationDetails, error) {
 	return notifications.MaintenanceNotificationDetails{}, nil
+}
+
+// Mock notifications.Notifier implementation
+type mockNotifier struct {
+	sendIncidentFunc    func(ctx context.Context, ch notifications.ViewNotification, isFirst bool, details notifications.IncidentNotificationDetails, prevExtID string) (string, error)
+	sendMaintenanceFunc func(ctx context.Context, ch notifications.ViewNotification, isFirst bool, details notifications.MaintenanceNotificationDetails, prevExtID string) (string, error)
+}
+
+var _ notifications.Notifier = &mockNotifier{}
+
+func (m *mockNotifier) SendIncident(
+	ctx context.Context,
+	ch notifications.ViewNotification,
+	isFirst bool,
+	details notifications.IncidentNotificationDetails,
+	prevExtID string,
+) (string, error) {
+	if m.sendIncidentFunc != nil {
+		return m.sendIncidentFunc(ctx, ch, isFirst, details, prevExtID)
+	}
+	return "mock-external-id", nil
+}
+
+func (m *mockNotifier) SendMaintenance(
+	ctx context.Context,
+	ch notifications.ViewNotification,
+	isFirst bool,
+	details notifications.MaintenanceNotificationDetails,
+	prevExtID string,
+) (string, error) {
+	if m.sendMaintenanceFunc != nil {
+		return m.sendMaintenanceFunc(ctx, ch, isFirst, details, prevExtID)
+	}
+	return "mock-external-id", nil
 }
 
 // Mock queue.Queue implementation
@@ -117,6 +156,7 @@ func (mq *mockQueue) Archive(ctx context.Context, queueName string, messageID st
 
 func TestDispatcherProcessBatch(t *testing.T) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	notifier := &mockNotifier{}
 
 	t.Run("successful incident update dispatch - first message", func(t *testing.T) {
 		repo := &mockNotificationsRepo{
@@ -143,7 +183,7 @@ func TestDispatcherProcessBatch(t *testing.T) {
 			},
 		}
 
-		dispatcher := NewDispatcherApplication(q, repo, logger)
+		dispatcher := NewDispatcherApplication(q, repo, notifier, logger)
 		count, err := dispatcher.processBatch(context.Background())
 
 		assert.NoError(t, err)
@@ -195,7 +235,7 @@ func TestDispatcherProcessBatch(t *testing.T) {
 			},
 		}
 
-		dispatcher := NewDispatcherApplication(q, repo, logger)
+		dispatcher := NewDispatcherApplication(q, repo, notifier, logger)
 		count, err := dispatcher.processBatch(context.Background())
 
 		assert.NoError(t, err)
@@ -245,7 +285,7 @@ func TestDispatcherProcessBatch(t *testing.T) {
 			},
 		}
 
-		dispatcher := NewDispatcherApplication(q, repo, logger)
+		dispatcher := NewDispatcherApplication(q, repo, notifier, logger)
 		count, err := dispatcher.processBatch(context.Background())
 
 		assert.NoError(t, err)
@@ -269,7 +309,7 @@ func TestDispatcherProcessBatch(t *testing.T) {
 			},
 		}
 
-		dispatcher := NewDispatcherApplication(q, repo, logger)
+		dispatcher := NewDispatcherApplication(q, repo, notifier, logger)
 		count, err := dispatcher.processBatch(context.Background())
 
 		assert.NoError(t, err)

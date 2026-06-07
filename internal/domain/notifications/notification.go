@@ -38,32 +38,49 @@ type NotificationDelivery struct {
 	UpdatedAt          time.Time `json:"updated_at"`
 }
 
+type NotificationComponent struct {
+	Name      string  `json:"name"`
+	GroupName *string `json:"group_name"`
+}
+
+type NotificationDeliveryFailure struct {
+	ID                 uint      `json:"id"`
+	ViewNotificationID uint      `json:"view_notification_id"`
+	AlertType          string    `json:"alert_type"` // "incident" or "scheduled_maintenance"
+	AlertID            uint      `json:"alert_id"`
+	UpdateID           uint      `json:"update_id"`
+	ErrorMessage       string    `json:"error_message"`
+	CreatedAt          time.Time `json:"created_at"`
+}
+
 // IncidentNotificationDetails holds detailed info of an incident update to build notification payload
 type IncidentNotificationDetails struct {
-	IncidentID     uint      `json:"incident_id"`
-	UpdateID       uint      `json:"update_id"`
-	Title          string    `json:"title"`
-	Status         string    `json:"status"` // investigating, identified, monitoring, resolved
-	Description    string    `json:"description"`
-	ProviderID     string    `json:"provider_id"`
-	ServiceName    string    `json:"service_name"`
-	ComponentNames []string  `json:"component_names"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	IncidentID  uint                    `json:"incident_id"`
+	UpdateID    uint                    `json:"update_id"`
+	Title       string                  `json:"title"`
+	Status      string                  `json:"status"` // investigating, identified, monitoring, resolved
+	Description string                  `json:"description"`
+	ProviderID  string                  `json:"provider_id"`
+	ServiceName string                  `json:"service_name"`
+	Components  []NotificationComponent `json:"components"`
+	UpdatedAt   time.Time               `json:"updated_at"`
+	Link        string                  `json:"link"`
 }
 
 // MaintenanceNotificationDetails holds detailed info of a maintenance update to build notification payload
 type MaintenanceNotificationDetails struct {
-	MaintenanceID  uint      `json:"maintenance_id"`
-	UpdateID       uint      `json:"update_id"`
-	Title          string    `json:"title"`
-	Status         string    `json:"status"` // scheduled, in_progress, verifying, completed
-	Description    string    `json:"description"`
-	ProviderID     string    `json:"provider_id"`
-	ServiceName    string    `json:"service_name"`
-	ComponentNames []string  `json:"component_names"`
-	StartTime      time.Time `json:"start_time"`
-	EndTime        time.Time `json:"end_time"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	MaintenanceID uint                    `json:"maintenance_id"`
+	UpdateID      uint                    `json:"update_id"`
+	Title         string                  `json:"title"`
+	Status        string                  `json:"status"` // scheduled, in_progress, verifying, completed
+	Description   string                  `json:"description"`
+	ProviderID    string                  `json:"provider_id"`
+	ServiceName   string                  `json:"service_name"`
+	Components    []NotificationComponent `json:"components"`
+	StartTime     time.Time               `json:"start_time"`
+	EndTime       time.Time               `json:"end_time"`
+	UpdatedAt     time.Time               `json:"updated_at"`
+	Link          string                  `json:"link"`
 }
 
 type NotificationsRepository interface {
@@ -74,10 +91,16 @@ type NotificationsRepository interface {
 
 	GetDelivery(ctx context.Context, channelID uint, alertType string, alertID uint) (NotificationDelivery, error)
 	SaveDelivery(ctx context.Context, delivery NotificationDelivery) error
-	UpdateDelivery(ctx context.Context, deliveryID uint, lastUpdateID uint) error
+	UpdateDelivery(ctx context.Context, deliveryID uint, lastUpdateID uint, externalIdentifier string) error
+	SaveDeliveryFailure(ctx context.Context, failure NotificationDeliveryFailure) error
 
 	GetNotificationConfigsForIncidentUpdate(ctx context.Context, updateID uint) ([]ViewNotification, error)
 	GetNotificationConfigsForMaintenanceUpdate(ctx context.Context, updateID uint) ([]ViewNotification, error)
 	GetIncidentNotificationDetails(ctx context.Context, updateID uint) (IncidentNotificationDetails, error)
 	GetMaintenanceNotificationDetails(ctx context.Context, updateID uint) (MaintenanceNotificationDetails, error)
+}
+
+type Notifier interface {
+	SendIncident(ctx context.Context, ch ViewNotification, isFirst bool, details IncidentNotificationDetails, prevExtID string) (string, error)
+	SendMaintenance(ctx context.Context, ch ViewNotification, isFirst bool, details MaintenanceNotificationDetails, prevExtID string) (string, error)
 }

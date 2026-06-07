@@ -10,8 +10,8 @@ import (
 var updateNotificationDeliveryQuery string
 
 // UpdateDelivery updates existing delivery
-func (r *PostgresNotificationsRepository) UpdateDelivery(ctx context.Context, deliveryID uint, lastUpdateID uint) error {
-	_, err := r.writeDB.Exec(ctx, updateNotificationDeliveryQuery, lastUpdateID, deliveryID)
+func (r *PostgresNotificationsRepository) UpdateDelivery(ctx context.Context, deliveryID uint, lastUpdateID uint, externalIdentifier string) error {
+	_, err := r.writeDB.Exec(ctx, updateNotificationDeliveryQuery, lastUpdateID, externalIdentifier, deliveryID)
 	if err != nil {
 		return fmt.Errorf("failed to update notification delivery: %w", err)
 	}

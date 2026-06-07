@@ -18,6 +18,7 @@ type dispatchFunc func(ctx context.Context, eventID uint) error
 type DispatcherApplication struct {
 	queue        queue.Queue
 	viewsRepo    notifications.NotificationsRepository
+	notifier     notifications.Notifier
 	lg           *slog.Logger
 	pollInterval time.Duration
 	handlers     map[queue.EventType]dispatchFunc
@@ -26,11 +27,13 @@ type DispatcherApplication struct {
 func NewDispatcherApplication(
 	q queue.Queue,
 	repo notifications.NotificationsRepository,
+	notifier notifications.Notifier,
 	lg *slog.Logger,
 ) *DispatcherApplication {
 	d := &DispatcherApplication{
 		queue:        q,
 		viewsRepo:    repo,
+		notifier:     notifier,
 		lg:           lg,
 		pollInterval: 2 * time.Second,
 	}
@@ -132,7 +135,8 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 
 			isFirst := false
 			if err != nil {
-				if appErr, ok := errors.AsType[*apperrors.AppError](err); ok && appErr.Type == apperrors.TypeNotFound {
+				var appErr *apperrors.AppError
+				if errors.As(err, &appErr) && appErr.Type == apperrors.TypeNotFound {
 					isFirst = true
 				} else {
 					return fmt.Errorf("failed to get delivery state: %w", err)
@@ -144,9 +148,24 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 				return nil
 			}
 
-			extID, err := d.sendAlert(gCtx)
-			if err != nil {
-				return fmt.Errorf("alert send failed: %w", err)
+			extID, sendErr := d.notifier.SendIncident(gCtx, ch, isFirst, details, delivery.ExternalIdentifier)
+			if sendErr != nil {
+				d.lg.ErrorContext(gCtx, "failed to dispatch notification",
+					slog.Uint64("channel_id", uint64(ch.ID)),
+					slog.String("channel_type", string(ch.Type)),
+					slog.Any("err", sendErr),
+				)
+				dbErr := d.viewsRepo.SaveDeliveryFailure(gCtx, notifications.NotificationDeliveryFailure{
+					ViewNotificationID: ch.ID,
+					AlertType:          "incident",
+					AlertID:            details.IncidentID,
+					UpdateID:           updateID,
+					ErrorMessage:       sendErr.Error(),
+				})
+				if dbErr != nil {
+					d.lg.ErrorContext(gCtx, "failed to save delivery failure to db", slog.Any("err", dbErr))
+				}
+				return nil
 			}
 
 			if isFirst {
@@ -158,7 +177,7 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 					ExternalIdentifier: extID,
 				})
 			} else {
-				err = d.viewsRepo.UpdateDelivery(gCtx, delivery.ID, updateID)
+				err = d.viewsRepo.UpdateDelivery(gCtx, delivery.ID, updateID, extID)
 			}
 			if err != nil {
 				return fmt.Errorf("failed to record delivery: %w", err)
@@ -188,7 +207,8 @@ func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, u
 
 			isFirst := false
 			if err != nil {
-				if appErr, ok := errors.AsType[*apperrors.AppError](err); ok && appErr.Type == apperrors.TypeNotFound {
+				var appErr *apperrors.AppError
+				if errors.As(err, &appErr) && appErr.Type == apperrors.TypeNotFound {
 					isFirst = true
 				} else {
 					return fmt.Errorf("failed to get delivery state: %w", err)
@@ -200,9 +220,24 @@ func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, u
 				return nil
 			}
 
-			extID, err := d.sendAlert(gCtx)
-			if err != nil {
-				return fmt.Errorf("alert send failed: %w", err)
+			extID, sendErr := d.notifier.SendMaintenance(gCtx, ch, isFirst, details, delivery.ExternalIdentifier)
+			if sendErr != nil {
+				d.lg.ErrorContext(gCtx, "failed to dispatch notification",
+					slog.Uint64("channel_id", uint64(ch.ID)),
+					slog.String("channel_type", string(ch.Type)),
+					slog.Any("err", sendErr),
+				)
+				dbErr := d.viewsRepo.SaveDeliveryFailure(gCtx, notifications.NotificationDeliveryFailure{
+					ViewNotificationID: ch.ID,
+					AlertType:          "scheduled_maintenance",
+					AlertID:            details.MaintenanceID,
+					UpdateID:           updateID,
+					ErrorMessage:       sendErr.Error(),
+				})
+				if dbErr != nil {
+					d.lg.ErrorContext(gCtx, "failed to save delivery failure to db", slog.Any("err", dbErr))
+				}
+				return nil
 			}
 
 			if isFirst {
@@ -214,7 +249,7 @@ func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, u
 					ExternalIdentifier: extID,
 				})
 			} else {
-				err = d.viewsRepo.UpdateDelivery(gCtx, delivery.ID, updateID)
+				err = d.viewsRepo.UpdateDelivery(gCtx, delivery.ID, updateID, extID)
 			}
 			if err != nil {
 				return fmt.Errorf("failed to record delivery: %w", err)
@@ -223,8 +258,4 @@ func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, u
 		})
 	}
 	return g.Wait()
-}
-
-func (d *DispatcherApplication) sendAlert(ctx context.Context) (string, error) {
-	return "mock-external-id", nil
 }
