@@ -530,7 +530,7 @@ func parseCommaSeparatedInts(s *string) []int {
 		return nil
 	}
 	var res []int
-	for _, part := range strings.Split(*s, ",") {
+	for part := range strings.SplitSeq(*s, ",") {
 		part = strings.TrimSpace(part)
 		if part == "" {
 			continue
@@ -712,8 +712,8 @@ func (h Handler) DeleteViewNotification(ctx context.Context, request api.DeleteV
 	return api.DeleteViewNotification204Response{}, nil
 }
 
-func rawJSONToMap(raw json.RawMessage) (map[string]interface{}, error) {
-	var m map[string]interface{}
+func rawJSONToMap(raw json.RawMessage) (map[string]any, error) {
+	var m map[string]any
 	if err := json.Unmarshal(raw, &m); err != nil {
 		return nil, err
 	}

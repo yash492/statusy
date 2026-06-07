@@ -16,7 +16,9 @@ exclude_dir = [
   "tmp",
   "vendor",
   "testdata",
-  "resources/api/tsp/node_modules/*"
+  "resources/api/tsp/node_modules",
+  "_ui/node_modules",
+  "_ui/build",
 ]
 exclude_file = []
 exclude_regex = ["_test.go"]
