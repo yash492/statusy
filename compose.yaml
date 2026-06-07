@@ -34,7 +34,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.backend
+      dockerfile: Dockerfile.app
     depends_on:
       psql:
         condition: service_healthy
