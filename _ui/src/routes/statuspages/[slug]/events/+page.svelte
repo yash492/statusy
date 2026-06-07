@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import * as Tabs from '$lib/components/ui/tabs';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import Search from '@lucide/svelte/icons/search';
 	import IncidentsTable, { type Incident } from '$lib/components/custom/IncidentsTable.svelte';
 	import ScheduledMaintenancesTable, {
 		type ScheduledMaintenanceDisplay
 	} from '$lib/components/custom/ScheduledMaintenancesTable.svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import Search from '@lucide/svelte/icons/search';
 	import type { PaginationState } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
 	import type { PageData } from './$types';
@@ -25,7 +24,6 @@
 	let isFilterDialogOpen = $state(false);
 	let filterSearchQuery = $state('');
 
-	const PAGE_SIZE = 10;
 	const initialPagination: PaginationState = $derived({
 		pageIndex: Math.max(0, data.page - 1),
 		pageSize: data.pageSize
@@ -52,16 +50,16 @@
 
 				// Check name match
 				const matchesGroupQuery = g.name.toLowerCase().includes(query);
-				const filteredComps = selectedComps.filter((c) =>
-					c.name.toLowerCase().includes(query)
-				);
+				const filteredComps = selectedComps.filter((c) => c.name.toLowerCase().includes(query));
 
 				if (matchesGroupQuery || filteredComps.length > 0 || isGroupSelected) {
 					return {
 						id: g.id,
 						name: g.name,
 						isFullySelected: isGroupSelected,
-						components: isGroupSelected ? g.components.filter(c => c.name.toLowerCase().includes(query)) : filteredComps
+						components: isGroupSelected
+							? g.components.filter((c) => c.name.toLowerCase().includes(query))
+							: filteredComps
 					};
 				}
 				return null;
@@ -107,16 +105,6 @@
 
 	const incidentData = $derived(toIncidents(incidentsArray));
 	const scheduledMaintenanceData = $derived(toScheduledMaintenances(scheduledMaintenancesArray));
-	const currentListLength = $derived(
-		isIncidents ? incidentsArray.length : scheduledMaintenancesArray.length
-	);
-
-	const feedBaseUrl = $derived(
-		`${$page.url.origin}/statuspages/${encodeURIComponent(data.resp.statuspage.slug)}`
-	);
-	const feedRssPath = $derived(`${feedBaseUrl}/feed.rss`);
-	const feedAtomPath = $derived(`${feedBaseUrl}/feed.atom`);
-	const slackSnippet = $derived(`/feed subscribe ${feedRssPath}`);
 
 	const rowCount = $derived(data.resp.total_count);
 
@@ -196,7 +184,8 @@
 						<span
 							class="flex w-fit items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/30 px-3 py-1 text-xs text-zinc-400"
 						>
-							<span class="size-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+							<span class="size-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+							></span>
 							Filter Active
 						</span>
 						<button
@@ -214,7 +203,9 @@
 						<span
 							class="flex w-fit items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/30 px-3 py-1 text-xs text-zinc-400"
 						>
-							<span class="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+							<span
+								class="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+							></span>
 							All Components Monitored
 						</span>
 					</div>
@@ -267,8 +258,9 @@
 	<Dialog.Content class="border-zinc-800 bg-zinc-950 text-white shadow-xl sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title class="text-lg font-bold text-white">Active Component Filters</Dialog.Title>
-			<Dialog.Description class="text-zinc-400 text-sm">
-				Only incidents and scheduled maintenance events affecting the following components are displayed.
+			<Dialog.Description class="text-sm text-zinc-400">
+				Only incidents and scheduled maintenance events affecting the following components are
+				displayed.
 			</Dialog.Description>
 		</Dialog.Header>
 
@@ -287,14 +279,14 @@
 			</div>
 
 			<!-- Filter List -->
-			<div class="max-h-75 overflow-y-auto pr-1 flex flex-col gap-3">
+			<div class="flex max-h-75 flex-col gap-3 overflow-y-auto pr-1">
 				{#each activeFilters.groups as g (g.id)}
 					<div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-3">
 						<div class="flex items-center justify-between">
 							<span class="text-sm font-semibold text-zinc-200">{g.name}</span>
 							{#if g.isFullySelected}
 								<span
-									class="rounded bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium tracking-wider text-zinc-500 uppercase border border-zinc-800/40"
+									class="rounded border border-zinc-800/40 bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium tracking-wider text-zinc-500 uppercase"
 								>
 									Group Monitored
 								</span>
@@ -303,7 +295,7 @@
 						{#if !g.isFullySelected && g.components.length > 0}
 							<div class="mt-2 flex flex-col gap-1 border-t border-zinc-900/50 pt-2">
 								{#each g.components as c (c.id)}
-									<span class="text-xs text-zinc-200 pl-2 flex items-center gap-1.5">
+									<span class="flex items-center gap-1.5 pl-2 text-xs text-zinc-200">
 										<span class="size-1 rounded-full bg-zinc-500"></span>
 										{c.name}
 									</span>
@@ -312,7 +304,7 @@
 						{:else if g.isFullySelected && g.components.length > 0}
 							<div class="mt-2 flex flex-col gap-1 border-t border-zinc-900/50 pt-2">
 								{#each g.components as c (c.id)}
-									<span class="text-xs text-zinc-200 pl-2 flex items-center gap-1.5">
+									<span class="flex items-center gap-1.5 pl-2 text-xs text-zinc-200">
 										<span class="size-1 rounded-full bg-zinc-500"></span>
 										{c.name}
 									</span>
@@ -323,10 +315,12 @@
 				{/each}
 
 				{#each activeFilters.ungrouped as c (c.id)}
-					<div class="rounded-lg border border-zinc-900 bg-zinc-950/40 p-3 flex items-center justify-between">
+					<div
+						class="flex items-center justify-between rounded-lg border border-zinc-900 bg-zinc-950/40 p-3"
+					>
 						<span class="text-sm font-medium text-zinc-200">{c.name}</span>
 						<span
-							class="rounded bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium tracking-wider text-zinc-500 uppercase border border-zinc-800/40"
+							class="rounded border border-zinc-800/40 bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium tracking-wider text-zinc-500 uppercase"
 						>
 							Component Monitored
 						</span>
