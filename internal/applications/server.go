@@ -2,17 +2,23 @@ package applications
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/yash492/statusy"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentgroupsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/incidentsdb"
@@ -169,6 +175,9 @@ func (s ServerApplication) Start(ctx context.Context, addr string) error {
 	)
 
 	handler := api.HandlerFromMux(serverInterface, r)
+
+	r.Get("/*", serveStatic(statusy.FrontendFs, "_ui/build"))
+
 	httpServer := &http.Server{
 		Addr:    addr,
 		Handler: handler,
@@ -236,4 +245,56 @@ func (l *CustomLogEntry) Write(status, bytes int, header http.Header, elapsed ti
 }
 func (l *CustomLogEntry) Panic(v any, stack []byte) {
 	middleware.PrintPrettyStack(v)
+}
+
+func serveStatic(embedFS embed.FS, directory string) http.HandlerFunc {
+	subFS, err := fs.Sub(embedFS, directory)
+	if err != nil {
+		panic(err)
+	}
+	fileServer := http.FileServer(http.FS(subFS))
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := filepath.Clean(r.URL.Path)
+		filePath := strings.TrimPrefix(path, "/")
+
+		if filePath == "" {
+			filePath = "index.html"
+		}
+
+		file, err := subFS.Open(filePath)
+		if err != nil {
+			// File does not exist, serve index.html for SPA router fallback
+			indexFile, err := subFS.Open("index.html")
+			if err != nil {
+				http.Error(w, "Not Found", http.StatusNotFound)
+				return
+			}
+			defer indexFile.Close()
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.Copy(w, indexFile)
+			return
+		}
+		defer file.Close()
+
+		stat, err := file.Stat()
+		if err != nil || stat.IsDir() {
+			// If path points to a directory, fallback to index.html
+			indexFile, err := subFS.Open("index.html")
+			if err != nil {
+				http.Error(w, "Not Found", http.StatusNotFound)
+				return
+			}
+			defer indexFile.Close()
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.Copy(w, indexFile)
+			return
+		}
+
+		fileServer.ServeHTTP(w, r)
+	}
 }

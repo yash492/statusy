@@ -31,8 +31,7 @@ services:
       DB_PASSWORD: password
       DB_NAME: statusy
 
-
-  backend:
+  app:
     build:
       context: .
       dockerfile: Dockerfile.backend
@@ -44,15 +43,4 @@ services:
     ports:
       - 8081:8081
 
-  frontend:
-    build:
-      context: ./_ui
-      dockerfile: Dockerfile
-      args:
-        PUBLIC_API_SERVER_ROUTE: http://localhost:8081/api
-        PUBLIC_LOCAL_API_SERVER_ROUTE: http://backend:8081/api
-    depends_on:
-      - backend
-    ports:
-      - 3000:3000
 

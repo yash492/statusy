@@ -1,4 +1,3 @@
-import { PUBLIC_API_SERVER_ROUTE } from '$env/static/public';
 import ky, { isHTTPError, isNetworkError, isTimeoutError, type Options } from 'ky';
 
 interface AppError {
@@ -55,7 +54,7 @@ export async function safeAsync<T>(promise: Promise<T>): Promise<Response<T>> {
 }
 
 const KyClient = ky.create({
-	prefix: PUBLIC_API_SERVER_ROUTE,
+	prefix: "/api",
 	headers: {
 		accept: 'application/json'
 	},

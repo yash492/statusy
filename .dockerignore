@@ -1,3 +1,5 @@
-_ui/**
+_ui/node_modules
+_ui/.svelte-kit
+_ui/build
 .air.toml
 .gitignore
