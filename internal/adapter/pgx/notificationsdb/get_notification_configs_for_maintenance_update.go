@@ -4,6 +4,8 @@ import (
 	"context"
 	_ "embed"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/samber/lo"
 	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/notifications"
 )
@@ -19,14 +21,20 @@ func (r *PostgresNotificationsRepository) GetNotificationConfigsForMaintenanceUp
 	}
 	defer rows.Close()
 
-	var list []notifications.ViewNotification
-	for rows.Next() {
-		var vn notifications.ViewNotification
-		err := rows.Scan(&vn.ID, &vn.ViewID, &vn.Type, &vn.Config, &vn.CreatedAt, &vn.UpdatedAt)
-		if err != nil {
-			return nil, apperrors.InternalError("failed to scan resolved view notification config", err)
-		}
-		list = append(list, vn)
+	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[viewNotificationDto])
+	if err != nil {
+		return nil, apperrors.InternalError("failed to collect notification configs for maintenance update", err)
 	}
-	return list, nil
+
+	return lo.Map(dtos, func(item viewNotificationDto, _ int) notifications.ViewNotification {
+		return notifications.ViewNotification{
+			ID:        item.ID,
+			ViewID:    item.ViewID,
+			Name:      item.Name,
+			Type:      item.Type,
+			Config:    item.Config,
+			CreatedAt: item.CreatedAt,
+			UpdatedAt: item.UpdatedAt,
+		}
+	}), nil
 }

@@ -18,8 +18,8 @@ SELECT
         ),
         '[]'
     ) AS components,
-    sm.start_time,
-    sm.end_time,
+    sm.starts_at AS start_time,
+    sm.ends_at AS end_time,
     smu.updated_at,
     sm.link
 FROM
@@ -39,7 +39,7 @@ GROUP BY
     smu.description,
     sm.provider_id,
     s.name,
-    sm.start_time,
-    sm.end_time,
+    sm.starts_at,
+    sm.ends_at,
     smu.updated_at,
     sm.link;

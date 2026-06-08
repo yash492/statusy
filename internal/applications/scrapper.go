@@ -163,7 +163,7 @@ func (s ScrapperApplication) Start(ctx context.Context, scrapInterval int) error
 	}
 
 	// Run once at startup so we don't wait an entire interval before first scrape.
-	executeScrape(true)
+	executeScrape(false)
 
 	ticker := time.NewTicker(time.Duration(scrapInterval) * time.Second)
 	defer ticker.Stop()

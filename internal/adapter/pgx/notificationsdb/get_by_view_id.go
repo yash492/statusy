@@ -3,9 +3,12 @@ package notificationsdb
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/samber/lo"
 	"github.com/yash492/statusy/internal/domain/notifications"
 )
 
@@ -14,6 +17,16 @@ var getViewNotificationsByViewIDQuery string
 
 //go:embed queries/count_view_notifications.sql
 var countViewNotificationsQuery string
+
+type viewNotificationDto struct {
+	ID        uint                           `db:"id"`
+	ViewID    uint                           `db:"view_id"`
+	Name      string                         `db:"name"`
+	Type      notifications.NotificationType `db:"type"`
+	Config    json.RawMessage                `db:"config"`
+	CreatedAt time.Time                      `db:"created_at"`
+	UpdatedAt time.Time                      `db:"updated_at"`
+}
 
 // GetByViewID returns all notification destinations config for a given view with search and pagination
 func (r *PostgresNotificationsRepository) GetByViewID(ctx context.Context, viewID uint, search string, limit int, offset int) ([]notifications.ViewNotification, int64, error) {
@@ -28,14 +41,9 @@ func (r *PostgresNotificationsRepository) GetByViewID(ctx context.Context, viewI
 	}
 	defer rows.Close()
 
-	var list []notifications.ViewNotification
-	for rows.Next() {
-		var vn notifications.ViewNotification
-		err := rows.Scan(&vn.ID, &vn.ViewID, &vn.Name, &vn.Type, &vn.Config, &vn.CreatedAt, &vn.UpdatedAt)
-		if err != nil {
-			return nil, 0, fmt.Errorf("failed to scan view notification: %w", err)
-		}
-		list = append(list, vn)
+	dtos, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[viewNotificationDto])
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to collect view notification rows: %w", err)
 	}
 
 	var totalCount int64
@@ -47,5 +55,17 @@ func (r *PostgresNotificationsRepository) GetByViewID(ctx context.Context, viewI
 		return nil, 0, fmt.Errorf("failed to count view notifications: %w", err)
 	}
 
-	return list, totalCount, nil
+	result := lo.Map(dtos, func(item viewNotificationDto, _ int) notifications.ViewNotification {
+		return notifications.ViewNotification{
+			ID:        item.ID,
+			ViewID:    item.ViewID,
+			Name:      item.Name,
+			Type:      item.Type,
+			Config:    item.Config,
+			CreatedAt: item.CreatedAt,
+			UpdatedAt: item.UpdatedAt,
+		}
+	})
+
+	return result, totalCount, nil
 }

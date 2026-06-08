@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/samber/lo"
 	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/views"
 )
@@ -40,9 +41,8 @@ func (r *PostgresViewsRepository) GetAll(ctx context.Context, search string, lim
 		return nil, 0, apperrors.InternalError("failed to count views", err)
 	}
 
-	result := make([]views.View, len(dtos))
-	for i, dto := range dtos {
-		result[i] = views.View{
+	result := lo.Map(dtos, func(dto viewDto, _ int) views.View {
+		return views.View{
 			ID:          dto.ID,
 			Name:        dto.Name,
 			PublicID:    dto.PublicID,
@@ -51,6 +51,6 @@ func (r *PostgresViewsRepository) GetAll(ctx context.Context, search string, lim
 			CreatedAt:   dto.CreatedAt,
 			UpdatedAt:   dto.UpdatedAt,
 		}
-	}
+	})
 	return result, totalCount, nil
 }

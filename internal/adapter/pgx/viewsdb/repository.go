@@ -5,13 +5,46 @@ import (
 	_ "embed"
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/samber/lo"
 	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/common/snowflake"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/views"
 )
+
+// viewDto maps a row from the views table.
+type viewDto struct {
+	ID          uint       `db:"id"`
+	Name        string     `db:"name"`
+	PublicID    string     `db:"public_id"`
+	Description string     `db:"description"`
+	IsDefault   bool       `db:"is_default"`
+	CreatedAt   time.Time  `db:"created_at"`
+	UpdatedAt   time.Time  `db:"updated_at"`
+	DeletedAt   *time.Time `db:"deleted_at"`
+}
+
+// viewServiceDto maps a row joining view_services → services.
+type viewServiceDto struct {
+	ID                           uint       `db:"id"`
+	Name                         string     `db:"name"`
+	Slug                         string     `db:"slug"`
+	IncludeAllComponents         bool       `db:"include_all_components"`
+	MonitorIncidents             bool       `db:"monitor_incidents"`
+	MonitorScheduledMaintenances bool       `db:"monitor_scheduled_maintenances"`
+	Status                       string     `db:"status"`
+	LastIncident                 string     `db:"last_incident"`
+	LastIncidentLink             string     `db:"last_incident_link"`
+	UpcomingMaintenance          string     `db:"upcoming_maintenance"`
+	UpcomingMaintenanceLink      string     `db:"upcoming_maintenance_link"`
+	ComponentIDs                 []int      `db:"component_ids"`
+	ComponentGroupIDs            []int      `db:"component_group_ids"`
+	UpdatedAt                    time.Time  `db:"updated_at"`
+	DeletedAt                    *time.Time `db:"deleted_at"`
+}
 
 //go:embed queries/get_default_view.sql
 var getDefaultViewQuery string
@@ -104,9 +137,8 @@ func (r *PostgresViewsRepository) GetServicesByViewID(ctx context.Context, viewI
 		return nil, apperrors.InternalError("failed to collect view services rows", err)
 	}
 
-	result := make([]views.ViewServiceStatus, len(dtos))
-	for i, dto := range dtos {
-		result[i] = views.ViewServiceStatus{
+	return lo.Map(dtos, func(dto viewServiceDto, _ int) views.ViewServiceStatus {
+		return views.ViewServiceStatus{
 			ID:                   dto.ID,
 			Name:                 dto.Name,
 			Slug:                 dto.Slug,
@@ -114,8 +146,7 @@ func (r *PostgresViewsRepository) GetServicesByViewID(ctx context.Context, viewI
 			LastIncident:         "",
 			IncludeAllComponents: dto.IncludeAllComponents,
 		}
-	}
-	return result, nil
+	}), nil
 }
 
 func (r *PostgresViewsRepository) GetByPublicID(ctx context.Context, publicID string) (views.View, error) {
