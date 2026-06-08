@@ -2,11 +2,11 @@ package httphandler
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
-	"strconv"
-	"strings"
 
 	"github.com/yash492/statusy/internal/command"
+	"github.com/yash492/statusy/internal/domain/notifications"
 	"github.com/yash492/statusy/internal/port/httphandler/generated/api"
 )
 
@@ -31,6 +31,10 @@ type Handler struct {
 	ListViewsCmd                        command.ListViewsCmd
 	CreateViewCmd                       command.CreateViewCmd
 	GetViewCmd                          command.GetViewCmd
+	AddViewNotificationCmd              command.AddViewNotificationHandler
+	GetViewNotificationsCmd             command.GetViewNotificationsHandler
+	EditViewNotificationCmd             command.EditViewNotificationHandler
+	DeleteViewNotificationCmd           command.DeleteViewNotificationHandler
 }
 
 // (GET /statuspages)
@@ -84,10 +88,20 @@ func (h Handler) IncidentByStatuspage(ctx context.Context, request api.IncidentB
 		pageSize = *request.Params.PageSize
 	}
 
+	var componentIDs []int
+	if request.Params.ComponentIds != nil {
+		componentIDs = *request.Params.ComponentIds
+	}
+
+	var componentGroupIDs []int
+	if request.Params.ComponentGroupIds != nil {
+		componentGroupIDs = *request.Params.ComponentGroupIds
+	}
+
 	result, err := h.IncidentByStatuspageCmd.Execute(ctx, command.IncidentByStatuspageParams{
 		StatuspageSlug:    request.StatuspageSlug,
-		ComponentIDs:      parseCommaSeparatedInts(request.Params.ComponentIds),
-		ComponentGroupIDs: parseCommaSeparatedInts(request.Params.ComponentGroupIds),
+		ComponentIDs:      componentIDs,
+		ComponentGroupIDs: componentGroupIDs,
 		PageNumber:        pageNumber,
 		PageSize:          pageSize,
 	})
@@ -134,10 +148,20 @@ func (h Handler) ScheduledMaintenanceByStatuspage(ctx context.Context, request a
 		pageSize = *request.Params.PageSize
 	}
 
+	var componentIDs []int
+	if request.Params.ComponentIds != nil {
+		componentIDs = *request.Params.ComponentIds
+	}
+
+	var componentGroupIDs []int
+	if request.Params.ComponentGroupIds != nil {
+		componentGroupIDs = *request.Params.ComponentGroupIds
+	}
+
 	result, err := h.ScheduledMaintenanceByStatuspageCmd.Execute(ctx, command.ScheduledMaintenanceByStatuspageParams{
 		StatuspageSlug:    request.StatuspageSlug,
-		ComponentIDs:      parseCommaSeparatedInts(request.Params.ComponentIds),
-		ComponentGroupIDs: parseCommaSeparatedInts(request.Params.ComponentGroupIds),
+		ComponentIDs:      componentIDs,
+		ComponentGroupIDs: componentGroupIDs,
 		PageNumber:        pageNumber,
 		PageSize:          pageSize,
 	})
@@ -519,24 +543,6 @@ func (h Handler) GetViewServices(ctx context.Context, request api.GetViewService
 	}, nil
 }
 
-func parseCommaSeparatedInts(s *string) []int {
-	if s == nil || *s == "" {
-		return nil
-	}
-	var res []int
-	for _, part := range strings.Split(*s, ",") {
-		part = strings.TrimSpace(part)
-		if part == "" {
-			continue
-		}
-		val, err := strconv.Atoi(part)
-		if err == nil {
-			res = append(res, val)
-		}
-	}
-	return res
-}
-
 // (GET /views)
 func (h Handler) ListViews(ctx context.Context, request api.ListViewsRequestObject) (api.ListViewsResponseObject, error) {
 	search := ""
@@ -544,12 +550,12 @@ func (h Handler) ListViews(ctx context.Context, request api.ListViewsRequestObje
 		search = *request.Params.Search
 	}
 
-	result, err := h.ListViewsCmd.Execute(ctx, search)
+	result, totalCount, err := h.ListViewsCmd.Execute(ctx, search)
 	if err != nil {
 		return nil, err
 	}
 
-	viewsList := make(api.ListViews200JSONResponse, 0, len(result))
+	viewsList := make([]api.View, 0, len(result))
 	for _, v := range result {
 		viewsList = append(viewsList, api.View{
 			Name:        v.Name,
@@ -559,7 +565,10 @@ func (h Handler) ListViews(ctx context.Context, request api.ListViewsRequestObje
 		})
 	}
 
-	return viewsList, nil
+	return api.ListViews200JSONResponse{
+		Views:      viewsList,
+		TotalCount: int(totalCount),
+	}, nil
 }
 
 // (POST /views)
@@ -578,4 +587,135 @@ func (h Handler) CreateView(ctx context.Context, request api.CreateViewRequestOb
 		Description: result.Description,
 		IsDefault:   result.IsDefault,
 	}, nil
+}
+
+// (GET /views/{publicId}/notifications)
+func (h Handler) ListViewNotifications(ctx context.Context, request api.ListViewNotificationsRequestObject) (api.ListViewNotificationsResponseObject, error) {
+	pageNumber := 1
+	pageSize := 20
+	search := ""
+
+	if request.Params.PageNumber != nil {
+		pageNumber = *request.Params.PageNumber
+	}
+
+	if request.Params.PageSize != nil {
+		pageSize = *request.Params.PageSize
+	}
+
+	if request.Params.Search != nil {
+		search = *request.Params.Search
+	}
+
+	result, totalCount, err := h.GetViewNotificationsCmd.Handle(ctx, command.GetViewNotifications{
+		ViewPublicID: request.PublicId,
+		Search:       search,
+		PageNumber:   pageNumber,
+		PageSize:     pageSize,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]api.ViewNotificationResponse, 0, len(result))
+	for _, vn := range result {
+		configMap, err := rawJSONToMap(vn.Config)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, api.ViewNotificationResponse{
+			Id:        int(vn.ID),
+			Name:      vn.Name,
+			Type:      string(vn.Type),
+			Config:    configMap,
+			CreatedAt: vn.CreatedAt,
+		})
+	}
+
+	return api.ListViewNotifications200JSONResponse{
+		Notifications: list,
+		TotalCount:    int(totalCount),
+	}, nil
+}
+
+// (POST /views/{publicId}/notifications)
+func (h Handler) AddViewNotification(ctx context.Context, request api.AddViewNotificationRequestObject) (api.AddViewNotificationResponseObject, error) {
+	configJSON, err := json.Marshal(request.Body.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := h.AddViewNotificationCmd.Handle(ctx, command.AddViewNotification{
+		ViewPublicID: request.PublicId,
+		Name:         request.Body.Name,
+		Type:         notifications.NotificationType(request.Body.Type),
+		Config:       configJSON,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	configMap, err := rawJSONToMap(result.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	return api.AddViewNotification200JSONResponse{
+		Id:        int(result.ID),
+		Name:      result.Name,
+		Type:      string(result.Type),
+		Config:    configMap,
+		CreatedAt: result.CreatedAt,
+	}, nil
+}
+
+// (PUT /views/{publicId}/notifications/{notificationId})
+func (h Handler) EditViewNotification(ctx context.Context, request api.EditViewNotificationRequestObject) (api.EditViewNotificationResponseObject, error) {
+	configJSON, err := json.Marshal(request.Body.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := h.EditViewNotificationCmd.Handle(ctx, command.EditViewNotification{
+		ID:     uint(request.NotificationId),
+		Name:   request.Body.Name,
+		Type:   notifications.NotificationType(request.Body.Type),
+		Config: configJSON,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	configMap, err := rawJSONToMap(result.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	return api.EditViewNotification200JSONResponse{
+		Id:        int(result.ID),
+		Name:      result.Name,
+		Type:      string(result.Type),
+		Config:    configMap,
+		CreatedAt: result.CreatedAt,
+	}, nil
+}
+
+// (DELETE /views/{publicId}/notifications/{notificationId})
+func (h Handler) DeleteViewNotification(ctx context.Context, request api.DeleteViewNotificationRequestObject) (api.DeleteViewNotificationResponseObject, error) {
+	err := h.DeleteViewNotificationCmd.Handle(ctx, command.DeleteViewNotification{
+		ID: uint(request.NotificationId),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return api.DeleteViewNotification204Response{}, nil
+}
+
+func rawJSONToMap(raw json.RawMessage) (map[string]any, error) {
+	var m map[string]any
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }

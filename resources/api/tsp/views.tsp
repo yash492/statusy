@@ -320,6 +320,11 @@ model CreateViewRequest {
   description: string;
 }
 
+model PaginatedViews {
+  views: View[];
+  total_count: integer;
+}
+
 @doc("Get all views")
 @get
 @route("/views")
@@ -327,7 +332,7 @@ op listViews(
   @doc("Optional search term to filter views by name or description")
   @query
   search?: string,
-): View[] | StandardErrors;
+): PaginatedViews | StandardErrors;
 
 @doc("Create a new view")
 @post
@@ -336,3 +341,98 @@ op createView(
   @body
   body: CreateViewRequest,
 ): View | StandardErrors;
+
+model ViewNotificationRequest {
+  @doc("Display name for this notification destination")
+  name: string;
+
+  @doc("Notification channel type")
+  type: "slack" | "discord" | "msteams" | "pagerduty" | "solarwinds_incident_response" | "webhook";
+
+  @doc("Channel-specific configuration (webhook URL, routing key, headers, etc.)")
+  config: Record<unknown>;
+}
+
+model ViewNotificationResponse {
+  @doc("Unique identifier")
+  id: integer;
+
+  @doc("Display name")
+  name: string;
+
+  @doc("Notification channel type")
+  type: string;
+
+  @doc("Channel-specific configuration")
+  config: Record<unknown>;
+
+  @doc("Creation timestamp")
+  created_at: utcDateTime;
+}
+
+model PaginatedViewNotifications {
+  notifications: ViewNotificationResponse[];
+  total_count: integer;
+}
+
+@doc("List all notification configurations for a view with search and pagination")
+@get
+@route("/views/{publicId}/notifications")
+op listViewNotifications(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @doc("Page number for paginated results (default: 1)")
+  @query
+  page_number?: integer,
+
+  @doc("Number of items per page (default: 20)")
+  @query
+  page_size?: integer,
+
+  @doc("Optional search term to filter notifications by name or type")
+  @query
+  search?: string,
+): PaginatedViewNotifications | StandardErrors;
+
+@doc("Add a notification configuration to a view")
+@post
+@route("/views/{publicId}/notifications")
+op addViewNotification(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @body
+  body: ViewNotificationRequest,
+): ViewNotificationResponse | StandardErrors;
+
+@doc("Edit a notification configuration")
+@put
+@route("/views/{publicId}/notifications/{notificationId}")
+op editViewNotification(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @doc("The notification config ID")
+  @path
+  notificationId: integer,
+
+  @body
+  body: ViewNotificationRequest,
+): ViewNotificationResponse | StandardErrors;
+
+@doc("Delete a notification configuration")
+@delete
+@route("/views/{publicId}/notifications/{notificationId}")
+op deleteViewNotification(
+  @doc("The view public ID")
+  @path
+  publicId: string,
+
+  @doc("The notification config ID")
+  @path
+  notificationId: integer,
+): void | StandardErrors;

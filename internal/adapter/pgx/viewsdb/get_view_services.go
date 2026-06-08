@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/samber/lo"
 	"github.com/yash492/statusy/internal/common/apperrors"
 	"github.com/yash492/statusy/internal/domain/views"
 )
@@ -47,9 +48,8 @@ func (r *PostgresViewsRepository) GetViewServices(ctx context.Context, viewID ui
 		return nil, 0, 0, 0, apperrors.InternalError("failed to count view services", err)
 	}
 
-	result := make([]views.ViewServiceStatus, len(dtos))
-	for i, dto := range dtos {
-		result[i] = views.ViewServiceStatus{
+	result := lo.Map(dtos, func(dto viewServiceDto, _ int) views.ViewServiceStatus {
+		return views.ViewServiceStatus{
 			ID:                           dto.ID,
 			Name:                         dto.Name,
 			Slug:                         dto.Slug,
@@ -64,7 +64,7 @@ func (r *PostgresViewsRepository) GetViewServices(ctx context.Context, viewID ui
 			ComponentIDs:                 dto.ComponentIDs,
 			ComponentGroupIDs:            dto.ComponentGroupIDs,
 		}
-	}
+	})
 
 	return result, totalCount, upCount, downCount, nil
 }

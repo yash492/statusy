@@ -54,6 +54,26 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## 5. Repository Architecture & Boundaries
+
+The project follows **Hexagonal Architecture (Ports and Adapters / Clean Architecture)**. Dependencies flow strictly **inwards** toward the core domain.
+
+### Directory Structure & Responsibilities:
+- `cmd/`: Application entry point (`main.go`). Initializes configurations, connection pools, and runs database migrations.
+- `internal/applications/`: Manages runtime apps (e.g. HTTP server, background scraper). Wires dependencies and manages runtime lifecycles.
+- `internal/command/`: Domain orchestrators/use cases containing application business workflows. Decoupled from transport (HTTP) and DB drivers.
+- `internal/domain/`: Core models and ports/interfaces. **Zero** imports from adapters, commands, or transport layers.
+- `internal/adapter/pgx/`: Postgres database adapters implementing domain repository ports. SQL files must be colocated in a `queries/` subdirectory inside each DB package, loaded via `//go:embed`, and run using the separated `readDB` and `writeDB` `pgxpool.Pool` connections.
+- `internal/adapter/collector/`: Outbound provider integrations (e.g. status page scrapers) implementing `StatusPageProvider`.
+- `internal/port/`: Inbound controllers (e.g. OpenAPI strict HTTP handlers) that route external requests to commands.
+- `internal/common/`: Common helpers (status normalizer, Snowflake IDs, application error formats, local queue wrappers).
+
+### Rules and Boundaries to Maintain:
+- **No Outward Domain Imports**: Core domain code must never depend on database packages (`internal/adapter/pgx/...`), commands, or handlers.
+- **Constructor Injection**: All repositories/providers must be injected as interfaces into commands and applications.
+- **DB & Transport Abstraction**: No raw database client structs (`pgx`) or HTTP framework imports are allowed within command handlers.
+- **Colocated DB SQL**: Always colocate SQL files in `queries/` under the corresponding DB adapter package and embed them in Go code.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

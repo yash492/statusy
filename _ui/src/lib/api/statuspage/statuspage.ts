@@ -72,30 +72,44 @@ export class StatuspageApi {
 	}
 
 	incidents(slug: string, pageNumber = 1, pageSize = 10, componentIds?: number[], componentGroupIds?: number[]) {
+		const searchParams = new URLSearchParams({
+			page_number: String(pageNumber),
+			page_size: String(pageSize)
+		});
+		if (componentIds) {
+			for (const id of componentIds) {
+				searchParams.append('component_ids', String(id));
+			}
+		}
+		if (componentGroupIds) {
+			for (const id of componentGroupIds) {
+				searchParams.append('component_group_ids', String(id));
+			}
+		}
 		return ApiClient.get<StatuspageIncidents>(
 			`${this.basePath}/${encodeURIComponent(slug)}/incidents`,
-			{
-				searchParams: {
-					page_number: pageNumber,
-					page_size: pageSize,
-					...(componentIds && componentIds.length > 0 ? { component_ids: componentIds.join(',') } : {}),
-					...(componentGroupIds && componentGroupIds.length > 0 ? { component_group_ids: componentGroupIds.join(',') } : {})
-				}
-			}
+			{ searchParams }
 		);
 	}
 
 	scheduledMaintenances(slug: string, pageNumber = 1, pageSize = 10, componentIds?: number[], componentGroupIds?: number[]) {
+		const searchParams = new URLSearchParams({
+			page_number: String(pageNumber),
+			page_size: String(pageSize)
+		});
+		if (componentIds) {
+			for (const id of componentIds) {
+				searchParams.append('component_ids', String(id));
+			}
+		}
+		if (componentGroupIds) {
+			for (const id of componentGroupIds) {
+				searchParams.append('component_group_ids', String(id));
+			}
+		}
 		return ApiClient.get<StatuspageScheduledMaintenances>(
 			`${this.basePath}/${encodeURIComponent(slug)}/schedule-maintenances`,
-			{
-				searchParams: {
-					page_number: pageNumber,
-					page_size: pageSize,
-					...(componentIds && componentIds.length > 0 ? { component_ids: componentIds.join(',') } : {}),
-					...(componentGroupIds && componentGroupIds.length > 0 ? { component_group_ids: componentGroupIds.join(',') } : {})
-				}
-			}
+			{ searchParams }
 		);
 	}
 

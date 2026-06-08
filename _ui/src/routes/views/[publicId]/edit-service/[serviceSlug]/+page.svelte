@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { ServiceForm } from '$lib/derivedcomponents';
+	import { ServiceForm } from '$lib/components/custom';
 
 	const publicId = $derived(page.params.publicId ?? '');
 	const serviceSlug = $derived(page.params.serviceSlug);

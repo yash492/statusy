@@ -1,0 +1,13 @@
+FROM rust:alpine AS builder
+RUN apk add --no-cache musl-dev
+RUN cargo install pgmq --features cli --bin pgmq-cli
+
+FROM alpine:latest
+RUN apk add --no-cache postgresql-client
+COPY --from=builder /usr/local/cargo/bin/pgmq-cli /usr/local/bin/pgmq-cli
+
+COPY pgmq-install.sh /usr/local/bin/pgmq-install.sh
+RUN chmod +x /usr/local/bin/pgmq-install.sh
+
+ENTRYPOINT ["/usr/local/bin/pgmq-install.sh"]
+

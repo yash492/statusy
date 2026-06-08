@@ -23,6 +23,36 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
+// Defines values for ViewNotificationRequestType.
+const (
+	Discord                    ViewNotificationRequestType = "discord"
+	Msteams                    ViewNotificationRequestType = "msteams"
+	Pagerduty                  ViewNotificationRequestType = "pagerduty"
+	Slack                      ViewNotificationRequestType = "slack"
+	SolarwindsIncidentResponse ViewNotificationRequestType = "solarwinds_incident_response"
+	Webhook                    ViewNotificationRequestType = "webhook"
+)
+
+// Valid indicates whether the value is a known member of the ViewNotificationRequestType enum.
+func (e ViewNotificationRequestType) Valid() bool {
+	switch e {
+	case Discord:
+		return true
+	case Msteams:
+		return true
+	case Pagerduty:
+		return true
+	case Slack:
+		return true
+	case SolarwindsIncidentResponse:
+		return true
+	case Webhook:
+		return true
+	default:
+		return false
+	}
+}
+
 // AddViewServiceRequest defines model for AddViewServiceRequest.
 type AddViewServiceRequest struct {
 	// ComponentGroupIds List of specific component group IDs to include (ignored if include_all_components is true)
@@ -137,12 +167,24 @@ type Incident struct {
 	Title string `json:"title"`
 }
 
+// PaginatedViewNotifications defines model for PaginatedViewNotifications.
+type PaginatedViewNotifications struct {
+	Notifications []ViewNotificationResponse `json:"notifications"`
+	TotalCount    int                        `json:"total_count"`
+}
+
 // PaginatedViewServices defines model for PaginatedViewServices.
 type PaginatedViewServices struct {
 	DownCount  int                 `json:"down_count"`
 	Services   []ViewServiceStatus `json:"services"`
 	TotalCount int                 `json:"total_count"`
 	UpCount    int                 `json:"up_count"`
+}
+
+// PaginatedViews defines model for PaginatedViews.
+type PaginatedViews struct {
+	TotalCount int    `json:"total_count"`
+	Views      []View `json:"views"`
 }
 
 // ScheduledMaintenance defines model for ScheduledMaintenance.
@@ -231,6 +273,39 @@ type View struct {
 	PublicId string `json:"public_id"`
 }
 
+// ViewNotificationRequest defines model for ViewNotificationRequest.
+type ViewNotificationRequest struct {
+	// Config Channel-specific configuration (webhook URL, routing key, headers, etc.)
+	Config map[string]interface{} `json:"config"`
+
+	// Name Display name for this notification destination
+	Name string `json:"name"`
+
+	// Type Notification channel type
+	Type ViewNotificationRequestType `json:"type"`
+}
+
+// ViewNotificationRequestType Notification channel type
+type ViewNotificationRequestType string
+
+// ViewNotificationResponse defines model for ViewNotificationResponse.
+type ViewNotificationResponse struct {
+	// Config Channel-specific configuration
+	Config map[string]interface{} `json:"config"`
+
+	// CreatedAt Creation timestamp
+	CreatedAt time.Time `json:"created_at"`
+
+	// Id Unique identifier
+	Id int `json:"id"`
+
+	// Name Display name
+	Name string `json:"name"`
+
+	// Type Notification channel type
+	Type string `json:"type"`
+}
+
 // ViewServiceResponse defines model for ViewServiceResponse.
 type ViewServiceResponse struct {
 	// ComponentGroupIds List of specific component group IDs to include (ignored if include_all_components is true)
@@ -311,11 +386,11 @@ type IncidentByStatuspageParams struct {
 	// PageSize Number of updates per page
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// ComponentIds Comma-separated list of component IDs to filter by
-	ComponentIds *string `form:"component_ids,omitempty" json:"component_ids,omitempty"`
+	// ComponentIds List of component IDs to filter by
+	ComponentIds *[]int `form:"component_ids,omitempty" json:"component_ids,omitempty"`
 
-	// ComponentGroupIds Comma-separated list of component group IDs to filter by
-	ComponentGroupIds *string `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
+	// ComponentGroupIds List of component group IDs to filter by
+	ComponentGroupIds *[]int `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
 }
 
 // ScheduledMaintenanceByStatuspageParams defines parameters for ScheduledMaintenanceByStatuspage.
@@ -326,16 +401,28 @@ type ScheduledMaintenanceByStatuspageParams struct {
 	// PageSize Number of updates per page
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
 
-	// ComponentIds Comma-separated list of component IDs to filter by
-	ComponentIds *string `form:"component_ids,omitempty" json:"component_ids,omitempty"`
+	// ComponentIds List of component IDs to filter by
+	ComponentIds *[]int `form:"component_ids,omitempty" json:"component_ids,omitempty"`
 
-	// ComponentGroupIds Comma-separated list of component group IDs to filter by
-	ComponentGroupIds *string `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
+	// ComponentGroupIds List of component group IDs to filter by
+	ComponentGroupIds *[]int `form:"component_group_ids,omitempty" json:"component_group_ids,omitempty"`
 }
 
 // ListViewsParams defines parameters for ListViews.
 type ListViewsParams struct {
 	// Search Optional search term to filter views by name or description
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+}
+
+// ListViewNotificationsParams defines parameters for ListViewNotifications.
+type ListViewNotificationsParams struct {
+	// PageNumber Page number for paginated results (default: 1)
+	PageNumber *int `form:"page_number,omitempty" json:"page_number,omitempty"`
+
+	// PageSize Number of items per page (default: 20)
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// Search Optional search term to filter notifications by name or type
 	Search *string `form:"search,omitempty" json:"search,omitempty"`
 }
 
@@ -362,6 +449,12 @@ type CreateViewJSONRequestBody = CreateViewRequest
 
 // EditViewJSONRequestBody defines body for EditView for application/json ContentType.
 type EditViewJSONRequestBody = EditViewRequest
+
+// AddViewNotificationJSONRequestBody defines body for AddViewNotification for application/json ContentType.
+type AddViewNotificationJSONRequestBody = ViewNotificationRequest
+
+// EditViewNotificationJSONRequestBody defines body for EditViewNotification for application/json ContentType.
+type EditViewNotificationJSONRequestBody = ViewNotificationRequest
 
 // AddViewServiceJSONRequestBody defines body for AddViewService for application/json ContentType.
 type AddViewServiceJSONRequestBody = AddViewServiceRequest
@@ -410,6 +503,18 @@ type ServerInterface interface {
 
 	// (PUT /api/views/{publicId})
 	EditView(w http.ResponseWriter, r *http.Request, publicId string)
+
+	// (GET /api/views/{publicId}/notifications)
+	ListViewNotifications(w http.ResponseWriter, r *http.Request, publicId string, params ListViewNotificationsParams)
+
+	// (POST /api/views/{publicId}/notifications)
+	AddViewNotification(w http.ResponseWriter, r *http.Request, publicId string)
+
+	// (DELETE /api/views/{publicId}/notifications/{notificationId})
+	DeleteViewNotification(w http.ResponseWriter, r *http.Request, publicId string, notificationId int)
+
+	// (PUT /api/views/{publicId}/notifications/{notificationId})
+	EditViewNotification(w http.ResponseWriter, r *http.Request, publicId string, notificationId int)
 
 	// (POST /api/views/{publicId}/services)
 	AddViewService(w http.ResponseWriter, r *http.Request, publicId string)
@@ -496,6 +601,26 @@ func (_ Unimplemented) GetView(w http.ResponseWriter, r *http.Request, publicId 
 
 // (PUT /api/views/{publicId})
 func (_ Unimplemented) EditView(w http.ResponseWriter, r *http.Request, publicId string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /api/views/{publicId}/notifications)
+func (_ Unimplemented) ListViewNotifications(w http.ResponseWriter, r *http.Request, publicId string, params ListViewNotificationsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (POST /api/views/{publicId}/notifications)
+func (_ Unimplemented) AddViewNotification(w http.ResponseWriter, r *http.Request, publicId string) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (DELETE /api/views/{publicId}/notifications/{notificationId})
+func (_ Unimplemented) DeleteViewNotification(w http.ResponseWriter, r *http.Request, publicId string, notificationId int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (PUT /api/views/{publicId}/notifications/{notificationId})
+func (_ Unimplemented) EditViewNotification(w http.ResponseWriter, r *http.Request, publicId string, notificationId int) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -700,7 +825,7 @@ func (siw *ServerInterfaceWrapper) IncidentByStatuspage(w http.ResponseWriter, r
 
 	// ------------- Optional query parameter "component_ids" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_ids", Err: err})
 		return
@@ -708,7 +833,7 @@ func (siw *ServerInterfaceWrapper) IncidentByStatuspage(w http.ResponseWriter, r
 
 	// ------------- Optional query parameter "component_group_ids" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_group_ids", Err: err})
 		return
@@ -760,7 +885,7 @@ func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.Respo
 
 	// ------------- Optional query parameter "component_ids" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "component_ids", r.URL.Query(), &params.ComponentIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_ids", Err: err})
 		return
@@ -768,7 +893,7 @@ func (siw *ServerInterfaceWrapper) ScheduledMaintenanceByStatuspage(w http.Respo
 
 	// ------------- Optional query parameter "component_group_ids" -------------
 
-	err = runtime.BindQueryParameterWithOptions("form", false, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "component_group_ids", r.URL.Query(), &params.ComponentGroupIds, runtime.BindQueryParameterOptions{Type: "array", Format: ""})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "component_group_ids", Err: err})
 		return
@@ -906,6 +1031,151 @@ func (siw *ServerInterfaceWrapper) EditView(w http.ResponseWriter, r *http.Reque
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.EditView(w, r, publicId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListViewNotifications operation middleware
+func (siw *ServerInterfaceWrapper) ListViewNotifications(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListViewNotificationsParams
+
+	// ------------- Optional query parameter "page_number" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_number", r.URL.Query(), &params.PageNumber, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_number", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "page_size", r.URL.Query(), &params.PageSize, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "search" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", false, false, "search", r.URL.Query(), &params.Search, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "search", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListViewNotifications(w, r, publicId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AddViewNotification operation middleware
+func (siw *ServerInterfaceWrapper) AddViewNotification(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddViewNotification(w, r, publicId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteViewNotification operation middleware
+func (siw *ServerInterfaceWrapper) DeleteViewNotification(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "notificationId" -------------
+	var notificationId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "notificationId", chi.URLParam(r, "notificationId"), &notificationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "notificationId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteViewNotification(w, r, publicId, notificationId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// EditViewNotification operation middleware
+func (siw *ServerInterfaceWrapper) EditViewNotification(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "publicId" -------------
+	var publicId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "publicId", chi.URLParam(r, "publicId"), &publicId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "publicId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "notificationId" -------------
+	var notificationId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "notificationId", chi.URLParam(r, "notificationId"), &notificationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "notificationId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.EditViewNotification(w, r, publicId, notificationId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1281,6 +1551,18 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/api/views/{publicId}", wrapper.EditView)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/views/{publicId}/notifications", wrapper.ListViewNotifications)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/views/{publicId}/notifications", wrapper.AddViewNotification)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/views/{publicId}/notifications/{notificationId}", wrapper.DeleteViewNotification)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/views/{publicId}/notifications/{notificationId}", wrapper.EditViewNotification)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/views/{publicId}/services", wrapper.AddViewService)
@@ -1872,7 +2154,7 @@ type ListViewsResponseObject interface {
 	VisitListViewsResponse(w http.ResponseWriter) error
 }
 
-type ListViews200JSONResponse []View
+type ListViews200JSONResponse PaginatedViews
 
 func (response ListViews200JSONResponse) VisitListViewsResponse(w http.ResponseWriter) error {
 
@@ -2315,6 +2597,317 @@ func (response EditView409JSONResponse) VisitEditViewResponse(w http.ResponseWri
 type EditView500JSONResponse ErrorResponse
 
 func (response EditView500JSONResponse) VisitEditViewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViewNotificationsRequestObject struct {
+	PublicId string `json:"publicId"`
+	Params   ListViewNotificationsParams
+}
+
+type ListViewNotificationsResponseObject interface {
+	VisitListViewNotificationsResponse(w http.ResponseWriter) error
+}
+
+type ListViewNotifications200JSONResponse PaginatedViewNotifications
+
+func (response ListViewNotifications200JSONResponse) VisitListViewNotificationsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViewNotifications400JSONResponse ErrorResponse
+
+func (response ListViewNotifications400JSONResponse) VisitListViewNotificationsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViewNotifications404JSONResponse ErrorResponse
+
+func (response ListViewNotifications404JSONResponse) VisitListViewNotificationsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViewNotifications409JSONResponse ErrorResponse
+
+func (response ListViewNotifications409JSONResponse) VisitListViewNotificationsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type ListViewNotifications500JSONResponse ErrorResponse
+
+func (response ListViewNotifications500JSONResponse) VisitListViewNotificationsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewNotificationRequestObject struct {
+	PublicId string `json:"publicId"`
+	Body     *AddViewNotificationJSONRequestBody
+}
+
+type AddViewNotificationResponseObject interface {
+	VisitAddViewNotificationResponse(w http.ResponseWriter) error
+}
+
+type AddViewNotification200JSONResponse ViewNotificationResponse
+
+func (response AddViewNotification200JSONResponse) VisitAddViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewNotification400JSONResponse ErrorResponse
+
+func (response AddViewNotification400JSONResponse) VisitAddViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewNotification404JSONResponse ErrorResponse
+
+func (response AddViewNotification404JSONResponse) VisitAddViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewNotification409JSONResponse ErrorResponse
+
+func (response AddViewNotification409JSONResponse) VisitAddViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type AddViewNotification500JSONResponse ErrorResponse
+
+func (response AddViewNotification500JSONResponse) VisitAddViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewNotificationRequestObject struct {
+	PublicId       string `json:"publicId"`
+	NotificationId int    `json:"notificationId"`
+}
+
+type DeleteViewNotificationResponseObject interface {
+	VisitDeleteViewNotificationResponse(w http.ResponseWriter) error
+}
+
+type DeleteViewNotification204Response struct {
+}
+
+func (response DeleteViewNotification204Response) VisitDeleteViewNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteViewNotification400JSONResponse ErrorResponse
+
+func (response DeleteViewNotification400JSONResponse) VisitDeleteViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewNotification404JSONResponse ErrorResponse
+
+func (response DeleteViewNotification404JSONResponse) VisitDeleteViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewNotification409JSONResponse ErrorResponse
+
+func (response DeleteViewNotification409JSONResponse) VisitDeleteViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type DeleteViewNotification500JSONResponse ErrorResponse
+
+func (response DeleteViewNotification500JSONResponse) VisitDeleteViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewNotificationRequestObject struct {
+	PublicId       string `json:"publicId"`
+	NotificationId int    `json:"notificationId"`
+	Body           *EditViewNotificationJSONRequestBody
+}
+
+type EditViewNotificationResponseObject interface {
+	VisitEditViewNotificationResponse(w http.ResponseWriter) error
+}
+
+type EditViewNotification200JSONResponse ViewNotificationResponse
+
+func (response EditViewNotification200JSONResponse) VisitEditViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewNotification400JSONResponse ErrorResponse
+
+func (response EditViewNotification400JSONResponse) VisitEditViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewNotification404JSONResponse ErrorResponse
+
+func (response EditViewNotification404JSONResponse) VisitEditViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewNotification409JSONResponse ErrorResponse
+
+func (response EditViewNotification409JSONResponse) VisitEditViewNotificationResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type EditViewNotification500JSONResponse ErrorResponse
+
+func (response EditViewNotification500JSONResponse) VisitEditViewNotificationResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -2837,6 +3430,18 @@ type StrictServerInterface interface {
 	// (PUT /api/views/{publicId})
 	EditView(ctx context.Context, request EditViewRequestObject) (EditViewResponseObject, error)
 
+	// (GET /api/views/{publicId}/notifications)
+	ListViewNotifications(ctx context.Context, request ListViewNotificationsRequestObject) (ListViewNotificationsResponseObject, error)
+
+	// (POST /api/views/{publicId}/notifications)
+	AddViewNotification(ctx context.Context, request AddViewNotificationRequestObject) (AddViewNotificationResponseObject, error)
+
+	// (DELETE /api/views/{publicId}/notifications/{notificationId})
+	DeleteViewNotification(ctx context.Context, request DeleteViewNotificationRequestObject) (DeleteViewNotificationResponseObject, error)
+
+	// (PUT /api/views/{publicId}/notifications/{notificationId})
+	EditViewNotification(ctx context.Context, request EditViewNotificationRequestObject) (EditViewNotificationResponseObject, error)
+
 	// (POST /api/views/{publicId}/services)
 	AddViewService(ctx context.Context, request AddViewServiceRequestObject) (AddViewServiceResponseObject, error)
 
@@ -3235,6 +3840,127 @@ func (sh *strictHandler) EditView(w http.ResponseWriter, r *http.Request, public
 	}
 }
 
+// ListViewNotifications operation middleware
+func (sh *strictHandler) ListViewNotifications(w http.ResponseWriter, r *http.Request, publicId string, params ListViewNotificationsParams) {
+	var request ListViewNotificationsRequestObject
+
+	request.PublicId = publicId
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListViewNotifications(ctx, request.(ListViewNotificationsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListViewNotifications")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListViewNotificationsResponseObject); ok {
+		if err := validResponse.VisitListViewNotificationsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// AddViewNotification operation middleware
+func (sh *strictHandler) AddViewNotification(w http.ResponseWriter, r *http.Request, publicId string) {
+	var request AddViewNotificationRequestObject
+
+	request.PublicId = publicId
+
+	var body AddViewNotificationJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.AddViewNotification(ctx, request.(AddViewNotificationRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "AddViewNotification")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(AddViewNotificationResponseObject); ok {
+		if err := validResponse.VisitAddViewNotificationResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteViewNotification operation middleware
+func (sh *strictHandler) DeleteViewNotification(w http.ResponseWriter, r *http.Request, publicId string, notificationId int) {
+	var request DeleteViewNotificationRequestObject
+
+	request.PublicId = publicId
+	request.NotificationId = notificationId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteViewNotification(ctx, request.(DeleteViewNotificationRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteViewNotification")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteViewNotificationResponseObject); ok {
+		if err := validResponse.VisitDeleteViewNotificationResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// EditViewNotification operation middleware
+func (sh *strictHandler) EditViewNotification(w http.ResponseWriter, r *http.Request, publicId string, notificationId int) {
+	var request EditViewNotificationRequestObject
+
+	request.PublicId = publicId
+	request.NotificationId = notificationId
+
+	var body EditViewNotificationJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.EditViewNotification(ctx, request.(EditViewNotificationRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "EditViewNotification")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(EditViewNotificationResponseObject); ok {
+		if err := validResponse.VisitEditViewNotificationResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // AddViewService operation middleware
 func (sh *strictHandler) AddViewService(w http.ResponseWriter, r *http.Request, publicId string) {
 	var request AddViewServiceRequestObject
@@ -3413,52 +4139,58 @@ func (sh *strictHandler) GetViewServices(w http.ResponseWriter, r *http.Request,
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"f77+XwAAAP//APW7ww1+AAA=",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

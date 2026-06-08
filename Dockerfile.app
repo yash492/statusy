@@ -4,8 +4,6 @@ WORKDIR /app
 COPY _ui/package.json _ui/bun.lock ./_ui/
 RUN cd _ui && bun install --frozen-lockfile
 COPY _ui/ ./_ui/
-ENV PUBLIC_API_SERVER_ROUTE=/api
-ENV PUBLIC_LOCAL_API_SERVER_ROUTE=http://localhost:8081/api
 RUN cd _ui && bun run build
 
 # Stage 2: Build Go backend

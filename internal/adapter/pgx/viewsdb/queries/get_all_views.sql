@@ -13,7 +13,7 @@ WHERE
   AND (
     @search::TEXT = ''
     OR name ILIKE '%' || @search || '%'
-    OR description ILIKE '%' || @search || '%'
   )
 ORDER BY
-  is_default DESC, name ASC;
+  is_default DESC, name ASC
+LIMIT @limit;

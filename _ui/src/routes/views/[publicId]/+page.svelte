@@ -3,12 +3,12 @@
 	import { ViewsApi } from '$lib/api/views/views';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Table from '$lib/components/ui/table';
-	import ViewForm from '$lib/components/ViewForm.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import * as Table from '$lib/components/ui/table';
+	import ViewForm from '$lib/components/custom/ViewForm.svelte';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
-	import Calendar from '@lucide/svelte/icons/calendar';
 	import Bell from '@lucide/svelte/icons/bell';
+	import Calendar from '@lucide/svelte/icons/calendar';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Search from '@lucide/svelte/icons/search';
@@ -170,18 +170,18 @@
 		await invalidateAll();
 	}
 
-	function openNotificationConfig() {
-		toast.info('Notification configuration coming soon');
-	}
-
 	function getEventsUrl(service: any) {
 		const params = new URLSearchParams();
 		if (!service.include_all_components) {
 			if (service.component_ids && service.component_ids.length > 0) {
-				params.set('component_ids', service.component_ids.join(','));
+				for (const id of service.component_ids) {
+					params.append('component_ids', String(id));
+				}
 			}
 			if (service.component_group_ids && service.component_group_ids.length > 0) {
-				params.set('component_group_ids', service.component_group_ids.join(','));
+				for (const id of service.component_group_ids) {
+					params.append('component_group_ids', String(id));
+				}
 			}
 		}
 		const queryString = params.toString();
@@ -213,15 +213,15 @@
 			</div>
 
 			<div class="flex items-center gap-2.5">
-				<button
-					onclick={openNotificationConfig}
+				<a
+					href="/views/{data.view.public_id}/notifications"
 					class="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
 					title="Configure Notifications"
 					aria-label="Configure notifications"
 				>
 					<Bell class="size-3.5" />
 					<span>Configure Notifications</span>
-				</button>
+				</a>
 
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger
@@ -231,13 +231,20 @@
 					>
 						<Settings class="size-4" />
 					</DropdownMenu.Trigger>
-					<DropdownMenu.Content align="end" class="border-zinc-800 bg-zinc-950 text-white min-w-45">
-						<DropdownMenu.Item onclick={openEditViewDialog} class="cursor-pointer hover:bg-zinc-900/50">
+					<DropdownMenu.Content align="end" class="min-w-45 border-zinc-800 bg-zinc-950 text-white">
+						<DropdownMenu.Item
+							onclick={openEditViewDialog}
+							class="cursor-pointer hover:bg-zinc-900/50"
+						>
 							<Pencil class="mr-2 size-3.5" />
 							<span>Edit View</span>
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator class="bg-zinc-900" />
-						<DropdownMenu.Item onclick={openDeleteViewDialog} variant="destructive" class="cursor-pointer hover:bg-red-950/20">
+						<DropdownMenu.Item
+							onclick={openDeleteViewDialog}
+							variant="destructive"
+							class="cursor-pointer hover:bg-red-950/20"
+						>
 							<Trash2 class="mr-2 size-3.5 text-red-500" />
 							<span>Delete View</span>
 						</DropdownMenu.Item>
@@ -315,8 +322,8 @@
 
 			<Table.Body>
 				{#each localServices as service (service.id)}
-					<Table.Row 
-						class="group border-zinc-800 transition-all duration-200 hover:bg-zinc-900/30 cursor-pointer"
+					<Table.Row
+						class="group cursor-pointer border-zinc-800 transition-all duration-200 hover:bg-zinc-900/30"
 						onclick={(e) => {
 							const target = e.target as HTMLElement;
 							if (target.closest('a') || target.closest('button')) {

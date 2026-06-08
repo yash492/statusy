@@ -18,6 +18,7 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/schedulemaintenancecomponentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
 	"github.com/yash492/statusy/internal/command"
+	"github.com/yash492/statusy/internal/common/queue"
 	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/domain/statuspage"
 	"resty.dev/v3"
@@ -105,6 +106,8 @@ func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
 	restyClient.SetRetryWaitTime(2 * time.Second)
 	restyClient.SetRetryMaxWaitTime(8 * time.Second)
 
+	q := queue.NewPGMQQueue(deps.writeDB)
+
 	registeredStatusPage := collector.RegisterAll(restyClient)
 	return ScrapperApplication{
 		lg:                   deps.lg,
@@ -121,6 +124,7 @@ func NewScrapperApplication(deps ScrapperDeps) ScrapperApplication {
 				scheduledMaintenanceComponentsRepo,
 				componentsRepo,
 				componentGroupsRepo,
+				q,
 				lg,
 			),
 		},
@@ -147,9 +151,10 @@ func (s ScrapperApplication) Start(ctx context.Context, scrapInterval int) error
 		return err
 	}
 
-	executeScrape := func() {
+	executeScrape := func(skipEnqueue bool) {
 		err := s.commands.scrapper.Execute(ctx, command.ScrapperParams{
-			Services: servicesResult,
+			Services:    servicesResult,
+			SkipEnqueue: skipEnqueue,
 		})
 
 		if err != nil {
@@ -158,7 +163,7 @@ func (s ScrapperApplication) Start(ctx context.Context, scrapInterval int) error
 	}
 
 	// Run once at startup so we don't wait an entire interval before first scrape.
-	executeScrape()
+	executeScrape(false)
 
 	ticker := time.NewTicker(time.Duration(scrapInterval) * time.Second)
 	defer ticker.Stop()
@@ -169,7 +174,7 @@ func (s ScrapperApplication) Start(ctx context.Context, scrapInterval int) error
 			s.lg.InfoContext(ctx, "scraper stopped", "reason", ctx.Err())
 			return ctx.Err()
 		case <-ticker.C:
-			executeScrape()
+			executeScrape(false)
 		}
 	}
 

@@ -96,13 +96,13 @@ func (r *PostgresViewsRepository) UpdateViewService(ctx context.Context, vs view
 	compIDs := componentIDs
 	if compIDs == nil {
 		compIDs = []int{}
- 	}
- 
+	}
+
 	compGrpIDs := componentGroupIDs
 	if compGrpIDs == nil {
 		compGrpIDs = []int{}
- 	}
- 
+	}
+
 	return views.ViewService{
 		ID:                           dto.ID,
 		ViewID:                       dto.ViewID,

@@ -2,7 +2,6 @@ package viewsdb
 
 import (
 	"log/slog"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yash492/statusy/internal/domain/views"
@@ -26,50 +25,4 @@ func NewPostgresViewsRepository(
 		readDB:  readDB,
 		writeDB: writeDB,
 	}
-}
-
-// viewDto maps a row from the views table.
-type viewDto struct {
-	ID          uint       `db:"id"`
-	Name        string     `db:"name"`
-	PublicID    string     `db:"public_id"`
-	Description string     `db:"description"`
-	IsDefault   bool       `db:"is_default"`
-	CreatedAt   time.Time  `db:"created_at"`
-	UpdatedAt   time.Time  `db:"updated_at"`
-	DeletedAt   *time.Time `db:"deleted_at"`
-}
-
-// viewServiceDto maps a row joining view_services → services.
-type viewServiceDto struct {
-	ID                           uint       `db:"id"`
-	Name                         string     `db:"name"`
-	Slug                         string     `db:"slug"`
-	IncludeAllComponents         bool       `db:"include_all_components"`
-	MonitorIncidents             bool       `db:"monitor_incidents"`
-	MonitorScheduledMaintenances bool       `db:"monitor_scheduled_maintenances"`
-	Status                       string     `db:"status"`
-	LastIncident                 string     `db:"last_incident"`
-	LastIncidentLink             string     `db:"last_incident_link"`
-	UpcomingMaintenance          string     `db:"upcoming_maintenance"`
-	UpcomingMaintenanceLink      string     `db:"upcoming_maintenance_link"`
-	ComponentIDs                 []int      `db:"component_ids"`
-	ComponentGroupIDs            []int      `db:"component_group_ids"`
-	UpdatedAt                    time.Time  `db:"updated_at"`
-	DeletedAt                    *time.Time `db:"deleted_at"`
-}
-
-// viewServiceFullDto maps a full row from the view_services table.
-type viewServiceFullDto struct {
-	ID                           uint       `db:"id"`
-	ViewID                       uint       `db:"view_id"`
-	ServiceID                    uint       `db:"service_id"`
-	IncludeAllComponents         bool       `db:"include_all_components"`
-	MonitorIncidents             bool       `db:"monitor_incidents"`
-	MonitorScheduledMaintenances bool       `db:"monitor_scheduled_maintenances"`
-	ComponentIDs                 []int      `db:"component_ids"`
-	ComponentGroupIDs            []int      `db:"component_group_ids"`
-	CreatedAt                    time.Time  `db:"created_at"`
-	UpdatedAt                    time.Time  `db:"updated_at"`
-	DeletedAt                    *time.Time `db:"deleted_at"`
 }

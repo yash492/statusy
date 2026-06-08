@@ -10,7 +10,6 @@ import (
 	"github.com/yash492/statusy/internal/common/apperrors"
 )
 
-
 //go:embed queries/soft_delete_view_service.sql
 var softDeleteViewServiceQuery string
 
