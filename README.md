@@ -1,57 +1,104 @@
 # statusy
 
-> WIP: This project is actively under development.
+> ⚠️ This project is unstable and actively under development. Expect breaking changes.
 
-Statusy aggregates incidents and component status from external provider status pages into a single backend.
-It stores normalized data in PostgreSQL and serves it for API and UI consumption.
+Statusy is a backend service that aggregates incidents, component statuses, and scheduled maintenances from external provider status pages into a single normalized store. It periodically scrapes supported status pages, persists the data in PostgreSQL, and dispatches notifications to configured channels (Slack, Discord, MS Teams, PagerDuty, webhooks, and SolarWinds Incident Response) when things change.
 
-## Running the Application
+Built with [Antigravity](https://antigravity.dev) by Google DeepMind.
 
-Run the backend, frontend, and database services:
+---
+
+## What it does
+
+- **Scrapes** status pages from 17 providers on a configurable interval
+- **Normalizes** incident and component status data into a common format
+- **Stores** everything in PostgreSQL (with separate read/write pool connections)
+- **Queues** notification jobs via [PGMQ](https://github.com/tembo-io/pgmq) (Postgres-native message queue)
+- **Dispatches** alerts to notification channels when incidents open, update, or resolve
+- **Serves** an HTTP API (OpenAPI-generated) for UI and external consumption
+- **Ships as a single binary** — PostgreSQL is the only external dependency (PGMQ is installed as a Postgres extension)
+
+## Supported Status Pages
+
+| Provider | Page |
+|---|---|
+| Anthropic Claude | status.claude.com |
+| CircleCI | status.circleci.com |
+| Cloudflare | cloudflarestatus.com |
+| Cursor | status.cursor.com |
+| Datadog | status.datadoghq.com |
+| DigitalOcean | status.digitalocean.com |
+| Discord | discordstatus.com |
+| Dropbox | status.dropbox.com |
+| GitHub | githubstatus.com |
+| HashiCorp | status.hashicorp.com |
+| New Relic | status.newrelic.com |
+| OpenAI | status.openai.com |
+| Pleo | status.pleo.io |
+| Plivo | status.plivo.com |
+| SolarWinds Observability | status.cloud.solarwinds.com |
+| Twilio | status.twilio.com |
+| Zoom | zoomstatus.com |
+
+If the status page you need isn't listed, feel free to open a pull request adding it.
+
+## Notification Channels
+
+Slack · Discord · Microsoft Teams · PagerDuty · SolarWinds Incident Response · Generic Webhook
+
+## Running Locally
+
+Start the backend, database, and PGMQ installer with Docker Compose:
 
 ```bash
 docker compose up --build
 ```
 
-- **Frontend UI:** [http://localhost:3000](http://localhost:3000)
-- **Backend API:** [http://localhost:8081/api](http://localhost:8081/api)
+- **Backend API:** http://localhost:8081/api
 
-To stop all services:
+To stop:
 
 ```bash
 docker compose down
 ```
 
-## Supported Status Pages
+For hot-reload development (requires [air](https://github.com/air-verse/air) and [just](https://github.com/casey/just)):
 
-- [Anthropic Claude](https://status.claude.com)
-- [CircleCI](https://status.circleci.com)
-- [Cloudflare](https://www.cloudflarestatus.com)
-- [Cursor](https://status.cursor.com)
-- [Datadog](https://status.datadoghq.com)
-- [DigitalOcean](https://status.digitalocean.com)
-- [Discord](https://discordstatus.com)
-- [Dropbox](https://status.dropbox.com)
-- [GitHub](https://www.githubstatus.com)
-- [New Relic](https://status.newrelic.com)
-- [Plivo](https://status.plivo.com)
-- [SolarWinds Observability](https://status.cloud.solarwinds.com)
-- [Twilio](https://status.twilio.com)
-- [Zoom](https://www.zoomstatus.com)
+```bash
+just air
+```
 
-## Dependencies Used
+## Tech Stack
 
-### Runtime & Tooling
+| Layer | Tool |
+|---|---|
+| Language | Go 1.26 |
+| Database | PostgreSQL 18 |
+| Message Queue | PGMQ (Postgres extension) |
+| HTTP router | chi |
+| DB driver | pgx/v5 |
+| API spec | TypeSpec + oapi-codegen |
+| Migrations | goose |
+| HTTP client | resty v3 |
+| Frontend | Bun (see `_ui/`) |
 
-- Golang (Go 1.25)
-- Bun
-- Just (justfile)
-- PostgreSQL
-- Docker Compose (for local services)
+## Architecture
 
-### Code Generation
+The project follows hexagonal architecture (ports and adapters). Dependencies flow inward toward the core domain:
 
-- TypeSpec compiler (`tsp`)
-- oapi-codegen
+```
+cmd/               → entry point, wires everything
+internal/
+  domain/          → core models and port interfaces
+  command/         → use cases / business logic
+  adapter/pgx/     → PostgreSQL adapters (read/write pool)
+  adapter/collector/ → status page scrapers
+  adapter/notification/ → channel dispatchers
+  port/            → inbound HTTP handlers (OpenAPI strict)
+  applications/    → runtime lifecycle (server, scraper, dispatcher)
+  common/          → shared helpers (queue, IDs, errors)
+```
 
+## License
 
+[GPL-3.0](./LICENSE)
