@@ -40,7 +40,7 @@ Built with [Antigravity](https://antigravity.google).
 | Twilio | status.twilio.com |
 | Zoom | zoomstatus.com |
 
-If the status page you need isn't listed, feel free to open a pull request adding it.
+If the status page you need isn't listed, feel free to open a pull request adding it or open up an issue.
 
 ## Notification Channels
 
