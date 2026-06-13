@@ -60,8 +60,8 @@ export async function load({ params, url }) {
 	const statuspageApi = new StatuspageApi();
 	const [data, errorRes] =
 		type === 'scheduled-maintenances'
-			? await statuspageApi.scheduledMaintenances(params.slug, page, pageSize, componentIds, componentGroupIds)
-			: await statuspageApi.incidents(params.slug, page, pageSize, componentIds, componentGroupIds);
+			? await statuspageApi.scheduledMaintenances(params.serviceSlug, page, pageSize, componentIds, componentGroupIds)
+			: await statuspageApi.incidents(params.serviceSlug, page, pageSize, componentIds, componentGroupIds);
 
 	if (errorRes || !data) {
 		error(500, errorRes?.message || 'Failed to load status page events');
@@ -69,7 +69,7 @@ export async function load({ params, url }) {
 
 	let serviceComponents = null;
 	if (componentIds.length > 0 || componentGroupIds.length > 0) {
-		const [compRes, compErr] = await statuspageApi.getComponents(params.slug);
+		const [compRes, compErr] = await statuspageApi.getComponents(params.serviceSlug);
 		if (!compErr && compRes) {
 			serviceComponents = compRes;
 		}

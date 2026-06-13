@@ -37,16 +37,10 @@
 					list.push({ label: 'Edit Service' });
 				} else if (pathname.endsWith('/notifications')) {
 					list.push({ label: 'Configure Notifications' });
+				} else if (pathname.endsWith('/events')) {
+					list.push({ label: data.resp?.statuspage?.name ?? 'Status Page' });
 				}
 			}
-		} else if (pathname.startsWith('/statuspages/')) {
-			const defaultView = data.defaultView;
-			const viewUrl = defaultView ? `/views/${defaultView.public_id}` : '/';
-
-			list.push({ label: 'Views', href: viewUrl });
-
-			const statuspageName = data.resp?.statuspage?.name ?? 'Status Page';
-			list.push({ label: statuspageName });
 		}
 
 		return list;

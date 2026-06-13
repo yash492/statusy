@@ -185,7 +185,10 @@
 			}
 		}
 		const queryString = params.toString();
-		return `/statuspages/${service.slug}/events` + (queryString ? `?${queryString}` : '');
+		return (
+			`/views/${data.view.public_id}/${service.slug}/events` +
+			(queryString ? `?${queryString}` : '')
+		);
 	}
 </script>
 
