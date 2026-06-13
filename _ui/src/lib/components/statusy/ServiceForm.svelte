@@ -347,8 +347,7 @@
 						href="https://github.com/yash492/statusy/issues/new"
 						target="_blank"
 						rel="noopener noreferrer"
-						class="text-zinc-200 underline hover:text-white"
-						>request it by creating an issue here</a
+						class="text-zinc-200 underline hover:text-white">request it by creating an issue here</a
 					>.
 				</p>
 			</div>
@@ -389,7 +388,6 @@
 										</span>
 									{/if}
 								</div>
-
 							</Select>
 						</div>
 					{:else if activeService}
@@ -408,7 +406,7 @@
 								<ControlledCheckbox
 									id="monitor-incidents"
 									checked={monitorIncidents}
-									onchange={() => monitorIncidents = !monitorIncidents}
+									onchange={() => (monitorIncidents = !monitorIncidents)}
 									class="size-5 shrink-0 cursor-pointer"
 								/>
 								<span class="text-sm font-semibold text-zinc-200">Monitor Incidents</span>
@@ -417,10 +415,12 @@
 								<ControlledCheckbox
 									id="monitor-maintenances"
 									checked={monitorMaintenances}
-									onchange={() => monitorMaintenances = !monitorMaintenances}
+									onchange={() => (monitorMaintenances = !monitorMaintenances)}
 									class="size-5 shrink-0 cursor-pointer"
 								/>
-								<span class="text-sm font-semibold text-zinc-200">Monitor Scheduled Maintenances</span>
+								<span class="text-sm font-semibold text-zinc-200"
+									>Monitor Scheduled Maintenances</span
+								>
 							</label>
 						</div>
 					</div>

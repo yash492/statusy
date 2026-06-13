@@ -54,7 +54,7 @@ export async function safeAsync<T>(promise: Promise<T>): Promise<Response<T>> {
 }
 
 const KyClient = ky.create({
-	prefix: "/api",
+	prefix: '/api',
 	headers: {
 		accept: 'application/json'
 	},

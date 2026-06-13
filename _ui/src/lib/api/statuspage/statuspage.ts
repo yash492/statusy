@@ -71,7 +71,13 @@ export class StatuspageApi {
 		return ApiClient.get<Statuspage>(`${this.basePath}/${encodeURIComponent(slug)}`);
 	}
 
-	incidents(slug: string, pageNumber = 1, pageSize = 10, componentIds?: number[], componentGroupIds?: number[]) {
+	incidents(
+		slug: string,
+		pageNumber = 1,
+		pageSize = 10,
+		componentIds?: number[],
+		componentGroupIds?: number[]
+	) {
 		const searchParams = new URLSearchParams({
 			page_number: String(pageNumber),
 			page_size: String(pageSize)
@@ -92,7 +98,13 @@ export class StatuspageApi {
 		);
 	}
 
-	scheduledMaintenances(slug: string, pageNumber = 1, pageSize = 10, componentIds?: number[], componentGroupIds?: number[]) {
+	scheduledMaintenances(
+		slug: string,
+		pageNumber = 1,
+		pageSize = 10,
+		componentIds?: number[],
+		componentGroupIds?: number[]
+	) {
 		const searchParams = new URLSearchParams({
 			page_number: String(pageNumber),
 			page_size: String(pageSize)

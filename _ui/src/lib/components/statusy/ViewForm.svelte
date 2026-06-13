@@ -44,7 +44,7 @@
 			id="view-description"
 			bind:value={description}
 			placeholder={descriptionPlaceholder}
-			class="border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700 min-h-[60px]"
+			class="min-h-[60px] border-zinc-800 bg-zinc-900/50 text-white placeholder-zinc-500 focus-visible:ring-zinc-700"
 		/>
 	</div>
 

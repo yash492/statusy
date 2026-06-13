@@ -37,15 +37,17 @@ export async function load({ params, url }) {
 	const pageSize = parsePositiveInt(url.searchParams.get('page_size'), DEFAULT_PAGE_SIZE);
 	const type = parseType(url.searchParams.get('type'));
 
-	const componentIds = url.searchParams.getAll('component_ids')
-		.flatMap(val => val.split(','))
+	const componentIds = url.searchParams
+		.getAll('component_ids')
+		.flatMap((val) => val.split(','))
 		.map(Number)
-		.filter(n => !isNaN(n));
+		.filter((n) => !isNaN(n));
 
-	const componentGroupIds = url.searchParams.getAll('component_group_ids')
-		.flatMap(val => val.split(','))
+	const componentGroupIds = url.searchParams
+		.getAll('component_group_ids')
+		.flatMap((val) => val.split(','))
 		.map(Number)
-		.filter(n => !isNaN(n));
+		.filter((n) => !isNaN(n));
 
 	// Keep URL canonical by always including normalized pagination and tab params.
 	if (rawPage !== String(page) || rawPageSize !== String(pageSize) || rawType !== type) {
@@ -60,8 +62,20 @@ export async function load({ params, url }) {
 	const statuspageApi = new StatuspageApi();
 	const [data, errorRes] =
 		type === 'scheduled-maintenances'
-			? await statuspageApi.scheduledMaintenances(params.serviceSlug, page, pageSize, componentIds, componentGroupIds)
-			: await statuspageApi.incidents(params.serviceSlug, page, pageSize, componentIds, componentGroupIds);
+			? await statuspageApi.scheduledMaintenances(
+					params.serviceSlug,
+					page,
+					pageSize,
+					componentIds,
+					componentGroupIds
+				)
+			: await statuspageApi.incidents(
+					params.serviceSlug,
+					page,
+					pageSize,
+					componentIds,
+					componentGroupIds
+				);
 
 	if (errorRes || !data) {
 		error(500, errorRes?.message || 'Failed to load status page events');

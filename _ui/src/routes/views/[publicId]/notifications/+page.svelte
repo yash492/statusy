@@ -219,7 +219,7 @@
 			isFormModalOpen = false;
 			editingConfigId = null;
 		}
-		
+
 		if (currentPage > 1 && notificationConfigs.length === 1) {
 			await changePage(currentPage - 1);
 		} else {
@@ -290,8 +290,14 @@
 				>
 					<div class="flex min-w-0 items-center gap-3 pr-4">
 						<!-- Logo Icon -->
-						<div class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/60 shadow-sm">
-							<img src={logoMap[config.type] || '/logos/webhook.svg'} class="size-5 object-contain" alt={config.type} />
+						<div
+							class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/60 shadow-sm"
+						>
+							<img
+								src={logoMap[config.type] || '/logos/webhook.svg'}
+								class="size-5 object-contain"
+								alt={config.type}
+							/>
 						</div>
 
 						<span class="truncate text-base font-bold text-white">{config.name}</span>
@@ -388,8 +394,14 @@
 					>Notification Type</label
 				>
 				<div class="flex items-center gap-3">
-					<div class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 shadow-[0_0_12px_rgba(255,255,255,0.05)]">
-						<img src={logoMap[newConfigType] || '/logos/webhook.svg'} class="size-6 object-contain" alt={newConfigType} />
+					<div
+						class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 shadow-[0_0_12px_rgba(255,255,255,0.05)]"
+					>
+						<img
+							src={logoMap[newConfigType] || '/logos/webhook.svg'}
+							class="size-6 object-contain"
+							alt={newConfigType}
+						/>
 					</div>
 					<select
 						id="channel-type"
@@ -401,7 +413,9 @@
 						<option value="discord">Discord Webhook</option>
 						<option value="msteams">MS Teams Webhook</option>
 						<option value="pagerduty">PagerDuty Event v2</option>
-						<option value="solarwinds_incident_response">Solarwinds Incident Response Webhook</option>
+						<option value="solarwinds_incident_response"
+							>Solarwinds Incident Response Webhook</option
+						>
 						<option value="webhook">Custom Webhook</option>
 					</select>
 				</div>

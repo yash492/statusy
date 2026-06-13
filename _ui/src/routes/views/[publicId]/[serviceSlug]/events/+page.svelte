@@ -258,10 +258,6 @@
 	<Dialog.Content class="border-zinc-800 bg-zinc-950 text-white shadow-xl sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title class="text-lg font-bold text-white">Active Component Filters</Dialog.Title>
-			<Dialog.Description class="text-sm text-zinc-400">
-				Only incidents and scheduled maintenance events affecting the following components are
-				displayed.
-			</Dialog.Description>
 		</Dialog.Header>
 
 		<div class="grid gap-4 py-4">
@@ -334,16 +330,5 @@
 				{/if}
 			</div>
 		</div>
-
-		<Dialog.Footer>
-			<button
-				class="w-full cursor-pointer rounded-lg bg-zinc-100 py-2 text-sm font-semibold text-zinc-950 transition-colors hover:bg-zinc-200"
-				onclick={() => {
-					isFilterDialogOpen = false;
-				}}
-			>
-				Close
-			</button>
-		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

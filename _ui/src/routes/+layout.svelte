@@ -64,7 +64,10 @@
 							{/if}
 							<Breadcrumb.Item>
 								{#if crumb.href}
-									<Breadcrumb.Link href={crumb.href} class="text-zinc-400 hover:text-zinc-100 transition-colors">
+									<Breadcrumb.Link
+										href={crumb.href}
+										class="text-zinc-400 transition-colors hover:text-zinc-100"
+									>
 										{crumb.label}
 									</Breadcrumb.Link>
 								{:else}

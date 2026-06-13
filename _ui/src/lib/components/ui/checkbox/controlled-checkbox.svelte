@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Checkbox from "./checkbox.svelte";
+	import Checkbox from './checkbox.svelte';
 
 	let {
 		id,
@@ -14,7 +14,7 @@
 		indeterminate?: boolean;
 		disabled?: boolean;
 		class?: string;
-		onchange?: (checked: boolean | "indeterminate") => void;
+		onchange?: (checked: boolean | 'indeterminate') => void;
 	}>();
 
 	let localChecked = $state(false);
