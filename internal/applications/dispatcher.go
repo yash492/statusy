@@ -15,6 +15,8 @@ import (
 
 type dispatchFunc func(ctx context.Context, eventID uint) error
 
+const notificationRetryCountLimit = 3
+
 type DispatcherApplication struct {
 	queue        queue.Queue
 	viewsRepo    notifications.NotificationsRepository
@@ -77,7 +79,8 @@ func (d *DispatcherApplication) Start(ctx context.Context) error {
 
 // processBatch reads and handles messages sequentially to guarantee strict execution ordering
 func (d *DispatcherApplication) processBatch(ctx context.Context) (int, error) {
-	messages, err := d.queue.Read(ctx, "notifications", 30, 10)
+
+	messages, err := d.queue.Read(ctx, queue.Notifications, 30, 10)
 	if err != nil {
 		return 0, fmt.Errorf("failed to read from queue: %w", err)
 	}
@@ -92,23 +95,28 @@ func (d *DispatcherApplication) processBatch(ctx context.Context) (int, error) {
 		envelope, err := queue.UnmarshalMessage[queue.AlertPayload](msg)
 		if err != nil {
 			d.lg.ErrorContext(ctx, "corrupt message payload, archiving", slog.String("msg_id", msg.ID), slog.Any("err", err))
-			_ = d.queue.Archive(ctx, "notifications", msg.ID)
+			_ = d.queue.Archive(ctx, queue.Notifications, msg.ID)
 			continue
 		}
 
 		handler, ok := d.handlers[envelope.Payload.EventType]
 		if !ok {
 			d.lg.WarnContext(ctx, "unknown event type, archiving", slog.String("type", string(envelope.Payload.EventType)))
-			_ = d.queue.Archive(ctx, "notifications", msg.ID)
+			_ = d.queue.Archive(ctx, queue.Notifications, msg.ID)
 			continue
 		}
 
 		// Strict sequential execution: wait for all channels of this update to complete
 		if err := handler(ctx, envelope.Payload.EventID); err != nil {
-			return len(messages), fmt.Errorf("dispatch failed for msg %s: %w", msg.ID, err)
+			if msg.ReadCount <= notificationRetryCountLimit {
+				return len(messages), fmt.Errorf("dispatch failed for msg %s: %w", msg.ID, err)
+			}
+			d.lg.ErrorContext(ctx, "dispatch failed after max retries, archiving", slog.String("msg_id", msg.ID), slog.Int("read_count", msg.ReadCount), slog.Any("err", err))
+			_ = d.queue.Archive(ctx, queue.Notifications, msg.ID)
+			continue
 		}
 
-		if err := d.queue.Delete(ctx, "notifications", msg.ID); err != nil {
+		if err := d.queue.Delete(ctx, queue.Notifications, msg.ID); err != nil {
 			return len(messages), fmt.Errorf("failed to delete msg %s: %w", msg.ID, err)
 		}
 	}
@@ -135,13 +143,11 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 			delivery, err := d.viewsRepo.GetDelivery(errGroupCtx, ch.ID, notifications.AlertTypeIncident, details.IncidentID)
 
 			isFirst := false
-			if err != nil {
-				if err, ok := errors.AsType[*apperrors.AppError](err); ok {
-					if err.Type == apperrors.TypeNotFound {
-						isFirst = true
-					} else {
-						return fmt.Errorf("failed to get delivery state: %w", err)
-					}
+			if err, ok := errors.AsType[*apperrors.AppError](err); ok {
+				if err.Type == apperrors.TypeNotFound {
+					isFirst = true
+				} else {
+					return fmt.Errorf("failed to get delivery state: %w", err)
 				}
 			}
 
@@ -208,9 +214,8 @@ func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, u
 			delivery, err := d.viewsRepo.GetDelivery(gCtx, ch.ID, notifications.AlertTypeScheduledMaintenance, details.MaintenanceID)
 
 			isFirst := false
-			if err != nil {
-				var appErr *apperrors.AppError
-				if errors.As(err, &appErr) && appErr.Type == apperrors.TypeNotFound {
+			if err, ok := errors.AsType[*apperrors.AppError](err); ok {
+				if err.Type == apperrors.TypeNotFound {
 					isFirst = true
 				} else {
 					return fmt.Errorf("failed to get delivery state: %w", err)

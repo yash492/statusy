@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"encoding/json"
+
 	"github.com/yash492/statusy/internal/adapter/collector"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentgroupsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/componentsdb"
@@ -13,26 +15,26 @@ import (
 	"github.com/yash492/statusy/internal/adapter/pgx/scheduledmaintenanceupdatesdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/schedulemaintenancecomponentsdb"
 	"github.com/yash492/statusy/internal/adapter/pgx/servicesdb"
-	"github.com/yash492/statusy/internal/domain/services"
 	"github.com/yash492/statusy/internal/common/queue"
-	"encoding/json"
+	"github.com/yash492/statusy/internal/domain/services"
 	"resty.dev/v3"
 )
 
 type mockQueue struct{}
-func (mockQueue) Send(ctx context.Context, queueName string, payload json.RawMessage) (string, error) {
+
+func (mockQueue) Send(ctx context.Context, queueName queue.QueueName, payload json.RawMessage) (string, error) {
 	return "1", nil
 }
-func (mockQueue) SendBatch(ctx context.Context, queueName string, payloads []json.RawMessage) ([]string, error) {
+func (mockQueue) SendBatch(ctx context.Context, queueName queue.QueueName, payloads []json.RawMessage) ([]string, error) {
 	return []string{"1"}, nil
 }
-func (mockQueue) Read(ctx context.Context, queueName string, vt int, limit int) ([]queue.Message, error) {
+func (mockQueue) Read(ctx context.Context, queueName queue.QueueName, vt int, limit int) ([]queue.Message, error) {
 	return nil, nil
 }
-func (mockQueue) Delete(ctx context.Context, queueName string, messageID string) error {
+func (mockQueue) Delete(ctx context.Context, queueName queue.QueueName, messageID string) error {
 	return nil
 }
-func (mockQueue) Archive(ctx context.Context, queueName string, messageID string) error {
+func (mockQueue) Archive(ctx context.Context, queueName queue.QueueName, messageID string) error {
 	return nil
 }
 
