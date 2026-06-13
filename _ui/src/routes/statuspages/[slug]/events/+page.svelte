@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import IncidentsTable, { type Incident } from '$lib/components/custom/IncidentsTable.svelte';
+	import IncidentsTable, { type Incident } from '$lib/components/statusy/IncidentsTable.svelte';
 	import ScheduledMaintenancesTable, {
 		type ScheduledMaintenanceDisplay
-	} from '$lib/components/custom/ScheduledMaintenancesTable.svelte';
+	} from '$lib/components/statusy/ScheduledMaintenancesTable.svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import Search from '@lucide/svelte/icons/search';

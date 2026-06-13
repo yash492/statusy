@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import favicon from '$lib/assets/favicon.svg';
-	import Navbar from '$lib/components/custom/Navbar.svelte';
+	import Navbar from '$lib/components/statusy/Navbar.svelte';
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';

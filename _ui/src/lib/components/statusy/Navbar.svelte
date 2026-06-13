@@ -2,8 +2,8 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { ViewsApi, type View } from '$lib/api/views/views';
+	import ViewForm from '$lib/components/statusy/ViewForm.svelte';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import ViewForm from '$lib/components/custom/ViewForm.svelte';
 	import { ChevronsUpDown, Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -150,7 +150,7 @@
 				type="text"
 				bind:value={searchQuery}
 				placeholder="Search views..."
-				class="w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-1.5 text-base text-white placeholder-zinc-555 outline-none focus:border-zinc-700"
+				class="placeholder-zinc-555 w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-1.5 text-base text-white outline-none focus:border-zinc-700"
 			/>
 		</div>
 
@@ -174,7 +174,7 @@
 								>
 							{/if}
 						</div>
-						<p class="text-zinc-500 mt-0.5 truncate text-xs">
+						<p class="mt-0.5 truncate text-xs text-zinc-500">
 							{view.description || 'No description'}
 						</p>
 					</div>
@@ -188,7 +188,7 @@
 			{/each}
 
 			{#if totalCount > viewsList.length}
-				<p class="text-[11px] text-zinc-500 mt-2 select-none text-center">
+				<p class="mt-2 text-center text-[11px] text-zinc-500 select-none">
 					Showing {viewsList.length} of {totalCount} views. Search to filter.
 				</p>
 			{/if}

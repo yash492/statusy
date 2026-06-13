@@ -13,13 +13,17 @@ JOIN incidents i ON i.id = iu.incident_id AND i.service_id = vs.service_id
 WHERE vs.monitor_incidents = true
   AND vn.deleted_at IS NULL
   AND (
+	-- This checks for the boolean flag
 	vs.include_all_components = true
+	-- This is catcha all when the incident does not have any components
 	OR NOT EXISTS (SELECT 1 FROM incident_components ic WHERE ic.incident_id = i.id)
+	-- This checks for components
 	OR EXISTS (
 	  SELECT 1 FROM incident_components ic
 	  JOIN view_service_components vsc ON vsc.component_id = ic.component_id AND vsc.deleted_at IS NULL
 	  WHERE ic.incident_id = i.id AND vsc.view_service_id = vs.id
 	)
+	-- This checks for component_groups
 	OR EXISTS (
 	  SELECT 1 FROM incident_components ic
 	  JOIN components c ON c.id = ic.component_id AND c.deleted_at IS NULL

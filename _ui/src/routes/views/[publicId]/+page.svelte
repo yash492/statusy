@@ -5,7 +5,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Table from '$lib/components/ui/table';
-	import ViewForm from '$lib/components/custom/ViewForm.svelte';
+	import ViewForm from '$lib/components/statusy/ViewForm.svelte';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
 	import Bell from '@lucide/svelte/icons/bell';
 	import Calendar from '@lucide/svelte/icons/calendar';
