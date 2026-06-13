@@ -70,19 +70,32 @@ func main() {
 	errGroup := new(errgroup.Group)
 
 	errGroup.Go(func() error {
-		return serverApp.Start(ctx, fmt.Sprintf(":%d", cfg.ServerPort))
+		err := serverApp.Start(ctx, fmt.Sprintf(":%d", cfg.ServerPort))
+		if err != nil {
+			return fmt.Errorf("server error: %w", err)
+		}
+		return nil
 	})
 
 	errGroup.Go(func() error {
-		return scrapperApp.Start(ctx, cfg.ScrappingInterval)
+		err := scrapperApp.Start(ctx, cfg.ScrappingInterval)
+		if err != nil {
+			return fmt.Errorf("scrapper error: %w", err)
+		}
+		return nil
+
 	})
 
 	errGroup.Go(func() error {
-		return dispatcherApp.Start(ctx)
+		err := dispatcherApp.Start(ctx)
+		if err != nil {
+			return fmt.Errorf("dispatcher error: %w", err)
+		}
+		return nil
 	})
 
 	if err := errGroup.Wait(); err != nil {
-		logger.Error("server, scrapper, or dispatcher stopped with error", slog.Any("err", err))
+		logger.Error("main waitgroup workers err:", slog.Any("err", err))
 		os.Exit(1)
 	}
 
