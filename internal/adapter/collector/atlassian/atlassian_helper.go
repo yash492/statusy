@@ -79,8 +79,8 @@ func FetchIncidentsHelper(req IncidentReq) []incidents.Incident {
 				Description:        update.Body,
 				IncidentProviderID: incident.ProviderID,
 				ProviderID:         update.ID,
-				Status:             update.Status,
-				ProviderStatus:     statusnormalizer.NormalizeIncidentStatus(update.Status),
+				Status:             statusnormalizer.NormalizeIncidentStatus(update.Status),
+				ProviderStatus:     update.Status,
 				StatusTime:         update.CreatedAt,
 			}
 		})
@@ -116,8 +116,8 @@ func FetchScheduledMaintenanceHelper(req ScheduledMaintenanceReq) []scheduledmai
 				Description:                    update.Body,
 				ScheduledMaintenanceProviderID: scheduledMaintenance.ProviderID,
 				ProviderID:                     update.ID,
-				Status:                         update.Status,
-				ProviderStatus:                 statusnormalizer.NormalizeMaintenanceStatus(update.Status),
+				ProviderStatus:                 update.Status,
+				Status:                         statusnormalizer.NormalizeMaintenanceStatus(update.Status),
 				StatusTime:                     update.CreatedAt,
 			}
 		})
