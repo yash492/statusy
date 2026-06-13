@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/PagerDuty/go-pagerduty"
 	"github.com/yash492/statusy/internal/common/jsonutil"
@@ -29,8 +30,6 @@ var _ ChannelDispatcher = &PagerDutyDispatcher{}
 func (p *PagerDutyDispatcher) Send(
 	ctx context.Context,
 	configRaw json.RawMessage,
-	isFirst bool,
-	isResolve bool,
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
@@ -43,10 +42,11 @@ func (p *PagerDutyDispatcher) Send(
 	}
 
 	eventAction := "trigger"
-	severity := "critical"
-	if isResolve {
+	if data.Status.IsResolved() {
 		eventAction = "resolve"
 	}
+
+	severity := "critical"
 	if data.AlertType == notifications.AlertTypeScheduledMaintenance {
 		severity = "info"
 	}
@@ -54,32 +54,26 @@ func (p *PagerDutyDispatcher) Send(
 	dedupKey := fmt.Sprintf("statusy-%s-%d", string(data.AlertType), data.AlertID)
 	comps := formatComponents(data.Components)
 
-	payload := pagerduty.V2Event{
+	_, err = pagerduty.ManageEventWithContext(ctx, pagerduty.V2Event{
 		RoutingKey: cfg.RoutingKey,
 		Action:     eventAction,
+		Client:     data.ServiceName,
 		DedupKey:   dedupKey,
+		ClientURL:  data.Link,
 		Payload: &pagerduty.V2Payload{
-			Summary:  fmt.Sprintf("[%s] %s", data.ServiceName, data.Title),
-			Source:   "Statusy",
-			Severity: severity,
+			Timestamp: data.UpdatedAt.UTC().Format(time.RFC3339),
+			Summary:   fmt.Sprintf("%s: %s", data.ServiceName, data.Title),
+			Source:    "Statusy",
+			Severity:  severity,
+			Component: comps,
 			Details: map[string]any{
-				"status":              data.Status,
-				"description":         data.Description,
-				"affected_components": comps,
-				"link":                data.Link,
+				"status":      data.Status.String(),
+				"description": data.Description,
 			},
 		},
-	}
-
-	resp, err := p.client.R().
-		SetContext(ctx).
-		SetBody(payload).
-		Post("https://events.pagerduty.com/v2/enqueue")
+	})
 	if err != nil {
-		return "", fmt.Errorf("failed to send PagerDuty HTTP request: %w", err)
-	}
-	if resp.IsError() {
-		return "", fmt.Errorf("PagerDuty returned status code %d: %s", resp.StatusCode(), resp.String())
+		return "", fmt.Errorf("failed to send PagerDuty event: %w", err)
 	}
 
 	return dedupKey, nil

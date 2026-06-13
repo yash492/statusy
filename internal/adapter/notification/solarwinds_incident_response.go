@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/yash492/statusy/internal/common/jsonutil"
 	"resty.dev/v3"
@@ -14,11 +15,19 @@ type SolarwindsConfig struct {
 	WebhookURL string `json:"webhook_url"`
 }
 
-type squadcastPayload struct {
-	Status      string `json:"status"`
-	EventID     string `json:"event_id"`
-	Message     string `json:"message"`
-	Description string `json:"description"`
+type squadcastIncidentEvent struct {
+	Message     string       `json:"message"`
+	Description string       `json:"description"`
+	Tags        incidentTags `json:"tags"`
+	Status      string       `json:"status"`
+	EventID     string       `json:"event_id"`
+}
+
+type incidentTags map[string]incidentTag
+
+type incidentTag struct {
+	Value string `json:"value"`
+	Color string `json:"color,omitempty"`
 }
 
 type SolarwindsDispatcher struct {
@@ -35,8 +44,6 @@ var _ ChannelDispatcher = &SolarwindsDispatcher{}
 func (s *SolarwindsDispatcher) Send(
 	ctx context.Context,
 	configRaw json.RawMessage,
-	isFirst bool,
-	isResolve bool,
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
@@ -49,15 +56,26 @@ func (s *SolarwindsDispatcher) Send(
 	}
 
 	status := "trigger"
-	if isResolve {
+	if data.Status.IsResolved() {
 		status = "resolve"
 	}
 
-	payload := squadcastPayload{
-		Status:      status,
-		EventID:     strconv.FormatUint(uint64(data.AlertID), 10),
-		Message:     fmt.Sprintf("[%s] Alert: %s", data.ServiceName, data.Title),
-		Description: data.Description,
+	comps := formatComponents(data.Components)
+	description := fmt.Sprintf("Updated At: %s\n", data.UpdatedAt.UTC().Format(time.RFC822)) +
+		fmt.Sprintf("Affected Components: %s\n", comps) +
+		fmt.Sprintf("Link: %s\n", data.Link) +
+		data.Description
+
+	payload := squadcastIncidentEvent{
+		Message:     fmt.Sprintf("%s: %s", data.ServiceName, data.Title),
+		Description: description,
+		Tags: incidentTags{
+			"Service":    {Value: data.ServiceName},
+			"Components": {Value: comps},
+			"Link":       {Value: data.Link},
+		},
+		Status:  status,
+		EventID: strconv.FormatUint(uint64(data.AlertID), 10),
 	}
 
 	resp, err := s.client.R().

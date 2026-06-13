@@ -32,8 +32,6 @@ var _ ChannelDispatcher = &DiscordDispatcher{}
 func (d *DiscordDispatcher) Send(
 	ctx context.Context,
 	configRaw json.RawMessage,
-	isFirst bool,
-	isResolve bool,
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
@@ -45,30 +43,40 @@ func (d *DiscordDispatcher) Send(
 		return "", fmt.Errorf("Discord webhook URL is empty")
 	}
 
-	_, colorInt := getColor(isFirst, isResolve)
+	_, colorInt := getColor(data.Status)
 	comps := formatComponents(data.Components)
 
+	fields := []*discordgo.MessageEmbedField{
+		{Name: "Service", Value: data.ServiceName, Inline: true},
+		{Name: "Status", Value: data.Status.ForDisplay(), Inline: true},
+		{Name: "Updated At", Value: data.UpdatedAt.UTC().Format(time.RFC822), Inline: true},
+	}
+
+	if data.StartTime != nil {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Start Time",
+			Value:  data.StartTime.UTC().Format(time.RFC822),
+			Inline: true,
+		})
+	}
+	if data.EndTime != nil {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "End Time",
+			Value:  data.EndTime.UTC().Format(time.RFC822),
+			Inline: true,
+		})
+	}
+
+	fields = append(fields,
+		&discordgo.MessageEmbedField{Name: "Affected Components", Value: comps},
+		&discordgo.MessageEmbedField{Name: "Description", Value: data.Description},
+	)
+
 	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("[%s] Alert: %s", data.ServiceName, data.Title),
-		Description: data.Description,
-		URL:         data.Link,
-		Color:       colorInt,
-		Fields: []*discordgo.MessageEmbedField{
-			{
-				Name:   "Status",
-				Value:  data.Status,
-				Inline: true,
-			},
-			{
-				Name:   "Affected Components",
-				Value:  comps,
-				Inline: false,
-			},
-		},
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: "Statusy",
-		},
-		Timestamp: data.UpdatedAt.UTC().Format(time.RFC3339),
+		Title:  fmt.Sprintf(":rotating_light: **%s - %s**", data.ServiceName, data.Title),
+		URL:    data.Link,
+		Color:  colorInt,
+		Fields: fields,
 	}
 
 	payload := discordgo.WebhookParams{

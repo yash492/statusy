@@ -105,21 +105,21 @@ func (c NotificationDispatchCmd) dispatchIncidentUpdate(ctx context.Context, upd
 		errGroup.Go(func() error {
 			delivery, err := c.viewsRepo.GetDelivery(errGroupCtx, ch.ID, notifications.AlertTypeIncident, details.IncidentID)
 
-			isFirst := false
+			notFound := false
 			if err, ok := errors.AsType[*apperrors.AppError](err); ok {
 				if err.Type == apperrors.TypeNotFound {
-					isFirst = true
+					notFound = true
 				} else {
 					return fmt.Errorf("failed to get delivery state: %w", err)
 				}
 			}
 
-			if !isFirst && delivery.LastUpdateID >= updateID {
+			if !notFound && delivery.LastUpdateID >= updateID {
 				c.lg.DebugContext(errGroupCtx, "incident notification already delivered", slog.Uint64("channel_id", uint64(ch.ID)), slog.Uint64("update_id", uint64(updateID)))
 				return nil
 			}
 
-			extID, sendErr := c.notifier.SendIncident(errGroupCtx, ch, isFirst, details, delivery.ExternalIdentifier)
+			extID, sendErr := c.notifier.SendIncident(errGroupCtx, ch, details, delivery.ExternalIdentifier)
 			if sendErr != nil {
 				c.lg.ErrorContext(errGroupCtx, "failed to dispatch notification",
 					slog.Uint64("channel_id", uint64(ch.ID)),
@@ -139,17 +139,13 @@ func (c NotificationDispatchCmd) dispatchIncidentUpdate(ctx context.Context, upd
 				return nil
 			}
 
-			if isFirst {
-				err = c.viewsRepo.SaveDelivery(errGroupCtx, notifications.NotificationDelivery{
-					ViewNotificationID: ch.ID,
-					AlertType:          notifications.AlertTypeIncident,
-					AlertID:            details.IncidentID,
-					LastUpdateID:       updateID,
-					ExternalIdentifier: extID,
-				})
-			} else {
-				err = c.viewsRepo.UpdateDelivery(errGroupCtx, delivery.ID, updateID, extID)
-			}
+			err = c.viewsRepo.UpsertDelivery(errGroupCtx, notifications.NotificationDelivery{
+				ViewNotificationID: ch.ID,
+				AlertType:          notifications.AlertTypeIncident,
+				AlertID:            details.IncidentID,
+				LastUpdateID:       updateID,
+				ExternalIdentifier: extID,
+			})
 			if err != nil {
 				return fmt.Errorf("failed to record delivery: %w", err)
 			}
@@ -176,21 +172,21 @@ func (c NotificationDispatchCmd) dispatchMaintenanceUpdate(ctx context.Context, 
 		g.Go(func() error {
 			delivery, err := c.viewsRepo.GetDelivery(gCtx, ch.ID, notifications.AlertTypeScheduledMaintenance, details.MaintenanceID)
 
-			isFirst := false
+			notFound := false
 			if err, ok := errors.AsType[*apperrors.AppError](err); ok {
 				if err.Type == apperrors.TypeNotFound {
-					isFirst = true
+					notFound = true
 				} else {
 					return fmt.Errorf("failed to get delivery state: %w", err)
 				}
 			}
 
-			if !isFirst && delivery.LastUpdateID >= updateID {
+			if !notFound && delivery.LastUpdateID >= updateID {
 				c.lg.DebugContext(gCtx, "maintenance notification already delivered", slog.Uint64("channel_id", uint64(ch.ID)), slog.Uint64("update_id", uint64(updateID)))
 				return nil
 			}
 
-			extID, sendErr := c.notifier.SendMaintenance(gCtx, ch, isFirst, details, delivery.ExternalIdentifier)
+			extID, sendErr := c.notifier.SendMaintenance(gCtx, ch, details, delivery.ExternalIdentifier)
 			if sendErr != nil {
 				c.lg.ErrorContext(gCtx, "failed to dispatch notification",
 					slog.Uint64("channel_id", uint64(ch.ID)),
@@ -210,17 +206,13 @@ func (c NotificationDispatchCmd) dispatchMaintenanceUpdate(ctx context.Context, 
 				return nil
 			}
 
-			if isFirst {
-				err = c.viewsRepo.SaveDelivery(gCtx, notifications.NotificationDelivery{
-					ViewNotificationID: ch.ID,
-					AlertType:          notifications.AlertTypeScheduledMaintenance,
-					AlertID:            details.MaintenanceID,
-					LastUpdateID:       updateID,
-					ExternalIdentifier: extID,
-				})
-			} else {
-				err = c.viewsRepo.UpdateDelivery(gCtx, delivery.ID, updateID, extID)
-			}
+			err = c.viewsRepo.UpsertDelivery(gCtx, notifications.NotificationDelivery{
+				ViewNotificationID: ch.ID,
+				AlertType:          notifications.AlertTypeScheduledMaintenance,
+				AlertID:            details.MaintenanceID,
+				LastUpdateID:       updateID,
+				ExternalIdentifier: extID,
+			})
 			if err != nil {
 				return fmt.Errorf("failed to record delivery: %w", err)
 			}

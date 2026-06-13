@@ -45,8 +45,6 @@ var _ ChannelDispatcher = &WebhookDispatcher{}
 func (w *WebhookDispatcher) Send(
 	ctx context.Context,
 	configRaw json.RawMessage,
-	isFirst bool,
-	isResolve bool,
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
@@ -73,7 +71,7 @@ func (w *WebhookDispatcher) Send(
 		AlertID:     data.AlertID,
 		UpdateID:    data.UpdateID,
 		Title:       data.Title,
-		Status:      data.Status,
+		Status:      data.Status.String(),
 		Description: data.Description,
 		ServiceName: data.ServiceName,
 		Components:  data.Components,

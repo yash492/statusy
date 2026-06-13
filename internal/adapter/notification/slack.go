@@ -4,22 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/slack-go/slack"
 	"github.com/yash492/statusy/internal/common/jsonutil"
-	"resty.dev/v3"
 )
 
 type SlackConfig struct {
+	Token      string `json:"token"`
+	ChannelID  string `json:"channel_id"`
 	WebhookURL string `json:"webhook_url"`
 }
 
-type SlackDispatcher struct {
-	client *resty.Client
-}
+type SlackDispatcher struct{}
 
-func newSlackDispatcher(client *resty.Client) *SlackDispatcher {
-	return &SlackDispatcher{client: client}
+func newSlackDispatcher() *SlackDispatcher {
+	return &SlackDispatcher{}
 }
 
 // Ensure SlackDispatcher implements ChannelDispatcher interface
@@ -28,8 +28,6 @@ var _ ChannelDispatcher = &SlackDispatcher{}
 func (s *SlackDispatcher) Send(
 	ctx context.Context,
 	configRaw json.RawMessage,
-	isFirst bool,
-	isResolve bool,
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
@@ -37,59 +35,74 @@ func (s *SlackDispatcher) Send(
 	if err != nil {
 		return "", err
 	}
-	if cfg.WebhookURL == "" {
-		return "", fmt.Errorf("Slack webhook URL is empty")
+	if cfg.Token == "" {
+		return "", fmt.Errorf("Slack token is empty")
+	}
+	if cfg.ChannelID == "" {
+		return "", fmt.Errorf("Slack channel ID is empty")
 	}
 
-	color, _ := getColor(isFirst, isResolve)
-	titleLink := fmt.Sprintf("*<%s|%s - %s>*", data.Link, data.ServiceName, data.Title)
-	if data.Link == "" {
-		titleLink = fmt.Sprintf("*%s - %s*", data.ServiceName, data.Title)
-	}
+	colorHex, _ := getColor(data.Status)
 	comps := formatComponents(data.Components)
 
-	attachment := slack.Attachment{
-		Color: color,
-		Blocks: slack.Blocks{
-			BlockSet: []slack.Block{
-				slack.NewSectionBlock(
-					slack.NewTextBlockObject("mrkdwn", titleLink, false, false),
-					nil, nil,
-				),
-				slack.NewSectionBlock(
-					slack.NewTextBlockObject("mrkdwn", data.Description, false, false),
-					nil, nil,
-				),
-				slack.NewSectionBlock(
-					nil,
-					[]*slack.TextBlockObject{
-						slack.NewTextBlockObject("mrkdwn", fmt.Sprintf("*Status:*\n%s", data.Status), false, false),
-						slack.NewTextBlockObject("mrkdwn", fmt.Sprintf("*Affected Components:*\n%s", comps), false, false),
-					},
-					nil,
-				),
-				slack.NewContextBlock(
-					"",
-					slack.NewTextBlockObject("mrkdwn", fmt.Sprintf("Statusy | %s", data.UpdatedAt.UTC().Format("2006-01-02 15:04:05 MST")), false, false),
-				),
+	titleText := fmt.Sprintf(":rotating_light: *<%s|%s - %s>*", data.Link, data.ServiceName, data.Title)
+	if data.Link == "" {
+		titleText = fmt.Sprintf(":rotating_light: *%s - %s*", data.ServiceName, data.Title)
+	}
+
+	fields := []*slack.TextBlockObject{
+		{Type: slack.MarkdownType, Text: fmt.Sprintf("*Service:* %s", data.ServiceName)},
+		{Type: slack.MarkdownType, Text: fmt.Sprintf("*Status:* `%s`", data.Status.ForDisplay())},
+		{Type: slack.MarkdownType, Text: fmt.Sprintf("*Updated At:* `%s`", data.UpdatedAt.UTC().Format(time.RFC822))},
+		{Type: slack.MarkdownType, Text: fmt.Sprintf("*Affected Components:*\n%s", comps)},
+	}
+
+	if data.StartTime != nil {
+		fields = append(fields, &slack.TextBlockObject{
+			Type: slack.MarkdownType,
+			Text: fmt.Sprintf("*Start Time:* `%s`", data.StartTime.UTC().Format(time.RFC822)),
+		})
+	}
+	if data.EndTime != nil {
+		fields = append(fields, &slack.TextBlockObject{
+			Type: slack.MarkdownType,
+			Text: fmt.Sprintf("*End Time:* `%s`", data.EndTime.UTC().Format(time.RFC822)),
+		})
+	}
+
+	msg := slack.NewBlockMessage(
+		slack.SectionBlock{
+			Type: slack.MBTSection,
+			Text: &slack.TextBlockObject{
+				Type: slack.MarkdownType,
+				Text: titleText,
 			},
+			Fields: fields,
 		},
+	)
+
+	attachmentBlocks := slack.NewBlockMessage(slack.SectionBlock{
+		Type: slack.MBTSection,
+		Text: &slack.TextBlockObject{
+			Type: slack.MarkdownType,
+			Text: data.Description,
+		},
+	})
+
+	attachment := slack.Attachment{
+		Color:  colorHex,
+		Blocks: attachmentBlocks.Blocks,
 	}
 
-	payload := slack.WebhookMessage{
-		Attachments: []slack.Attachment{attachment},
+	payload := &slack.WebhookMessage{
+		Blocks:          &msg.Blocks,
+		Attachments:     []slack.Attachment{attachment},
+		ThreadTimestamp: prevExtID,
 	}
 
-	resp, err := s.client.R().
-		SetContext(ctx).
-		SetBody(payload).
-		Post(cfg.WebhookURL)
-	if err != nil {
-		return "", fmt.Errorf("failed to send Slack HTTP request: %w", err)
-	}
-	if resp.IsError() {
-		return "", fmt.Errorf("Slack webhook returned status code %d: %s", resp.StatusCode(), resp.String())
+	if err := slack.PostWebhookContext(ctx, cfg.WebhookURL, payload); err != nil {
+		return "", fmt.Errorf("failed to send Slack message: %w", err)
 	}
 
-	return "", nil
+	return prevExtID, nil
 }

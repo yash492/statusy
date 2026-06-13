@@ -48,7 +48,8 @@ const (
 // AlertPayload represents the payload enqueued for notification dispatch.
 type AlertPayload struct {
 	EventType EventType `json:"event_type"`
-	EventID   uint      `json:"event_id"`
+	// This is incident update/scheduled maintenance update id
+	EventID uint `json:"event_id"`
 }
 
 // Queue defines the interface for interacting with the message queue.

@@ -97,8 +97,7 @@ type NotificationsRepository interface {
 	Update(ctx context.Context, vn ViewNotification) (ViewNotification, error)
 
 	GetDelivery(ctx context.Context, channelID uint, alertType AlertType, alertID uint) (NotificationDelivery, error)
-	SaveDelivery(ctx context.Context, delivery NotificationDelivery) error
-	UpdateDelivery(ctx context.Context, deliveryID uint, lastUpdateID uint, externalIdentifier string) error
+	UpsertDelivery(ctx context.Context, delivery NotificationDelivery) error
 	SaveDeliveryFailure(ctx context.Context, failure NotificationDeliveryFailure) error
 
 	GetNotificationConfigsForIncidentUpdate(ctx context.Context, updateID uint) ([]ViewNotification, error)
@@ -108,7 +107,7 @@ type NotificationsRepository interface {
 }
 
 type Notifier interface {
-	SendIncident(ctx context.Context, ch ViewNotification, isFirst bool, details IncidentNotificationDetails, prevExtID string) (string, error)
-	SendMaintenance(ctx context.Context, ch ViewNotification, isFirst bool, details MaintenanceNotificationDetails, prevExtID string) (string, error)
+	SendIncident(ctx context.Context, ch ViewNotification, details IncidentNotificationDetails, prevExtID string) (string, error)
+	SendMaintenance(ctx context.Context, ch ViewNotification, details MaintenanceNotificationDetails, prevExtID string) (string, error)
 }
 

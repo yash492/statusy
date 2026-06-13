@@ -8,14 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yash492/statusy/internal/common/statusnormalizer"
 	"github.com/yash492/statusy/internal/domain/notifications"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"resty.dev/v3"
 )
 
 type ChannelDispatcher interface {
-	Send(ctx context.Context, config json.RawMessage, isFirst bool, isResolve bool, data AlertData, prevExtID string) (string, error)
+	Send(ctx context.Context, config json.RawMessage, data AlertData, prevExtID string) (string, error)
 }
 
 type HttpNotifier struct {
@@ -40,7 +39,7 @@ func NewHttpNotifier(lg *slog.Logger) *HttpNotifier {
 	}
 
 	h.dispatchers = map[notifications.NotificationType]ChannelDispatcher{
-		notifications.NotificationTypeSlack:                      newSlackDispatcher(client),
+		notifications.NotificationTypeSlack:                      newSlackDispatcher(),
 		notifications.NotificationTypeDiscord:                    newDiscordDispatcher(client, lg),
 		notifications.NotificationTypeMsTeams:                    newMsTeamsDispatcher(lg),
 		notifications.NotificationTypePagerDuty:                  newPagerDutyDispatcher(client),
@@ -58,7 +57,7 @@ type AlertData struct {
 	AlertID     uint
 	UpdateID    uint
 	Title       string
-	Status      string
+	Status      statusnormalizer.NormalizedStatus
 	Description string
 	ServiceName string
 	Components  []notifications.NotificationComponent
@@ -72,7 +71,6 @@ type AlertData struct {
 func (h *HttpNotifier) SendIncident(
 	ctx context.Context,
 	ch notifications.ViewNotification,
-	isFirst bool,
 	details notifications.IncidentNotificationDetails,
 	prevExtID string,
 ) (string, error) {
@@ -80,7 +78,7 @@ func (h *HttpNotifier) SendIncident(
 		AlertID:     details.IncidentID,
 		UpdateID:    details.UpdateID,
 		Title:       details.Title,
-		Status:      details.Status,
+		Status:      statusnormalizer.ParseIncidentStatus(details.Status),
 		Description: details.Description,
 		ServiceName: details.ServiceName,
 		Components:  details.Components,
@@ -88,13 +86,12 @@ func (h *HttpNotifier) SendIncident(
 		UpdatedAt:   details.UpdatedAt,
 		AlertType:   notifications.AlertTypeIncident,
 	}
-	return h.send(ctx, ch, isFirst, data, prevExtID)
+	return h.send(ctx, ch, data, prevExtID)
 }
 
 func (h *HttpNotifier) SendMaintenance(
 	ctx context.Context,
 	ch notifications.ViewNotification,
-	isFirst bool,
 	details notifications.MaintenanceNotificationDetails,
 	prevExtID string,
 ) (string, error) {
@@ -102,7 +99,7 @@ func (h *HttpNotifier) SendMaintenance(
 		AlertID:     details.MaintenanceID,
 		UpdateID:    details.UpdateID,
 		Title:       details.Title,
-		Status:      cases.Title(language.AmericanEnglish).String(details.Status),
+		Status:      statusnormalizer.ParseMaintenanceStatus(details.Status),
 		Description: details.Description,
 		ServiceName: details.ServiceName,
 		Components:  details.Components,
@@ -112,38 +109,28 @@ func (h *HttpNotifier) SendMaintenance(
 		EndTime:     &details.EndTime,
 		AlertType:   notifications.AlertTypeScheduledMaintenance,
 	}
-	return h.send(ctx, ch, isFirst, data, prevExtID)
+	return h.send(ctx, ch, data, prevExtID)
 }
 
 func (h *HttpNotifier) send(
 	ctx context.Context,
 	ch notifications.ViewNotification,
-	isFirst bool,
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
-	isResolve := isResolve(data.AlertType, data.Status)
-
 	dispatcher, ok := h.dispatchers[ch.Type]
 	if !ok {
 		return "", fmt.Errorf("unsupported notification channel type: %s", ch.Type)
 	}
 
-	return dispatcher.Send(ctx, ch.Config, isFirst, isResolve, data, prevExtID)
+	return dispatcher.Send(ctx, ch.Config, data, prevExtID)
 }
 
-func isResolve(alertType notifications.AlertType, status string) bool {
-	if alertType == notifications.AlertTypeIncident {
-		return strings.ToLower(status) == "resolved"
-	}
-	return strings.ToLower(status) == "completed"
-}
-
-func getColor(isFirst, isResolve bool) (string, int) {
-	if isResolve {
+func getColor(status statusnormalizer.NormalizedStatus) (string, int) {
+	if status.IsResolved() {
 		return "#2EB886", 3061894
 	}
-	if isFirst {
+	if status.IsInitial() {
 		return "#E03E3E", 14696000
 	}
 	return "#FFA500", 16753920
