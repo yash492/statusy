@@ -11,8 +11,6 @@ import (
 )
 
 type SlackConfig struct {
-	Token      string `json:"token"`
-	ChannelID  string `json:"channel_id"`
 	WebhookURL string `json:"webhook_url"`
 }
 
@@ -35,13 +33,6 @@ func (s *SlackDispatcher) Send(
 	if err != nil {
 		return "", err
 	}
-	if cfg.Token == "" {
-		return "", fmt.Errorf("Slack token is empty")
-	}
-	if cfg.ChannelID == "" {
-		return "", fmt.Errorf("Slack channel ID is empty")
-	}
-
 	colorHex, _ := getColor(data.Status)
 	comps := formatComponents(data.Components)
 
