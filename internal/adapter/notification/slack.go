@@ -95,14 +95,13 @@ func (s *SlackDispatcher) Send(
 	}
 
 	payload := &slack.WebhookMessage{
-		Blocks:          &msg.Blocks,
-		Attachments:     []slack.Attachment{attachment},
-		ThreadTimestamp: prevExtID,
+		Blocks:      &msg.Blocks,
+		Attachments: []slack.Attachment{attachment},
 	}
 
 	if err := slack.PostWebhookContext(ctx, cfg.WebhookURL, payload); err != nil {
 		return "", fmt.Errorf("failed to send Slack message: %w", err)
 	}
 
-	return prevExtID, nil
+	return "", nil
 }
