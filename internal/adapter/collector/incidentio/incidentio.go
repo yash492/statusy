@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/yash492/statusy/internal/common/nullable"
+	"github.com/yash492/statusy/internal/common/statusnormalizer"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
@@ -166,8 +167,8 @@ func FetchIncidentsHelper(req IncidentsReq, statusPageUrl string) []incidents.In
 				Description:        update.MessageString,
 				IncidentProviderID: incident.ProviderID,
 				ProviderID:         update.ID,
-				Status:             update.ToStatus,
 				ProviderStatus:     update.ToStatus,
+				Status:             statusnormalizer.NormalizeIncidentStatus(update.ToStatus),
 				StatusTime:         update.PublishedAt,
 			}
 		}
@@ -233,7 +234,7 @@ func FetchScheduledMaintenancesHelper(req IncidentsReq, statusPageUrl string) []
 				Description:                    update.MessageString,
 				ScheduledMaintenanceProviderID: maintenance.ProviderID,
 				ProviderID:                     update.ID,
-				Status:                         update.ToStatus,
+				Status:                         statusnormalizer.NormalizeMaintenanceStatus(update.ToStatus),
 				ProviderStatus:                 update.ToStatus,
 				StatusTime:                     update.PublishedAt,
 			}

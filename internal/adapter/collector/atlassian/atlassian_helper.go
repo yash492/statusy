@@ -3,6 +3,7 @@ package atlassian
 import (
 	"github.com/samber/lo"
 	"github.com/yash492/statusy/internal/common/nullable"
+	"github.com/yash492/statusy/internal/common/statusnormalizer"
 	"github.com/yash492/statusy/internal/domain/components"
 	"github.com/yash492/statusy/internal/domain/incidents"
 	"github.com/yash492/statusy/internal/domain/scheduledmaintenance"
@@ -79,7 +80,7 @@ func FetchIncidentsHelper(req IncidentReq) []incidents.Incident {
 				IncidentProviderID: incident.ProviderID,
 				ProviderID:         update.ID,
 				Status:             update.Status,
-				ProviderStatus:     update.Status,
+				ProviderStatus:     statusnormalizer.NormalizeIncidentStatus(update.Status),
 				StatusTime:         update.CreatedAt,
 			}
 		})
@@ -116,7 +117,7 @@ func FetchScheduledMaintenanceHelper(req ScheduledMaintenanceReq) []scheduledmai
 				ScheduledMaintenanceProviderID: scheduledMaintenance.ProviderID,
 				ProviderID:                     update.ID,
 				Status:                         update.Status,
-				ProviderStatus:                 update.Status,
+				ProviderStatus:                 statusnormalizer.NormalizeMaintenanceStatus(update.Status),
 				StatusTime:                     update.CreatedAt,
 			}
 		})

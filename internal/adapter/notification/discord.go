@@ -62,7 +62,7 @@ func (d *DiscordDispatcher) Send(
 			{
 				Name:   "Affected Components",
 				Value:  comps,
-				Inline: true,
+				Inline: false,
 			},
 		},
 		Footer: &discordgo.MessageEmbedFooter{
