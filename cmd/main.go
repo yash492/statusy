@@ -95,7 +95,7 @@ func main() {
 	})
 
 	if err := errGroup.Wait(); err != nil {
-		logger.Error("main waitgroup workers err:", slog.Any("err", err))
+		logger.Error("main app waitgroup err:", slog.Any("err", err))
 		os.Exit(1)
 	}
 
