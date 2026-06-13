@@ -46,11 +46,11 @@ func NewDispatcherApplication(
 
 // Start runs the background worker loop polling the queue with conditional backoff and smart shutdown
 func (d *DispatcherApplication) Start(ctx context.Context) error {
-	d.lg.Info("starting notification dispatcher background worker")
+	d.lg.InfoContext(ctx, "starting notification dispatcher background worker")
 	for {
 		select {
 		case <-ctx.Done():
-			d.lg.Info("notification dispatcher stopped gracefully")
+			d.lg.InfoContext(ctx, "notification dispatcher stopped gracefully")
 			return ctx.Err()
 		default:
 			processedCount, err := d.processBatch(ctx)
@@ -127,35 +127,37 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 		return fmt.Errorf("failed to get incident notification details: %w", err)
 	}
 
-	g, gCtx := errgroup.WithContext(ctx)
+	errGroup, errGroupCtx := errgroup.WithContext(ctx)
+	errGroup.SetLimit(10)
 	for _, channel := range channels {
 		ch := channel
-		g.Go(func() error {
-			delivery, err := d.viewsRepo.GetDelivery(gCtx, ch.ID, notifications.AlertTypeIncident, details.IncidentID)
+		errGroup.Go(func() error {
+			delivery, err := d.viewsRepo.GetDelivery(errGroupCtx, ch.ID, notifications.AlertTypeIncident, details.IncidentID)
 
 			isFirst := false
 			if err != nil {
-				var appErr *apperrors.AppError
-				if errors.As(err, &appErr) && appErr.Type == apperrors.TypeNotFound {
-					isFirst = true
-				} else {
-					return fmt.Errorf("failed to get delivery state: %w", err)
+				if err, ok := errors.AsType[*apperrors.AppError](err); ok {
+					if err.Type == apperrors.TypeNotFound {
+						isFirst = true
+					} else {
+						return fmt.Errorf("failed to get delivery state: %w", err)
+					}
 				}
 			}
 
 			if !isFirst && delivery.LastUpdateID >= updateID {
-				d.lg.DebugContext(gCtx, "incident notification already delivered", slog.Uint64("channel_id", uint64(ch.ID)), slog.Uint64("update_id", uint64(updateID)))
+				d.lg.DebugContext(errGroupCtx, "incident notification already delivered", slog.Uint64("channel_id", uint64(ch.ID)), slog.Uint64("update_id", uint64(updateID)))
 				return nil
 			}
 
-			extID, sendErr := d.notifier.SendIncident(gCtx, ch, isFirst, details, delivery.ExternalIdentifier)
+			extID, sendErr := d.notifier.SendIncident(errGroupCtx, ch, isFirst, details, delivery.ExternalIdentifier)
 			if sendErr != nil {
-				d.lg.ErrorContext(gCtx, "failed to dispatch notification",
+				d.lg.ErrorContext(errGroupCtx, "failed to dispatch notification",
 					slog.Uint64("channel_id", uint64(ch.ID)),
 					slog.String("channel_type", string(ch.Type)),
 					slog.Any("err", sendErr),
 				)
-				dbErr := d.viewsRepo.SaveDeliveryFailure(gCtx, notifications.NotificationDeliveryFailure{
+				dbErr := d.viewsRepo.SaveDeliveryFailure(errGroupCtx, notifications.NotificationDeliveryFailure{
 					ViewNotificationID: ch.ID,
 					AlertType:          notifications.AlertTypeIncident,
 					AlertID:            details.IncidentID,
@@ -163,13 +165,13 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 					ErrorMessage:       sendErr.Error(),
 				})
 				if dbErr != nil {
-					d.lg.ErrorContext(gCtx, "failed to save delivery failure to db", slog.Any("err", dbErr))
+					d.lg.ErrorContext(errGroupCtx, "failed to save delivery failure to db", slog.Any("err", dbErr))
 				}
 				return nil
 			}
 
 			if isFirst {
-				err = d.viewsRepo.SaveDelivery(gCtx, notifications.NotificationDelivery{
+				err = d.viewsRepo.SaveDelivery(errGroupCtx, notifications.NotificationDelivery{
 					ViewNotificationID: ch.ID,
 					AlertType:          notifications.AlertTypeIncident,
 					AlertID:            details.IncidentID,
@@ -177,7 +179,7 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 					ExternalIdentifier: extID,
 				})
 			} else {
-				err = d.viewsRepo.UpdateDelivery(gCtx, delivery.ID, updateID, extID)
+				err = d.viewsRepo.UpdateDelivery(errGroupCtx, delivery.ID, updateID, extID)
 			}
 			if err != nil {
 				return fmt.Errorf("failed to record delivery: %w", err)
@@ -185,7 +187,7 @@ func (d *DispatcherApplication) dispatchIncidentUpdate(ctx context.Context, upda
 			return nil
 		})
 	}
-	return g.Wait()
+	return errGroup.Wait()
 }
 
 func (d *DispatcherApplication) dispatchMaintenanceUpdate(ctx context.Context, updateID uint) error {
