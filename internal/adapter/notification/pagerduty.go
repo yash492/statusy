@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/PagerDuty/go-pagerduty"
+	"github.com/yash492/statusy/internal/common/jsonutil"
 	"github.com/yash492/statusy/internal/domain/notifications"
 	"resty.dev/v3"
 )
@@ -33,9 +34,9 @@ func (p *PagerDutyDispatcher) Send(
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
-	var cfg PagerDutyConfig
-	if err := json.Unmarshal(configRaw, &cfg); err != nil {
-		return "", fmt.Errorf("failed to parse PagerDuty config: %w", err)
+	cfg, err := jsonutil.UnmarshalWithType[PagerDutyConfig](configRaw)
+	if err != nil {
+		return "", err
 	}
 	if cfg.RoutingKey == "" {
 		return "", fmt.Errorf("PagerDuty routing key is empty")

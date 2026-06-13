@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/yash492/statusy/internal/common/jsonutil"
 	"resty.dev/v3"
 )
 
@@ -36,9 +37,9 @@ func (d *DiscordDispatcher) Send(
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
-	var cfg DiscordConfig
-	if err := json.Unmarshal(configRaw, &cfg); err != nil {
-		return "", fmt.Errorf("failed to parse Discord config: %w", err)
+	cfg, err := jsonutil.UnmarshalWithType[DiscordConfig](configRaw)
+	if err != nil {
+		return "", err
 	}
 	if cfg.WebhookURL == "" {
 		return "", fmt.Errorf("Discord webhook URL is empty")

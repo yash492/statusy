@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/yash492/statusy/internal/common/jsonutil"
 	"resty.dev/v3"
 )
 
@@ -39,9 +40,9 @@ func (s *SolarwindsDispatcher) Send(
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
-	var cfg SolarwindsConfig
-	if err := json.Unmarshal(configRaw, &cfg); err != nil {
-		return "", fmt.Errorf("failed to parse SolarWinds Incident Response config: %w", err)
+	cfg, err := jsonutil.UnmarshalWithType[SolarwindsConfig](configRaw)
+	if err != nil {
+		return "", err
 	}
 	if cfg.WebhookURL == "" {
 		return "", fmt.Errorf("SolarWinds Incident Response webhook URL is empty")

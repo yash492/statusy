@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/yash492/statusy/internal/domain/notifications"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"resty.dev/v3"
 )
 
@@ -100,7 +102,7 @@ func (h *HttpNotifier) SendMaintenance(
 		AlertID:     details.MaintenanceID,
 		UpdateID:    details.UpdateID,
 		Title:       details.Title,
-		Status:      details.Status,
+		Status:      cases.Title(language.AmericanEnglish).String(details.Status),
 		Description: details.Description,
 		ServiceName: details.ServiceName,
 		Components:  details.Components,

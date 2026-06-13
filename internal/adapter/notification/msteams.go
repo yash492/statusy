@@ -8,6 +8,7 @@ import (
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
+	"github.com/yash492/statusy/internal/common/jsonutil"
 )
 
 type MsTeamsConfig struct {
@@ -33,9 +34,9 @@ func (m *MsTeamsDispatcher) Send(
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
-	var cfg MsTeamsConfig
-	if err := json.Unmarshal(configRaw, &cfg); err != nil {
-		return "", fmt.Errorf("failed to parse MS Teams config: %w", err)
+	cfg, err := jsonutil.UnmarshalWithType[MsTeamsConfig](configRaw)
+	if err != nil {
+		return "", err
 	}
 	if cfg.WebhookURL == "" {
 		return "", fmt.Errorf("MS Teams webhook URL is empty")

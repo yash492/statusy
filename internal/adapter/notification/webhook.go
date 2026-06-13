@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/yash492/statusy/internal/common/jsonutil"
 	"github.com/yash492/statusy/internal/domain/notifications"
 	"resty.dev/v3"
 )
@@ -49,9 +50,9 @@ func (w *WebhookDispatcher) Send(
 	data AlertData,
 	prevExtID string,
 ) (string, error) {
-	var cfg WebhookConfig
-	if err := json.Unmarshal(configRaw, &cfg); err != nil {
-		return "", fmt.Errorf("failed to parse custom Webhook config: %w", err)
+	cfg, err := jsonutil.UnmarshalWithType[WebhookConfig](configRaw)
+	if err != nil {
+		return "", err
 	}
 	if cfg.URL == "" {
 		return "", fmt.Errorf("custom Webhook URL is empty")

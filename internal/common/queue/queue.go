@@ -3,7 +3,8 @@ package queue
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+
+	"github.com/yash492/statusy/internal/common/jsonutil"
 )
 
 // Message represents a single raw message from the queue.
@@ -20,11 +21,10 @@ type MessageEnvelope[T any] struct {
 
 // UnmarshalMessage decodes the raw JSON bytes of Message.Payload into a type-safe MessageEnvelope[T].
 func UnmarshalMessage[T any](msg Message) (MessageEnvelope[T], error) {
-	var payload T
-	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
-		return MessageEnvelope[T]{}, fmt.Errorf("failed to unmarshal payload: %w", err)
+	payload, err := jsonutil.UnmarshalWithType[T](msg.Payload)
+	if err != nil {
+		return MessageEnvelope[T]{}, err
 	}
-
 	return MessageEnvelope[T]{
 		ID:      msg.ID,
 		Payload: payload,
