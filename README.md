@@ -1,12 +1,13 @@
 # statusy
 
-> ⚠️ This project is unstable and actively under development. Expect breaking changes.
-
 Statusy is a backend service that aggregates incidents, component statuses, and scheduled maintenances from external provider status pages into a single normalized store. It periodically scrapes supported status pages, persists the data in PostgreSQL, and dispatches notifications to configured channels (Slack, Discord, MS Teams, PagerDuty, webhooks, and SolarWinds Incident Response) when things change.
 
-Built with [Antigravity](https://antigravity.google).
+Built with Antigravity & Claude Code.
 
 ---
+
+<img width="854" height="512" alt="output" src="https://github.com/user-attachments/assets/9d1c56a5-11a9-408b-8abe-c782dfaba572" />
+
 
 ## What it does
 
