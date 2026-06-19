@@ -33,7 +33,6 @@ func (s *SlackDispatcher) Send(
 	if err != nil {
 		return "", err
 	}
-	colorHex, _ := getColor(data.Status)
 	comps := formatComponents(data.Components)
 
 	titleText := fmt.Sprintf(":rotating_light: *<%s|%s - %s>*", data.Link, data.ServiceName, data.Title)
@@ -41,53 +40,28 @@ func (s *SlackDispatcher) Send(
 		titleText = fmt.Sprintf(":rotating_light: *%s - %s*", data.ServiceName, data.Title)
 	}
 
-	fields := []*slack.TextBlockObject{
-		{Type: slack.MarkdownType, Text: fmt.Sprintf("*Service:* %s", data.ServiceName)},
-		{Type: slack.MarkdownType, Text: fmt.Sprintf("*Status:* `%s`", data.Status.ForDisplay())},
-		{Type: slack.MarkdownType, Text: fmt.Sprintf("*Updated At:* `%s`", data.UpdatedAt.UTC().Format(time.RFC822))},
-		{Type: slack.MarkdownType, Text: fmt.Sprintf("*Affected Components:*\n%s", comps)},
-	}
-
+	fieldsText := fmt.Sprintf(
+		"*Service:* %s\n*Status:* `%s`\n*Updated At:* `%s`\n*Affected Components:*\n%s",
+		data.ServiceName,
+		data.Status.ForDisplay(),
+		data.UpdatedAt.UTC().Format(time.RFC822),
+		comps,
+	)
 	if data.StartTime != nil {
-		fields = append(fields, &slack.TextBlockObject{
-			Type: slack.MarkdownType,
-			Text: fmt.Sprintf("*Start Time:* `%s`", data.StartTime.UTC().Format(time.RFC822)),
-		})
+		fieldsText += fmt.Sprintf("\n*Start Time:* `%s`", data.StartTime.UTC().Format(time.RFC822))
 	}
 	if data.EndTime != nil {
-		fields = append(fields, &slack.TextBlockObject{
-			Type: slack.MarkdownType,
-			Text: fmt.Sprintf("*End Time:* `%s`", data.EndTime.UTC().Format(time.RFC822)),
-		})
+		fieldsText += fmt.Sprintf("\n*End Time:* `%s`", data.EndTime.UTC().Format(time.RFC822))
 	}
 
 	msg := slack.NewBlockMessage(
-		slack.SectionBlock{
-			Type: slack.MBTSection,
-			Text: &slack.TextBlockObject{
-				Type: slack.MarkdownType,
-				Text: titleText,
-			},
-			Fields: fields,
-		},
+		slack.NewSectionBlock(&slack.TextBlockObject{Type: slack.MarkdownType, Text: titleText}, nil, nil),
+		slack.NewSectionBlock(&slack.TextBlockObject{Type: slack.MarkdownType, Text: fieldsText}, nil, nil),
+		slack.NewSectionBlock(&slack.TextBlockObject{Type: slack.MarkdownType, Text: fmt.Sprintf("*Description:*\n%s", data.Description)}, nil, nil),
 	)
 
-	attachmentBlocks := slack.NewBlockMessage(slack.SectionBlock{
-		Type: slack.MBTSection,
-		Text: &slack.TextBlockObject{
-			Type: slack.MarkdownType,
-			Text: data.Description,
-		},
-	})
-
-	attachment := slack.Attachment{
-		Color:  colorHex,
-		Blocks: attachmentBlocks.Blocks,
-	}
-
 	payload := &slack.WebhookMessage{
-		Blocks:      &msg.Blocks,
-		Attachments: []slack.Attachment{attachment},
+		Blocks: &msg.Blocks,
 	}
 
 	if err := slack.PostWebhookContext(ctx, cfg.WebhookURL, payload); err != nil {
