@@ -74,6 +74,11 @@ The project follows **Hexagonal Architecture (Ports and Adapters / Clean Archite
 - **DB & Transport Abstraction**: No raw database client structs (`pgx`) or HTTP framework imports are allowed within command handlers.
 - **Colocated DB SQL**: Always colocate SQL files in `queries/` under the corresponding DB adapter package and embed them in Go code.
 
+### Collector Notes: AWS Health Dashboard
+- Data source: `historyevents.json` (gzip) and `services.json` on the public S3 buckets referenced by `https://health.aws.amazon.com/health/status`. `currentevents` is not used because history already contains active events.
+- Impact mapping: `ProviderImpact` stores AWS's raw event `status` (`"1"`, `"2"`, `"3"`). `Impact` stores the AWS UI label: `1` → `impacted`, `2` → `degraded`, `3` → `disrupted`. Both are unset when the status is `0`.
+- Resolution is decided by the latest `event_log` entry having status `0`, not by the `[RESOLVED]` summary prefix.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

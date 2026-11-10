@@ -182,3 +182,29 @@ func TestFetchIncidentsAndMaintenances(t *testing.T) {
 	assert.Equal(t, "01KFGG5S6TRSJJNNBB3TQATY24", maintenancesResult[0].ProviderID)
 	assert.Equal(t, "Scheduled Pleo Maintenance", maintenancesResult[0].Name)
 }
+
+func TestFetchComponentsHelperUngroupedComponents(t *testing.T) {
+	// Pages without groups only list their components in the structure, summary.components is empty.
+	raw := `{"summary": {
+		"components": [{"id": "c-listed", "name": "Listed"}],
+		"structure": {"items": [
+			{"group": {"id": "g1", "name": "APIs", "components": [{"component_id": "c-grouped", "name": "Grouped"}]}},
+			{"component": {"component_id": "c-listed", "name": "Listed"}},
+			{"component": {"component_id": "c-structure", "name": "Structure only"}},
+			{"component": {"component_id": "c-grouped", "name": "Grouped"}}
+		]}
+	}}`
+
+	var req incidentio.StatusReq
+	assert.NoError(t, json.Unmarshal([]byte(raw), &req))
+
+	result := incidentio.FetchComponentsHelper(req)
+	assert.Len(t, result.GroupedComponents, 1)
+	assert.Equal(t, "c-grouped", result.GroupedComponents[0].Components[0].ProviderID)
+
+	// a component is neither repeated when it is in summary.components and the structure, nor when it is grouped
+	assert.Len(t, result.UngroupedComponents, 2)
+	assert.Equal(t, "c-listed", result.UngroupedComponents[0].ProviderID)
+	assert.Equal(t, "c-structure", result.UngroupedComponents[1].ProviderID)
+	assert.Equal(t, "Structure only", result.UngroupedComponents[1].Name)
+}

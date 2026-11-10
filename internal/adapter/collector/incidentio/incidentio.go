@@ -38,7 +38,8 @@ type Structure struct {
 }
 
 type StructureItem struct {
-	Group *Group `json:"group,omitempty"`
+	Group     *Group          `json:"group,omitempty"`
+	Component *GroupComponent `json:"component,omitempty"`
 }
 
 type Group struct {
@@ -117,12 +118,25 @@ func FetchComponentsHelper(req StatusReq) components.AggregateComponents {
 	}
 
 	ungroupedComponents := []components.Component{}
+	ungroupedComponentIDs := make(map[string]bool)
 	for _, c := range req.Summary.Components {
 		if !groupedComponentIDs[c.ID] {
 			ungroupedComponents = append(ungroupedComponents, components.Component{
 				Name:       c.Name,
 				ProviderID: c.ID,
 			})
+			ungroupedComponentIDs[c.ID] = true
+		}
+	}
+
+	// Some status pages only list their ungrouped components in the structure, summary.components is empty for them.
+	for _, item := range req.Summary.Structure.Items {
+		if item.Component != nil && !groupedComponentIDs[item.Component.ComponentID] && !ungroupedComponentIDs[item.Component.ComponentID] {
+			ungroupedComponents = append(ungroupedComponents, components.Component{
+				Name:       item.Component.Name,
+				ProviderID: item.Component.ComponentID,
+			})
+			ungroupedComponentIDs[item.Component.ComponentID] = true
 		}
 	}
 
